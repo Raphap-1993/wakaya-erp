@@ -5,9 +5,9 @@
 - Dominio del spec: hospitality / lodge / reserva guiada
 - Actor principal: visitante web que evalúa hospedaje premium
 - Tarea principal navegable de inicio a fin: descubrir Wakaya -> revisar habitaciones -> abrir detalle -> enviar prereserva manual
-- Patrón visual elegido: otro — hospitality editorial + ecommerce-guided
+- Patrón visual elegido (streaming / operativo / ecommerce / educación / salud / dashboard / otro): otro — hospitality editorial + ecommerce-guided
 - Por qué NO se usa una shell genérica sidenav+tabla: el sitio es una superficie pública aspiracional; una shell SaaS rompería la atmósfera premium, la venta emocional del lodge y el journey de conversión.
-- Interacciones del prototipo:
+- Interacciones del prototipo (mínimo 3, expresadas como acciones reales del producto):
   - elegir fechas y huéspedes en la booking bar flotante
   - abrir una categoría de habitación y pasar al detalle
   - enviar una solicitud de prereserva, evento o full day
@@ -16,12 +16,12 @@
 ## Golden de referencia
 
 - Path: `ejemplos/fase-2-ux-ui/prototype-html5-golden/ecommerce-checkout/index.html` + `ejemplos/fase-2-ux-ui/prototype-html5-golden/streaming-catalogo-player/index.html`
-- Mezcla controlada: `ecommerce-checkout` aporta estructura comercial, CTA y summary guiado; `streaming-catalogo-player` aporta hero editorial, ritmo visual y navegación inmersiva.
+- Por qué este golden: `ecommerce-checkout` aporta estructura comercial, CTA y summary guiado; `streaming-catalogo-player` aporta hero editorial, ritmo visual y navegación inmersiva.
 - Patrones estructurales que voy a replicar:
   - hero dominante con narrativa y CTA claros
   - topbar ligera con navegación editorial y link discreto al hub
   - bloques secundarios con cards visuales y transiciones a detalle
-- Tokens base reutilizados de `:root`:
+- Tokens base reutilizados de `:root` (≥ 8):
   - `--brand`
   - `--brand-deep`
   - `--sand`
