@@ -30,7 +30,8 @@
       --radius-lg: 28px;
       --radius-xl: 38px;
       --content-w: 1240px;
-      --font-display: "Cormorant Garamond", "Times New Roman", serif;
+      --font-display: "Avenir Next", "Helvetica Neue", "Manrope", sans-serif;
+      --font-accent: "Avenir Next Condensed", "Arial Narrow", "Avenir Next", "Helvetica Neue", sans-serif;
       --font-body: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
       --transition: 180ms ease;
     }
@@ -115,9 +116,9 @@
       display: grid;
       place-items: center;
       color: var(--white);
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 700;
+      font-family: var(--font-body);
+      font-size: 24px;
+      font-weight: 800;
       box-shadow: var(--shadow-soft);
     }
 
@@ -132,8 +133,9 @@
 
     .brand-copy strong {
       display: block;
-      font-size: 15px;
-      letter-spacing: 0.08em;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
@@ -150,8 +152,10 @@
       color: var(--ink-soft);
       padding: 9px 14px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     .public-nav button:hover,
@@ -245,20 +249,21 @@
     }
 
     .hero-copy h1 {
-      max-width: 640px;
-      font-family: var(--font-display);
-      font-size: clamp(3.8rem, 7vw, 6.4rem);
-      line-height: 0.9;
-      font-weight: 600;
+      max-width: 620px;
+      font-family: var(--font-accent);
+      font-size: clamp(3.2rem, 6vw, 5.4rem);
+      line-height: 0.88;
+      font-weight: 800;
+      letter-spacing: -0.05em;
       color: var(--white);
       margin-bottom: 18px;
       text-shadow: 0 10px 34px rgba(0, 0, 0, 0.28);
     }
 
     .hero-copy p {
-      max-width: 540px;
-      font-size: 17px;
-      line-height: 1.75;
+      max-width: 500px;
+      font-size: 16px;
+      line-height: 1.7;
       color: rgba(255, 248, 239, 0.82);
       margin-bottom: 24px;
       text-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
@@ -295,7 +300,7 @@
       gap: 8px;
       border-radius: 999px;
       padding: 14px 22px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
     }
 
@@ -340,9 +345,11 @@
     }
 
     .booking-panel h2 {
-      font-family: var(--font-display);
-      font-size: 38px;
-      line-height: 0.95;
+      font-family: var(--font-accent);
+      font-size: 32px;
+      line-height: 0.98;
+      font-weight: 800;
+      letter-spacing: -0.04em;
       margin-bottom: 12px;
       color: var(--forest-deep);
     }
@@ -427,9 +434,11 @@
     }
 
     .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(2.3rem, 4vw, 3.7rem);
-      line-height: 0.95;
+      font-family: var(--font-accent);
+      font-size: clamp(2.1rem, 3.6vw, 3.15rem);
+      line-height: 0.92;
+      font-weight: 800;
+      letter-spacing: -0.045em;
       color: var(--forest-deep);
       margin-bottom: 8px;
     }
@@ -453,7 +462,8 @@
 
     .trust-card strong {
       display: block;
-      font-size: 20px;
+      font-size: 18px;
+      font-weight: 800;
       color: var(--forest-deep);
       margin-bottom: 6px;
     }
@@ -517,11 +527,13 @@
     }
 
     .room-body h3 {
-      font-family: var(--font-display);
-      font-size: 36px;
+      font-family: var(--font-accent);
+      font-size: 28px;
       color: var(--forest-deep);
       margin-bottom: 10px;
-      line-height: 0.94;
+      line-height: 0.96;
+      font-weight: 800;
+      letter-spacing: -0.035em;
     }
 
     .room-copy {
@@ -592,9 +604,11 @@
     }
 
     .editorial-panel h4 {
-      font-family: var(--font-display);
-      font-size: 42px;
-      line-height: 0.94;
+      font-family: var(--font-accent);
+      font-size: 34px;
+      line-height: 0.96;
+      font-weight: 800;
+      letter-spacing: -0.04em;
       margin-bottom: 12px;
     }
 
@@ -625,9 +639,11 @@
     }
 
     .summary-card h2 {
-      font-family: var(--font-display);
-      font-size: 42px;
-      line-height: 0.94;
+      font-family: var(--font-accent);
+      font-size: 34px;
+      line-height: 0.96;
+      font-weight: 800;
+      letter-spacing: -0.04em;
       color: var(--forest-deep);
       margin-bottom: 12px;
     }
@@ -734,9 +750,11 @@
     }
 
     .detail-card h1 {
-      font-family: var(--font-display);
-      font-size: clamp(3rem, 5vw, 4.4rem);
+      font-family: var(--font-accent);
+      font-size: clamp(2.6rem, 4.3vw, 3.8rem);
       line-height: 0.9;
+      font-weight: 800;
+      letter-spacing: -0.05em;
       color: var(--forest-deep);
       margin-bottom: 14px;
     }
@@ -817,9 +835,11 @@
     }
 
     .detail-price span {
-      font-family: var(--font-display);
-      font-size: 48px;
-      line-height: 0.9;
+      font-family: var(--font-accent);
+      font-size: 42px;
+      line-height: 0.92;
+      font-weight: 800;
+      letter-spacing: -0.045em;
       color: var(--forest-deep);
     }
 
@@ -848,9 +868,11 @@
     }
 
     .future-card h2 {
-      font-family: var(--font-display);
-      font-size: 54px;
-      line-height: 0.92;
+      font-family: var(--font-accent);
+      font-size: 42px;
+      line-height: 0.94;
+      font-weight: 800;
+      letter-spacing: -0.045em;
       color: var(--forest-deep);
       margin-bottom: 14px;
     }
