@@ -1,0 +1,14 @@
+# System: agrupa capacidades de plataforma (observabilidad, IaC, identidad).
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: plataforma-core
+  title: Plataforma Core
+  description: Sistema que agrupa capacidades transversales (IaC base, observabilidad compartida, identidad).
+  tags:
+    - sistema
+    - plataforma
+spec:
+  owner: group:team-plataforma
+  domain: plataforma

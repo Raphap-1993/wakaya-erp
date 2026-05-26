@@ -1,0 +1,70 @@
+{
+  "$schema": "./scripts/schema/template.config.schema.json",
+  "project": {
+    "name": "Case Management",
+    "slug": "case-management",
+    "apiServiceName": "case-management-api",
+    "webComponentName": "case-management-web",
+    "apiResourceName": "case",
+    "apiResourcePlural": "cases",
+    "apiResourcePath": "/api/cases",
+    "javaBasePackage": "com.acme.casemanagement",
+    "databaseName": "case_management",
+    "featureFlagPrefix": "case-management",
+    "backstageOwner": "team-case-management",
+    "backstageSystem": "case-management",
+    "databaseResourceName": "case-management-db",
+    "costCenter": "CC-123"
+  },
+  "github": {
+    "organization": "acme",
+    "repository": "case-management"
+  },
+  "support": {
+    "url": "https://support.acme.example/case-management"
+  },
+  "runtime": {
+    "containerImage": "ghcr.io/acme/case-management-api"
+  },
+  "terraform": {
+    "stateBucket": "acme-tf-state",
+    "lockTable": "acme-tf-lock",
+    "devDomain": "dev.case-management.acme.example",
+    "stagingDomain": "staging.case-management.acme.example",
+    "prodDomain": "case-management.acme.example"
+  },
+  "catalog": {
+    "portalUrl": "https://case-management.acme.example",
+    "apiUrl": "https://api.case-management.acme.example"
+  },
+  "auth": {
+    "oidcIssuer": "https://iam.acme.example/realms/case-management",
+    "oidcJwksUrl": "https://iam.acme.example/realms/case-management/protocol/openid-connect/certs",
+    "oidcAudience": "https://api.case-management.acme.example",
+    "oidcRolesClaim": "roles"
+  },
+  "observability": {
+    "prometheusUrl": "https://prometheus.ops.acme.example",
+    "grafanaUrl": "https://grafana.ops.acme.example",
+    "tempoUrl": "https://tempo.ops.acme.example",
+    "lokiUrl": "https://loki.ops.acme.example",
+    "otelCollectorEndpoint": "otel-collector.ops.acme.example:4317"
+  },
+  "dr": {
+    "tier": "tier-1",
+    "rto": "1h",
+    "rpo": "15m",
+    "primaryRegion": "us-east-1",
+    "secondaryRegion": "us-west-2"
+  },
+  "secrets": {
+    "provider": "aws",
+    "kvPath": "secret/acme/case-management",
+    "externalSecretsRefreshInterval": "1h"
+  },
+  "prototype": {
+    "golden_sim_threshold": 0.75,
+    "brand_hue": 222,
+    "brand_saturation": 55
+  }
+}

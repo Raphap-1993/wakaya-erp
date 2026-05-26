@@ -1,0 +1,16 @@
+# Cola/bus de eventos asociado al sistema wakaya-erp.
+# Se usa el motor que defina la organizacion (Kafka, RabbitMQ, SQS, Pub/Sub).
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: wakaya-erp-events-bus
+  title: Wakaya ERP Events Bus
+  description: Topico/cola para los eventos declarados en contracts/events/asyncapi.yaml.
+  tags:
+    - eventos
+    - mensajeria
+spec:
+  type: queue
+  owner: group:team-wakaya
+  system: wakaya-erp

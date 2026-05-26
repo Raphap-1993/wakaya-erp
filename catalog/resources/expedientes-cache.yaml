@@ -1,0 +1,15 @@
+# Cache compartido del sistema wakaya-erp (Redis). Solo handle logico; provisioning via IaC.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: wakaya-erp-cache
+  title: Wakaya ERP Cache
+  description: Cache Redis compartido del sistema wakaya-erp (sesiones, idempotency keys, fragments).
+  tags:
+    - redis
+    - cache
+spec:
+  type: cache
+  owner: group:team-wakaya
+  system: wakaya-erp

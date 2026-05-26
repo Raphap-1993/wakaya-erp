@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{PRODUCT_NAME}} — Hub de Prototipos</title>
+<style>
+  :root {
+    --brand: {{BRAND_COLOR}};
+    --brand-dark: {{BRAND_DARK}};
+    --brand-soft: {{BRAND_SOFT}};
+    --neutral-50: #F8FAFC; --neutral-100: #F1F5F9; --neutral-200: #E2E8F0;
+    --neutral-300: #CBD5E1; --neutral-400: #94A3B8; --neutral-500: #64748B;
+    --neutral-600: #475569; --neutral-700: #334155; --neutral-800: #1E293B;
+    --neutral-900: #0F172A;
+    --success: #16A34A; --success-soft: #DCFCE7;
+    --warning: #D97706; --warning-soft: #FEF3C7;
+    --danger: #DC2626;  --danger-soft: #FEE2E2;
+    --info: #2563EB;    --info-soft: #DBEAFE;
+    --font: 'Inter','Segoe UI',system-ui,sans-serif;
+    --font-mono: 'JetBrains Mono','Consolas',monospace;
+    --radius: 8px; --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.10);
+    --shadow-lg: 0 10px 30px rgba(15,23,42,0.14);
+    --transition: 0.2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--neutral-100); color: var(--neutral-800); min-height: 100vh; line-height: 1.55; }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+  /* === 1. BANNER SUPERIOR === */
+  .banner {
+    background: var(--neutral-900); color: #fff; padding: 8px 16px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; flex-wrap: wrap; font-size: 12px; font-weight: 500;
+    border-bottom: 1px solid var(--neutral-800);
+  }
+  .banner-tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 12px; }
+  .banner-tag.spdd { background: var(--brand-soft); color: var(--brand-dark); font-weight: 700; }
+  .banner-tag.info { background: rgba(255,255,255,0.08); color: #E2E8F0; }
+  .banner-tag.warn { background: var(--warning-soft); color: var(--warning); font-weight: 600; }
+  .banner-tag.ok   { background: var(--success-soft); color: #166534; font-weight: 600; }
+  .banner-tag.date { background: rgba(255,255,255,0.05); color: var(--neutral-400); font-family: var(--font-mono); }
+
+  /* === 2. HERO === */
+  .hero {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+    color: #fff; padding: 56px 0 64px; position: relative;
+  }
+  .hero-eyebrow { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; opacity: 0.85; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 14px; margin-bottom: 14px; }
+  .hero-title { font-size: 38px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 8px; }
+  .hero-subtitle { font-size: 15px; opacity: 0.92; margin-bottom: 10px; font-weight: 600; }
+  .hero-desc { font-size: 14px; opacity: 0.85; max-width: 720px; margin-bottom: 24px; line-height: 1.65; }
+  .hero-stats { display: grid; grid-template-columns: repeat(5, max-content); gap: 28px; }
+  .stat { }
+  .stat-num { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.85; font-weight: 600; margin-top: 2px; }
+
+  /* === Section base === */
+  section { padding: 48px 0; }
+  section + section { border-top: 1px solid var(--neutral-200); }
+  .section-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--brand); padding: 3px 10px; background: var(--brand-soft); border-radius: 10px; margin-bottom: 10px; }
+  .section-title { font-size: 26px; font-weight: 800; color: var(--neutral-900); letter-spacing: -0.02em; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--neutral-500); max-width: 720px; margin-bottom: 24px; line-height: 1.6; }
+
+  /* === 3. JOURNEY === */
+  .journey-wrap { display: flex; flex-direction: column; gap: 16px; }
+  .journey-row { display: grid; grid-template-columns: 160px 1fr; gap: 16px; align-items: center; }
+  .journey-actor-label { }
+  .actor-pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: var(--neutral-200); color: var(--neutral-800); border-radius: 18px; font-size: 12px; font-weight: 700; }
+  .journey-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .j-node {
+    display: flex; flex-direction: column; padding: 10px 14px; background: #fff;
+    border: 1px solid var(--neutral-200); border-radius: var(--radius);
+    min-width: 130px; transition: var(--transition); cursor: pointer;
+    border-left: 4px solid var(--card-clr, var(--brand));
+  }
+  .j-node:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .j-num { font-size: 10px; font-weight: 800; color: var(--neutral-400); font-family: var(--font-mono); letter-spacing: 0.6px; }
+  .j-name { font-size: 12px; font-weight: 600; color: var(--neutral-900); margin-top: 2px; }
+  .j-arrow { color: var(--neutral-300); font-size: 18px; flex-shrink: 0; }
+  .j-arrow::before { content: '→'; }
+
+  /* === 4. SPEC CARDS === */
+  .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .spec-card {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);
+    border-top: 4px solid var(--card-clr, var(--brand));
+    display: flex; flex-direction: column; transition: var(--transition);
+  }
+  .spec-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .spec-num-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 0.8px; padding: 3px 8px; background: var(--neutral-100); color: var(--neutral-700); border-radius: 6px; }
+  .status-pill { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 600; }
+  .status-pill.validado { background: var(--success-soft); color: #166534; }
+  .status-pill.pendiente { background: var(--warning-soft); color: #92400E; }
+  .status-pill.bloqueado { background: var(--danger-soft); color: #991B1B; }
+  .status-pill.en-revision { background: var(--info-soft); color: #1E40AF; }
+  .spec-title { font-size: 15px; font-weight: 800; color: var(--neutral-900); margin-bottom: 6px; line-height: 1.3; }
+  .spec-desc { font-size: 12.5px; color: var(--neutral-600); line-height: 1.55; margin-bottom: 12px; }
+  .invariants { list-style: none; padding: 0; margin: 0 0 14px 0; }
+  .invariants li { display: flex; align-items: flex-start; gap: 8px; font-size: 11.5px; color: var(--neutral-700); padding: 3px 0; line-height: 1.45; }
+  .inv-icon { font-size: 12px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--neutral-200); gap: 10px; }
+  .actor-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .actor-chip { padding: 2px 8px; background: var(--neutral-100); color: var(--neutral-600); border-radius: 10px; font-size: 10.5px; font-weight: 600; }
+  .open-btn { padding: 6px 14px; background: var(--card-clr, var(--brand)); color: #fff; border-radius: var(--radius); font-size: 11.5px; font-weight: 700; transition: var(--transition); }
+  .open-btn:hover { filter: brightness(0.9); }
+
+  /* === 5. ACTORES === */
+  .actors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .actor-card {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); padding: 18px; text-align: center;
+    box-shadow: var(--shadow-sm); transition: var(--transition);
+  }
+  .actor-card:hover { box-shadow: var(--shadow-md); }
+  .actor-emoji { font-size: 38px; margin-bottom: 6px; line-height: 1; }
+  .actor-name { font-size: 12px; font-weight: 800; letter-spacing: 0.7px; color: var(--neutral-900); }
+  .actor-role { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--neutral-500); margin-top: 2px; font-weight: 600; font-family: var(--font-mono); }
+  .actor-desc { font-size: 12px; color: var(--neutral-600); margin: 10px 0; line-height: 1.5; }
+  .actor-spec-tags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+  .spec-tag { padding: 2px 7px; background: var(--neutral-100); color: var(--neutral-700); border-radius: 8px; font-size: 10px; font-weight: 700; font-family: var(--font-mono); }
+
+  /* === 6. COBERTURA === */
+  .coverage-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+  .cov { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .cov thead { background: var(--neutral-50); }
+  .cov th { padding: 11px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-500); border-bottom: 1px solid var(--neutral-200); white-space: nowrap; }
+  .cov td { padding: 11px 12px; color: var(--neutral-700); border-bottom: 1px solid var(--neutral-100); vertical-align: middle; }
+  .cov tbody tr:last-child td { border-bottom: none; }
+  .cov tbody tr:hover td { background: var(--neutral-50); }
+  .row-num { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); }
+  .row-num .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sp-link { font-weight: 800; color: var(--neutral-900); }
+  .sp-link:hover { color: var(--brand); }
+  .ok { color: var(--success); font-weight: 700; }
+  .pending { color: var(--warning); font-weight: 700; }
+  .missing { color: var(--danger); font-weight: 700; }
+  .cov-status { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 10.5px; font-weight: 700; }
+  .cov-status.val { background: var(--success-soft); color: #166534; }
+  .cov-status.pend { background: var(--warning-soft); color: #92400E; }
+  .cov-status.bloc { background: var(--danger-soft); color: #991B1B; }
+
+  /* === 7. DECISIONES TRANSVERSALES === */
+  .decisions { background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius-lg); padding: 22px 26px; box-shadow: var(--shadow-sm); }
+  .decisions ul { list-style: none; padding: 0; }
+  .decisions li { font-size: 13px; color: var(--neutral-700); padding: 8px 0; padding-left: 28px; position: relative; line-height: 1.55; border-bottom: 1px dashed var(--neutral-200); }
+  .decisions li:last-child { border-bottom: none; }
+  .decisions li::before { content: '◆'; position: absolute; left: 8px; color: var(--brand); font-weight: 800; }
+
+  /* === 8. QUICK LINKS DOCS === */
+  .doclinks { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; }
+  .doc-link { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius); transition: var(--transition); font-size: 13px; color: var(--neutral-700); }
+  .doc-link:hover { border-color: var(--brand); color: var(--brand); box-shadow: var(--shadow-sm); }
+  .doc-link .icon { font-size: 14px; opacity: 0.7; }
+
+  /* === 9. FOOTER === */
+  footer { background: var(--neutral-900); color: #E2E8F0; padding: 36px 0 28px; margin-top: 32px; }
+  footer p { font-size: 13px; margin-bottom: 4px; opacity: 0.85; }
+  footer p strong { color: #fff; }
+  footer .stack-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+  .stack-tag { padding: 4px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #94A3B8; border-radius: 14px; font-size: 11px; font-weight: 500; font-family: var(--font-mono); }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 900px) {
+    .hero { padding: 36px 0 44px; }
+    .hero-title { font-size: 28px; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    section { padding: 32px 0; }
+    .section-title { font-size: 20px; }
+    .journey-row { grid-template-columns: 1fr; gap: 8px; }
+    .specs-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .banner { font-size: 11px; padding: 8px 10px; }
+    .container { padding: 0 16px; }
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 1. BANNER ── -->
+<div class="banner">
+  <span class="banner-tag spdd">◆ SPDD HUB</span>
+  <span class="banner-tag info">{{PRODUCT_NAME}} · {{SPEC_COUNT}} specs · {{PROTOTYPE_COUNT}} prototipos</span>
+  <span class="banner-tag {{STATUS_CLASS}}">{{STATUS_LABEL}}</span>
+  <span class="banner-tag date">{{TODAY_DATE}}</span>
+</div>
+
+<!-- ── 2. HERO ── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Spec-Prototype-Driven Development</div>
+    <h1 class="hero-title">{{PRODUCT_NAME}}</h1>
+    <p class="hero-subtitle">Hub de Prototipos — Navegación End-to-End</p>
+    <p class="hero-desc">Centro de navegación para todos los prototipos HTML5 del producto. Cada spec es una vertical funcional completa. Abre cualquier prototipo para validar flujos y diseño antes de implementar.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">{{SPEC_COUNT}}</span><span class="stat-label">Specs</span></div>
+      <div class="stat"><span class="stat-num">{{PROTOTYPE_COUNT}}</span><span class="stat-label">Prototipos HTML5</span></div>
+      <div class="stat"><span class="stat-num">{{ACTOR_COUNT}}</span><span class="stat-label">Actores</span></div>
+      <div class="stat"><span class="stat-num">{{FLOW_COUNT}}</span><span class="stat-label">Flujos cubiertos</span></div>
+      <div class="stat"><span class="stat-num">0</span><span class="stat-label">Backend real</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 3. JOURNEY END-TO-END POR ACTOR ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Journey End-to-End</div>
+    <h2 class="section-title">Flujo completo por actor</h2>
+    <p class="section-sub">Sigue el recorrido de cada actor para entender cómo las specs se encadenan. Cada nodo es clickeable y abre el prototipo correspondiente en una pestaña nueva.</p>
+    <div class="journey-wrap">
+      <!-- @auto:start name=journeys -->
+      <!-- (generado por generate-prototype-hub: una journey-row por actor) -->
+      <!-- @auto:end -->
+    </div>
+  </div>
+</section>
+
+<!-- ── 4. PROTOTIPOS POR SPEC ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Prototipos por Spec</div>
+    <h2 class="section-title">{{SPEC_COUNT}} verticales funcionales</h2>
+    <p class="section-sub">Cada prototipo es un archivo HTML5 autocontenido sin backend real. Cubre flujos completos con datos mock, navegación entre pantallas y validación visual de invariantes críticos.</p>
+    <div class="specs-grid">
+      <!-- @auto:start name=specs -->
+      <!-- (generado por generate-prototype-hub: una spec-card por feature) -->
+      <!-- @auto:end -->
+    </div>
+  </div>
+</section>
+
+<!-- ── 5. ACTORES ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Actores del Sistema</div>
+    <h2 class="section-title">{{ACTOR_COUNT}} roles, {{ACTOR_COUNT}} experiencias</h2>
+    <p class="section-sub">Cada actor tiene un shell visual diferente, permisos distintos y accede a un subconjunto de specs. El sistema garantiza el aislamiento entre roles.</p>
+    <div class="actors-grid">
+      <!-- @auto:start name=actors -->
+      <!-- (generado por generate-prototype-hub: una actor-card por rol detectado) -->
+      <!-- @auto:end -->
+    </div>
+  </div>
+</section>
+
+<!-- ── 6. COBERTURA SPDD ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Estado y Cobertura</div>
+    <h2 class="section-title">Cobertura SPDD por spec</h2>
+    <p class="section-sub">Esta tabla refleja el estado real del repositorio: regenerada automáticamente desde la BD de memoria del agente IA. Cada celda valida la existencia del artefacto correspondiente.</p>
+    <div class="coverage-wrap">
+      <!-- @auto:start name=coverage -->
+      <!-- (generado por generate-prototype-hub: tabla con columnas SPDD por spec) -->
+      <!-- @auto:end -->
+    </div>
+    <!-- Las tablas adicionales (ADRs, threat-model, etc.) van fuera de @auto -->
+  </div>
+</section>
+
+<!-- ── 7. DECISIONES TRANSVERSALES ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Decisiones Transversales</div>
+    <h2 class="section-title">Reglas que aplican a todo el producto</h2>
+    <p class="section-sub">Decisiones cross-cutting documentadas en ADRs y `decisiones-ux.md` que afectan a varias specs.</p>
+    <div class="decisions">
+      <!-- @auto:start name=decisions -->
+      <ul>
+        <!-- (generado por generate-prototype-hub: una li por decisión transversal) -->
+      </ul>
+      <!-- @auto:end -->
+    </div>
+  </div>
+</section>
+
+<!-- ── 8. DOCUMENTACIÓN POR SPEC ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Quick Links</div>
+    <h2 class="section-title">Documentación por spec</h2>
+    <p class="section-sub">Acceso rápido al directorio completo de cada feature (spec funcional, técnica, tareas, traceability, prototipo).</p>
+    <div class="doclinks">
+      <!-- @auto:start name=doclinks -->
+      <!-- (generado por generate-prototype-hub: un doc-link por spec) -->
+      <!-- @auto:end -->
+    </div>
+  </div>
+</section>
+
+<!-- ── 9. FOOTER ── -->
+<footer>
+  <div class="container">
+    <p><strong>{{PRODUCT_NAME}}</strong> · SPDD Hub v{{TEMPLATE_VERSION}} · {{TODAY_DATE}}</p>
+    <p>Sin backend real · Sin credenciales reales · Datos mock representativos del dominio.</p>
+    <div class="stack-tags">
+      <!-- @auto:start name=stack -->
+      <!-- (generado por generate-prototype-hub: stack-tags desde template.config) -->
+      <!-- @auto:end -->
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

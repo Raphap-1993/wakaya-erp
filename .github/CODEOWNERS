@@ -1,0 +1,31 @@
+# CODEOWNERS for project-template
+# Adaptar al equipo real. Formato: <patron> <@usuario-o-equipo>
+
+# Defaults
+*                                      @maintainers
+
+# Documentacion y metodologia
+/docs/                                 @tech-writers @architects
+/plantillas/                           @architects
+/ejemplos/                             @architects
+/specs/                                @product @architects
+/revisiones/                           @architects
+/releases/                             @architects @release-managers
+CHANGELOG.md                           @architects @release-managers
+
+# Pipelines y tooling
+/.github/                              @platform
+/ci/                                   @platform
+/ops/                                  @platform @sre
+
+# Stacks
+/stacks/node-next/                     @frontend-guild
+/stacks/quarkus-angular/frontend/      @frontend-guild
+/stacks/spring-react/frontend/         @frontend-guild
+/stacks/java-monolith/                 @backend-guild
+/stacks/quarkus-angular/backend/       @backend-guild
+/stacks/spring-react/backend/          @backend-guild
+
+# Seguridad y compliance
+SECURITY.md                            @security
+/docs/transversal/90.16-privacidad-compliance.md @security @legal

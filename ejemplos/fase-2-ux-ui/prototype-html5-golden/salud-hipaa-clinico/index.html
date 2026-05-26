@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>MedRecord — Registro Clinico (HIPAA)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#0B6CB6; --brand-light:#E3F0FB; --brand-dark:#074C82; --brand-mid:#1A86D4;
+  --success:#0F9D58; --warning:#F4B400; --danger:#DB4437; --info:#4285F4;
+  --phi:#7E22CE; --phi-light:#F3E8FF;
+  --neutral-50:#F8FAFC; --neutral-100:#F1F5F9; --neutral-200:#E2E8F0;
+  --neutral-300:#CBD5E1; --neutral-500:#64748B; --neutral-700:#334155; --neutral-900:#0F172A;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 28px rgba(15,23,42,.12);
+  --radius:8px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:58px; --sidebar-w:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);font-size:14px;color:var(--neutral-900);background:var(--neutral-50);line-height:1.5}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── PHI Banner: aviso permanente HIPAA arriba ── */
+.phi-banner{background:var(--phi);color:#fff;padding:6px 24px;font-size:12px;text-align:center;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:8px}
+.phi-banner strong{font-weight:700}
+.phi-banner-dot{width:7px;height:7px;background:#FCD34D;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Topbar ── */
+.topbar{position:sticky;top:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;padding:0 24px;gap:16px;box-shadow:var(--shadow-sm);z-index:10}
+.brand{font-weight:800;font-size:16px;color:var(--brand);display:flex;align-items:center;gap:8px}
+.brand-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800}
+.topbar-search{flex:1;max-width:520px;position:relative}
+.topbar-search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--neutral-200);border-radius:6px;background:var(--neutral-50);transition:var(--transition)}
+.topbar-search input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px var(--brand-light)}
+.topbar-search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
+.topbar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.topbar-btn{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:var(--transition);position:relative}
+.topbar-btn:hover{background:var(--neutral-100)}
+.topbar-badge{position:absolute;top:4px;right:4px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:1px 5px}
+.profile{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;cursor:pointer;transition:var(--transition)}
+.profile:hover{background:var(--neutral-100)}
+.profile-avatar{width:30px;height:30px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.profile-name{font-size:13px;font-weight:600}
+.profile-role{font-size:11px;color:var(--neutral-500)}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h) - 28px)}
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--neutral-200);padding:16px 12px;flex-shrink:0}
+.sidebar-section{margin-bottom:18px}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--neutral-500);padding:0 10px 6px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:var(--transition);font-size:13px;color:var(--neutral-700);position:relative}
+.sidebar-item:hover{background:var(--neutral-100);color:var(--neutral-900)}
+.sidebar-item.active{background:var(--brand-light);color:var(--brand-dark);font-weight:600}
+.sidebar-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--brand);border-radius:0 3px 3px 0}
+.sidebar-item .icon{width:18px;text-align:center;font-size:14px}
+.sidebar-item .badge{margin-left:auto;background:var(--neutral-200);color:var(--neutral-700);font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px}
+.sidebar-item.active .badge{background:var(--brand);color:#fff}
+
+/* ── Main ── */
+.main{flex:1;padding:24px;max-width:calc(100vw - var(--sidebar-w))}
+.page-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.page-title h1{font-size:22px;font-weight:700;color:var(--neutral-900)}
+.page-title .breadcrumb{font-size:12px;color:var(--neutral-500);margin-bottom:4px}
+.page-actions{display:flex;gap:8px}
+
+.btn{padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:var(--transition);border:1px solid transparent}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-secondary{background:#fff;color:var(--neutral-700);border-color:var(--neutral-200)}
+.btn-secondary:hover{background:var(--neutral-50);border-color:var(--neutral-300)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#B33B30}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── KPI cards ── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:16px;transition:var(--transition)}
+.kpi-card:hover{box-shadow:var(--shadow-md);border-color:var(--neutral-300)}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700}
+.kpi-value{font-size:26px;font-weight:800;color:var(--neutral-900);margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi-delta{font-size:12px;margin-top:4px;display:flex;align-items:center;gap:4px}
+.delta-up{color:var(--success)}
+.delta-down{color:var(--danger)}
+.delta-flat{color:var(--neutral-500)}
+
+/* ── Filter chips ── */
+.filter-bar{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--brand-light);color:var(--brand-dark);border-radius:999px;font-size:12px;font-weight:600}
+.filter-chip button{font-size:14px;line-height:1;color:var(--brand-dark);opacity:.6;margin-left:2px}
+.filter-chip button:hover{opacity:1}
+.filter-clear{font-size:12px;color:var(--neutral-500);margin-left:auto}
+.filter-clear:hover{color:var(--neutral-700);text-decoration:underline}
+
+/* ── Table ── */
+.table-wrap{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);overflow:hidden}
+.table-toolbar{padding:12px 16px;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;gap:12px;background:var(--neutral-50)}
+.toolbar-search{flex:1;max-width:320px;padding:6px 12px;border:1px solid var(--neutral-200);border-radius:6px;background:#fff;font-size:13px}
+.toolbar-search:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 16px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);background:var(--neutral-50);font-weight:700;border-bottom:1px solid var(--neutral-200);user-select:none}
+th[data-sort]{cursor:pointer}
+th[data-sort]:hover{color:var(--brand)}
+th[data-sort]::after{content:" ↕";opacity:.4;font-size:9px}
+td{padding:12px 16px;border-bottom:1px solid var(--neutral-100);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr{transition:background var(--transition)}
+tr:hover{background:var(--neutral-50)}
+tr:hover .row-actions{opacity:1}
+.row-actions{opacity:0;transition:opacity var(--transition);display:flex;gap:4px}
+.row-action{padding:4px 8px;border-radius:4px;font-size:12px;color:var(--neutral-700);background:transparent}
+.row-action:hover{background:var(--neutral-100)}
+.row-action.danger:hover{background:#FEE2E2;color:var(--danger)}
+
+.patient-id{font-family:var(--font-mono);font-size:12px;color:var(--neutral-700)}
+.patient-name{font-weight:600;display:block}
+.patient-meta{font-size:11px;color:var(--neutral-500)}
+.badge-status{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.badge-status::before{content:"";width:6px;height:6px;border-radius:50%}
+.badge-stable{background:#DCFCE7;color:#166534}.badge-stable::before{background:#16A34A}
+.badge-monitoring{background:#FEF3C7;color:#92400E}.badge-monitoring::before{background:#D97706}
+.badge-critical{background:#FEE2E2;color:#991B1B}.badge-critical::before{background:#DC2626;animation:pulse 1.5s infinite}
+.badge-discharge{background:#E0E7FF;color:#3730A3}.badge-discharge::before{background:#4F46E5}
+
+.priority{display:inline-block;width:6px;height:24px;border-radius:3px;vertical-align:middle;margin-right:8px}
+.priority-high{background:var(--danger)}
+.priority-med{background:var(--warning)}
+.priority-low{background:var(--neutral-300)}
+
+/* ── PHI badge: indicador de acceso restringido ── */
+.phi-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;background:var(--phi-light);color:var(--phi);border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.phi-tag::before{content:"🔒"}
+
+/* ── Pagination ── */
+.pagination{padding:12px 16px;border-top:1px solid var(--neutral-200);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--neutral-500);background:var(--neutral-50)}
+.pagination-controls{display:flex;gap:4px}
+.page-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--neutral-200);background:#fff;cursor:pointer;transition:var(--transition)}
+.page-btn:hover{background:var(--neutral-100);border-color:var(--neutral-300)}
+.page-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Detail panel (slide-in) ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:50}
+.detail-overlay.open{opacity:1;pointer-events:auto}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:480px;background:#fff;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .3s ease;z-index:51;overflow-y:auto;display:flex;flex-direction:column}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{padding:18px 24px;border-bottom:1px solid var(--neutral-200);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.detail-close{background:transparent;font-size:20px;color:var(--neutral-500);cursor:pointer;padding:4px;line-height:1}
+.detail-close:hover{color:var(--neutral-900)}
+.detail-body{flex:1;padding:18px 24px;overflow-y:auto}
+.detail-section{margin-bottom:22px}
+.detail-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--neutral-100);font-size:13px}
+.detail-row:last-child{border-bottom:0}
+.detail-row .label{color:var(--neutral-500)}
+.detail-row .value{font-weight:600;color:var(--neutral-900)}
+.detail-footer{padding:14px 24px;border-top:1px solid var(--neutral-200);display:flex;gap:8px;background:var(--neutral-50)}
+
+/* Audit trail: requerimiento HIPAA - cada acceso queda registrado visible */
+.audit-row{padding:8px 0;border-bottom:1px dashed var(--neutral-200);font-size:12px}
+.audit-row:last-child{border-bottom:0}
+.audit-when{color:var(--neutral-500);font-family:var(--font-mono);font-size:11px}
+.audit-who{font-weight:600;color:var(--neutral-700)}
+.audit-action{color:var(--neutral-900)}
+
+/* Vitals visualizacion grafica */
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.vital{padding:10px;background:var(--neutral-50);border-radius:6px}
+.vital-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700}
+.vital-value{font-size:18px;font-weight:700;color:var(--neutral-900);margin-top:2px;font-variant-numeric:tabular-nums}
+.vital-value.warning{color:var(--warning)}
+.vital-value.danger{color:var(--danger)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--neutral-900);color:#fff;padding:12px 18px;border-radius:6px;box-shadow:var(--shadow-lg);display:none;animation:slideIn .25s ease;z-index:100;align-items:center;gap:10px}
+.toast.visible{display:flex}
+.toast.success{background:var(--success)}
+.toast.warning{background:var(--warning);color:var(--neutral-900)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius);max-width:480px;width:90%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:slideIn .25s ease}
+.modal h3{font-size:16px;margin-bottom:12px}
+.modal p{font-size:13px;color:var(--neutral-700);margin-bottom:18px}
+.modal-input{width:100%;padding:8px 12px;border:1px solid var(--neutral-200);border-radius:6px;font-size:13px;margin-bottom:16px}
+.modal-input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px}
+
+/* ── Empty + Error + Loading states ── */
+.state-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:60px 24px;text-align:center}
+.state-icon{font-size:48px;margin-bottom:12px}
+.state-title{font-size:16px;font-weight:700;color:var(--neutral-900);margin-bottom:6px}
+.state-desc{font-size:13px;color:var(--neutral-500);margin-bottom:18px;max-width:340px;margin-left:auto;margin-right:auto}
+
+.spinner{width:32px;height:32px;border:3px solid var(--neutral-200);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Hub link (discrete) ── */
+.hub-link{position:fixed;top:34px;right:18px;font-size:11px;color:var(--neutral-500);background:rgba(255,255,255,.95);padding:4px 10px;border-radius:6px;border:1px solid var(--neutral-200);z-index:99}
+.hub-link:hover{color:var(--neutral-900);background:#fff;text-decoration:none}
+
+/* ── Responsive ── */
+@media (max-width:1024px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .sidebar{width:64px}
+  .sidebar-label,.sidebar-item .badge,.sidebar-item span:not(.icon){display:none}
+  .sidebar-item{justify-content:center;padding:8px}
+  .detail-panel{width:90%}
+}
+@media (max-width:640px){
+  .kpis{grid-template-columns:1fr}
+  .topbar-search{display:none}
+  .main{padding:14px}
+  .page-header{flex-direction:column;align-items:stretch}
+  .page-actions{flex-wrap:wrap}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .profile-name,.profile-role{display:none}
+  table{font-size:12px}
+  th,td{padding:8px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- Banner permanente HIPAA — siempre visible -->
+<div class="phi-banner">
+  <span class="phi-banner-dot"></span>
+  <strong>PHI Restricted Access</strong>
+  · Toda visualizacion de informacion clinica queda registrada en el audit trail
+  · <a href="#" onclick="showAudit();return false" style="color:#FEF3C7;text-decoration:underline">Ver mi historial de accesos</a>
+</div>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">M+</span>
+    <span>MedRecord</span>
+  </div>
+  <div class="topbar-search">
+    <input type="search" placeholder="Buscar paciente por nombre, MRN o telefono..." aria-label="Buscar paciente">
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Notificaciones">🔔<span class="topbar-badge">3</span></button>
+    <button class="topbar-btn" title="Mensajes">✉</button>
+    <button class="topbar-btn" title="Audit log" onclick="showAudit()">📋</button>
+    <div class="profile">
+      <div class="profile-avatar">DM</div>
+      <div>
+        <div class="profile-name">Dra. Maria Vega</div>
+        <div class="profile-role">Cardiologa · Acceso: clinico</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Workflow</div>
+      <div class="sidebar-item active" data-view="patients">
+        <span class="icon">👥</span><span>Pacientes</span><span class="badge">42</span>
+      </div>
+      <div class="sidebar-item" data-view="appointments">
+        <span class="icon">📅</span><span>Citas hoy</span><span class="badge">12</span>
+      </div>
+      <div class="sidebar-item" data-view="orders">
+        <span class="icon">📋</span><span>Ordenes</span><span class="badge">8</span>
+      </div>
+      <div class="sidebar-item" data-view="results">
+        <span class="icon">🔬</span><span>Resultados</span><span class="badge">5</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Clinico</div>
+      <div class="sidebar-item" data-view="prescriptions">
+        <span class="icon">💊</span><span>Prescripciones</span>
+      </div>
+      <div class="sidebar-item" data-view="referrals">
+        <span class="icon">🏥</span><span>Referencias</span>
+      </div>
+      <div class="sidebar-item" data-view="messages">
+        <span class="icon">💬</span><span>Mensajes seguros</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Compliance</div>
+      <div class="sidebar-item" data-view="audit">
+        <span class="icon">📜</span><span>Audit trail</span>
+      </div>
+      <div class="sidebar-item" data-view="consents">
+        <span class="icon">✅</span><span>Consentimientos</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-title">
+        <div class="breadcrumb">Workflow · Pacientes</div>
+        <h1>Pacientes en seguimiento</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary">📤 Exportar (con auditoria)</button>
+        <button class="btn btn-primary" onclick="openNewPatient()">+ Nuevo paciente</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi-card">
+        <div class="kpi-label">Pacientes activos</div>
+        <div class="kpi-value">347</div>
+        <div class="kpi-delta delta-up">↑ 12 esta semana</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Citas hoy</div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-delta delta-flat">3 pendientes de confirmar</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Casos criticos</div>
+        <div class="kpi-value" style="color:var(--danger)">2</div>
+        <div class="kpi-delta delta-down">↑ 1 desde ayer</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Accesos PHI hoy</div>
+        <div class="kpi-value">84</div>
+        <div class="kpi-delta delta-flat">por 6 usuarios distintos</div>
+      </div>
+    </div>
+
+    <!-- Filtros activos -->
+    <div class="filter-bar">
+      <span style="font-size:12px;color:var(--neutral-500);font-weight:600">Filtros:</span>
+      <span class="filter-chip">Estado: Monitoreo<button onclick="this.parentElement.remove()">×</button></span>
+      <span class="filter-chip">Servicio: Cardiologia<button onclick="this.parentElement.remove()">×</button></span>
+      <span class="filter-chip">Ultima visita: 7d<button onclick="this.parentElement.remove()">×</button></span>
+      <button class="filter-clear">Limpiar todo</button>
+    </div>
+
+    <!-- Tabla principal -->
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input type="search" class="toolbar-search" placeholder="Refinar resultados...">
+        <button class="btn btn-secondary">⚙ Columnas</button>
+        <button class="btn btn-secondary">💾 Vista guardada</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px"></th>
+            <th data-sort="mrn">MRN</th>
+            <th data-sort="name">Paciente</th>
+            <th data-sort="age">Edad</th>
+            <th data-sort="status">Estado</th>
+            <th data-sort="diagnosis">Dx primario</th>
+            <th data-sort="lastSeen">Ultima visita</th>
+            <th data-sort="provider">Medico</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="patient-table">
+          <tr onclick="openDetail('MRN-44218')">
+            <td><span class="priority priority-high" title="Alta prioridad"></span></td>
+            <td><span class="patient-id">MRN-44218</span></td>
+            <td>
+              <span class="patient-name">Gomez, Roberto</span>
+              <span class="patient-meta">M · DOB 1958-03-12 <span class="phi-tag">PHI</span></span>
+            </td>
+            <td>67</td>
+            <td><span class="badge-status badge-critical">Critico</span></td>
+            <td>IM agudo con elevacion ST</td>
+            <td>Hace 2h</td>
+            <td>Dra. Vega</td>
+            <td><div class="row-actions">
+              <button class="row-action">Abrir</button>
+              <button class="row-action">Notas</button>
+            </div></td>
+          </tr>
+          <tr onclick="openDetail('MRN-44156')">
+            <td><span class="priority priority-high"></span></td>
+            <td><span class="patient-id">MRN-44156</span></td>
+            <td>
+              <span class="patient-name">Sanchez, Ana Maria</span>
+              <span class="patient-meta">F · DOB 1972-07-22 <span class="phi-tag">PHI</span></span>
+            </td>
+            <td>53</td>
+            <td><span class="badge-status badge-critical">Critico</span></td>
+            <td>Insuficiencia cardiaca CF III</td>
+            <td>Hace 5h</td>
+            <td>Dr. Romero</td>
+            <td><div class="row-actions">
+              <button class="row-action">Abrir</button>
+              <button class="row-action">Notas</button>
+            </div></td>
+          </tr>
+          <tr onclick="openDetail('MRN-43887')">
+            <td><span class="priority priority-med"></span></td>
+            <td><span class="patient-id">MRN-43887</span></td>
+            <td>
+              <span class="patient-name">Lopez, Carmen</span>
+              <span class="patient-meta">F · DOB 1965-11-08 <span class="phi-tag">PHI</span></span>
+            </td>
+            <td>60</td>
+            <td><span class="badge-status badge-monitoring">Monitoreo</span></td>
+            <td>HTA + DM-2</td>
+            <td>Ayer</td>
+            <td>Dra. Vega</td>
+            <td><div class="row-actions">
+              <button class="row-action">Abrir</button>
+            </div></td>
+          </tr>
+          <tr onclick="openDetail('MRN-43712')">
+            <td><span class="priority priority-med"></span></td>
+            <td><span class="patient-id">MRN-43712</span></td>
+            <td>
+              <span class="patient-name">Mendoza, Carlos</span>
+              <span class="patient-meta">M · DOB 1980-04-15 <span class="phi-tag">PHI</span></span>
+            </td>
+            <td>45</td>
+            <td><span class="badge-status badge-monitoring">Monitoreo</span></td>
+            <td>Arritmia paroxistica</td>
+            <td>Hace 3 dias</td>
+            <td>Dra. Vega</td>
+            <td><div class="row-actions">
+              <button class="row-action">Abrir</button>
+            </div></td>
+          </tr>
+          <tr onclick="openDetail('MRN-43544')">
+            <td><span class="priority priority-low"></span></td>
+            <td><span class="patient-id">MRN-43544</span></td>
+            <td>
+              <span class="patient-name">Quispe, Elena</span>
+              <span class="patient-meta">F · DOB 1990-09-30 <span class="phi-tag">PHI</span></span>
+            </td>
+            <td>35</td>
+            <td><span class="badge-status badge-stable">Estable</span></td>
+            <td>Sincope vasovagal</td>
+            <td>Hace 1 semana</td>
+            <td>Dra. Vega</td>
+            <td><div class="row-actions">
+              <button class="row-action">Abrir</button>
+            </div></td>
+          </tr>
+          <tr onclick="openDetail('MRN-43501')">
+            <td><span class="priority priority-low"></span></td>
+            <td><span class="patient-id">MRN-43501</span></td>
+            <td>
+              <span class="patient-name">Torres, Luis</span>
+              <span class="patient-meta">M · DOB 1955-12-01 <span class="phi-tag">PHI</span></span>
+            </td>
+            <td>70</td>
+            <td><span class="badge-status badge-discharge">Alta programada</span></td>
+            <td>Post-CABG dia 5</td>
+            <td>Hace 2 dias</td>
+            <td>Dr. Romero</td>
+            <td><div class="row-actions">
+              <button class="row-action">Abrir</button>
+              <button class="row-action danger">Cerrar caso</button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>Mostrando 6 de 42 pacientes</span>
+        <div class="pagination-controls">
+          <button class="page-btn" disabled>‹ Anterior</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">…</button>
+          <button class="page-btn">7</button>
+          <button class="page-btn">Siguiente ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state (oculto por default) -->
+    <div class="state-card" id="empty-state" style="display:none;margin-top:24px">
+      <div class="state-icon">📋</div>
+      <div class="state-title">Sin pacientes en este filtro</div>
+      <div class="state-desc">Ajusta los filtros o agrega un paciente nuevo para empezar el seguimiento.</div>
+      <button class="btn btn-primary" onclick="openNewPatient()">+ Agregar paciente</button>
+    </div>
+
+    <!-- Error state -->
+    <div class="state-card" id="error-state" style="display:none;margin-top:24px">
+      <div class="state-icon">⚠</div>
+      <div class="state-title">Error al cargar pacientes</div>
+      <div class="state-desc">No pudimos conectar con el servicio de registros. El audit trail no ha sido afectado.</div>
+      <button class="btn btn-primary" onclick="retryLoad()">Reintentar</button>
+    </div>
+
+    <!-- Loading state -->
+    <div class="state-card" id="loading-state" style="display:none;margin-top:24px">
+      <div class="spinner"></div>
+      <div class="state-title">Cargando registros...</div>
+      <div class="state-desc">Verificando permisos PHI y aplicando filtros.</div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Detail panel -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<aside class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:11px;color:var(--neutral-500);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Paciente</div>
+      <div style="font-size:18px;font-weight:700;margin-top:4px" id="detail-name">Gomez, Roberto</div>
+      <div style="font-size:12px;color:var(--neutral-500);margin-top:2px">
+        <span class="patient-id" id="detail-mrn">MRN-44218</span> · M · 67 anos · <span class="phi-tag">PHI</span>
+      </div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Estado actual</h4>
+      <div class="detail-row"><span class="label">Diagnostico primario</span><span class="value">IM agudo c/ ST</span></div>
+      <div class="detail-row"><span class="label">Severidad</span><span class="value" style="color:var(--danger)">Critico</span></div>
+      <div class="detail-row"><span class="label">Ubicacion</span><span class="value">UCI Cardiologia · Cama 3</span></div>
+      <div class="detail-row"><span class="label">Medico responsable</span><span class="value">Dra. Maria Vega</span></div>
+      <div class="detail-row"><span class="label">Admisiom</span><span class="value">Hace 2h 14min</span></div>
+    </div>
+    <div class="detail-section">
+      <h4>🩺 Signos vitales (ultimos)</h4>
+      <div class="vitals-grid">
+        <div class="vital"><div class="vital-label">PA</div><div class="vital-value warning">142/88</div></div>
+        <div class="vital"><div class="vital-label">FC</div><div class="vital-value">98</div></div>
+        <div class="vital"><div class="vital-label">SpO2</div><div class="vital-value">96%</div></div>
+        <div class="vital"><div class="vital-label">Temp</div><div class="vital-value">37.2°C</div></div>
+        <div class="vital"><div class="vital-label">Troponina</div><div class="vital-value danger">5.8 ng/mL</div></div>
+        <div class="vital"><div class="vital-label">Glucosa</div><div class="vital-value">142 mg/dL</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>📋 Audit trail reciente <span style="color:var(--phi);font-weight:600">(HIPAA)</span></h4>
+      <div class="audit-row">
+        <div class="audit-when">2026-05-17 14:32:08</div>
+        <div><span class="audit-who">Dra. Vega</span> · <span class="audit-action">Visualizo expediente completo</span></div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-when">2026-05-17 14:28:11</div>
+        <div><span class="audit-who">Lab.Tec.Mora</span> · <span class="audit-action">Cargo resultados troponina</span></div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-when">2026-05-17 13:55:42</div>
+        <div><span class="audit-who">Enf.Ramos</span> · <span class="audit-action">Registro signos vitales</span></div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-when">2026-05-17 13:42:17</div>
+        <div><span class="audit-who">Dr. Romero</span> · <span class="audit-action">Solicito interconsulta cardiologia</span></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>💊 Medicacion activa</h4>
+      <div class="detail-row"><span class="label">Aspirina</span><span class="value">81mg c/24h VO</span></div>
+      <div class="detail-row"><span class="label">Atorvastatina</span><span class="value">80mg c/24h VO</span></div>
+      <div class="detail-row"><span class="label">Metoprolol</span><span class="value">25mg c/12h VO</span></div>
+      <div class="detail-row"><span class="label">Enoxaparina</span><span class="value">1mg/kg c/12h SC</span></div>
+    </div>
+  </div>
+  <div class="detail-footer">
+    <button class="btn btn-secondary" style="flex:1">📝 Agregar nota</button>
+    <button class="btn btn-primary" style="flex:1">💊 Nueva orden</button>
+  </div>
+</aside>
+
+<!-- Modal nuevo paciente -->
+<div class="modal-overlay" id="modal-new-patient">
+  <div class="modal">
+    <h3>Registrar nuevo paciente</h3>
+    <p>Antes de crear un registro PHI, confirmamos tu identidad medica. Esta accion sera auditada.</p>
+    <label style="font-size:12px;font-weight:600;color:var(--neutral-700);display:block;margin-bottom:6px">Nombre del paciente</label>
+    <input class="modal-input" placeholder="Apellidos, Nombre" id="np-name">
+    <label style="font-size:12px;font-weight:600;color:var(--neutral-700);display:block;margin-bottom:6px">Razon clinica del registro</label>
+    <input class="modal-input" placeholder="Consulta primera vez, admision urgencias, transferencia..." id="np-reason">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmNewPatient()">Crear con auditoria</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✓</span>
+  <span id="toast-text">Cambios guardados</span>
+</div>
+
+<script>
+const PATIENTS = {
+  'MRN-44218': { name: 'Gomez, Roberto', age: 67, gender: 'M', status: 'critico', dx: 'IM agudo c/ ST' },
+  'MRN-44156': { name: 'Sanchez, Ana Maria', age: 53, gender: 'F', status: 'critico', dx: 'IC CF III' },
+  'MRN-43887': { name: 'Lopez, Carmen', age: 60, gender: 'F', status: 'monitoreo', dx: 'HTA + DM-2' },
+  'MRN-43712': { name: 'Mendoza, Carlos', age: 45, gender: 'M', status: 'monitoreo', dx: 'Arritmia paroxistica' },
+  'MRN-43544': { name: 'Quispe, Elena', age: 35, gender: 'F', status: 'estable', dx: 'Sincope vasovagal' },
+  'MRN-43501': { name: 'Torres, Luis', age: 70, gender: 'M', status: 'alta', dx: 'Post-CABG dia 5' },
+};
+
+function openDetail(mrn) {
+  const p = PATIENTS[mrn];
+  if (!p) return;
+  document.getElementById('detail-name').textContent = p.name;
+  document.getElementById('detail-mrn').textContent = mrn;
+  document.getElementById('detail-overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+  showToast('📋 Acceso registrado en audit trail', 'success');
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+function openNewPatient() {
+  document.getElementById('modal-new-patient').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-new-patient').classList.remove('open');
+}
+function confirmNewPatient() {
+  const name = document.getElementById('np-name').value || 'Paciente';
+  closeModal();
+  showToast('✓ ' + name + ' creado · auditoria PHI registrada', 'success');
+}
+function showToast(text, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = text;
+  t.className = 'toast visible' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+function showAudit() {
+  showToast('📋 Tu historial de accesos PHI esta disponible en Audit Trail', 'warning');
+}
+function retryLoad() {
+  showToast('Reintentando carga...', 'success');
+}
+
+// Sidebar nav
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', e => {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+// Filter clear
+document.querySelector('.filter-clear').addEventListener('click', () => {
+  document.querySelectorAll('.filter-chip').forEach(c => c.remove());
+  showToast('Filtros limpiados', 'success');
+});
+
+// Cerrar modal con ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDetail();
+    closeModal();
+  }
+});
+</script>
+</body>
+</html>

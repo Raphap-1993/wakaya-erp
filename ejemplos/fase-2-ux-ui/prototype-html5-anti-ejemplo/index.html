@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reportes operativos</title>
+  <style>
+    :root { font-family: Arial, sans-serif; --bg:#f5f7fb; --surface:#fff; --line:#d8e0ec; --text:#172033; --muted:#657085; --primary:#2454a6; --danger:#b42318; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    button, input, select { font: inherit; }
+    button { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 8px 12px; cursor: pointer; }
+    button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    input, select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 9px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    header { height: 58px; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; padding: 0 22px; }
+    .mock-banner { background: #fff8e1; border-bottom: 1px solid #ffe082; padding: 6px 22px; font-size: 12px; color: #7a5400; display: flex; justify-content: space-between; }
+    .layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); min-height: calc(100vh - 88px); }
+    aside { background: #122033; padding: 16px; }
+    nav { display: grid; gap: 8px; }
+    nav button { color: #fff; background: transparent; border-color: rgba(255,255,255,.2); text-align: left; }
+    nav button.active { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.4); }
+    main { padding: 22px; max-width: 1180px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+    .breadcrumb { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(140px,1fr)); gap: 12px; align-items: end; }
+    .row, .tabs { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .tabs { margin-bottom: 14px; }
+    .tabs button.active { background: #e9f0ff; color: var(--primary); border-color: #b9c9ec; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; }
+    th { color: var(--muted); background: #f8fafc; }
+    .state { min-height: 220px; display: grid; place-items: center; text-align: center; }
+    .progress { height: 12px; background: #dde6f2; border-radius: 999px; overflow: hidden; margin: 14px 0; }
+    .bar { height: 100%; width: var(--progress); background: var(--primary); }
+    .toast { position: fixed; right: 18px; bottom: 18px; display: none; background: #172033; color: #fff; border-radius: 8px; padding: 12px 14px; }
+    .modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(15,23,42,.45); padding: 18px; }
+    .modal .panel { width: min(460px,100%); }
+    .error { color: var(--danger); display: none; font-size: 13px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Reportes operativos</strong>
+    <span id="session">Sin sesión</span>
+  </header>
+  <div class="mock-banner">
+    <span>Prototipo de validación — datos de demostración, sin backend real</span>
+    <a href="../../../prototype/index.html" style="color:inherit;font-weight:600;">← Hub del producto</a>
+  </div>
+  <div class="layout">
+    <aside>
+      <nav>
+        <button data-view="login">Acceso</button>
+        <button data-view="dashboard">Panel principal</button>
+        <button data-view="config">Configurar reporte</button>
+        <button data-view="job">Seguimiento</button>
+        <button data-view="history">Historial</button>
+        <button data-view="audit">Auditoría</button>
+      </nav>
+    </aside>
+    <main id="app"></main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <div id="modal" class="modal"></div>
+
+  <script>
+    // Mocks de demostración — en producción serían servicios con API real
+    const state = { role: "operador", progress: 0 };
+    const jobs = [
+      ["JOB-001", "Reporte diario", "XLSX", "Completado"],
+      ["JOB-002", "Auditoría mensual", "CSV", "En proceso"],
+      ["JOB-003", "Errores de conciliación", "TXT", "Fallido"]
+    ];
+    const app = document.querySelector("#app");
+    const toast = document.querySelector("#toast");
+    const modal = document.querySelector("#modal");
+
+    const roleLabels = { operador: "Operador", admin: "Administrador", auditor: "Auditor", externo: "Usuario externo" };
+
+    function notify(text) { toast.textContent = text; toast.style.display = "block"; setTimeout(() => toast.style.display = "none", 2200); }
+    function shell(title, body) {
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      const active = document.querySelector(`[data-view="${currentView}"]`);
+      if (active) active.classList.add("active");
+      return `<div class="breadcrumb">Inicio / ${title}</div><section class="panel"><h1>${title}</h1>${body}</section>`;
+    }
+    function denied() { return shell("Sin acceso", `<div class="state"><div><h2>No tienes permiso para esta sección</h2><p>Contacta con el administrador si crees que esto es un error.</p><button data-view="login">Cambiar perfil</button></div></div>`); }
+
+    let currentView = "login";
+    const views = {
+      login: () => shell("Acceso al sistema", `<label>Correo corporativo<input id="email-input" value="operador@demo.local"></label><br><label>Perfil de acceso<select id="role"><option value="operador">Operador</option><option value="admin">Administrador</option><option value="auditor">Auditor</option><option value="externo">Usuario externo</option></select></label><br><button class="primary" data-login>Entrar</button>`),
+      dashboard: () => shell("Panel principal", `<div class="tabs"><button class="active" data-tab>Activos</button><button data-tab>Completados</button><button data-tab>Fallidos</button></div><p>3 reportes en cola — 1 en proceso, 1 fallido.</p><button class="primary" data-view="config">Generar nuevo reporte</button>`),
+      config: () => shell("Configurar reporte", `<form id="filters" class="grid"><label>Desde<input name="from" type="date" required></label><label>Hasta<input name="to" type="date" required></label><label>Formato<select name="format"><option>XLSX</option><option>CSV</option><option>TXT</option></select></label><div><button class="primary" type="submit">Generar</button></div></form><p id="error" class="error">Las fechas son obligatorias y el rango debe ser válido.</p>`),
+      job: () => shell("Seguimiento del reporte", `<div class="progress"><div class="bar" style="--progress:${state.progress}%"></div></div><p>${state.progress}% completado</p><button class="primary" data-progress>Avanzar</button><button data-view="history">Ver historial</button>`),
+      history: () => shell("Historial de reportes", `<table><thead><tr><th>ID</th><th>Reporte</th><th>Formato</th><th>Estado</th><th></th></tr></thead><tbody>${jobs.map(j => `<tr><td>${j[0]}</td><td>${j[1]}</td><td>${j[2]}</td><td>${j[3]}</td><td><button data-download>Descargar</button></td></tr>`).join("")}</tbody></table>`),
+      audit: () => state.role === "admin" || state.role === "auditor"
+        ? shell("Auditoría", `<table><tr><th>Evento</th><th>Usuario</th></tr><tr><td>Generación de reporte</td><td>operador@demo.local</td></tr><tr><td>Descarga de reporte</td><td>admin@demo.local</td></tr></table>`)
+        : denied()
+    };
+
+    function render(view) {
+      currentView = view;
+      if (state.role === "externo" && view !== "login") app.innerHTML = denied();
+      else app.innerHTML = views[view] ? views[view]() : views.dashboard();
+      document.querySelector("#session").textContent = state.role !== "externo"
+        ? `${document.querySelector("#email-input")?.value || "operador@demo.local"} — ${roleLabels[state.role]}`
+        : "Sin sesión activa";
+      document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+    }
+
+    document.addEventListener("click", (event) => {
+      const view = event.target.closest("[data-view]");
+      if (view) render(view.dataset.view);
+      if (event.target.matches("[data-login]")) {
+        state.role = document.querySelector("#role").value;
+        notify(`Sesión iniciada — ${roleLabels[state.role]}`);
+        render("dashboard");
+      }
+      if (event.target.matches("[data-progress]")) {
+        state.progress = Math.min(100, state.progress + 25);
+        notify(state.progress === 100 ? "Reporte completado" : "Generando...");
+        render("job");
+      }
+      if (event.target.matches("[data-download]")) notify("Descarga iniciada");
+      if (event.target.matches("[data-close]")) modal.style.display = "none";
+      if (event.target.matches("[data-confirm]")) {
+        modal.style.display = "none";
+        state.progress = 10;
+        notify("Reporte en cola");
+        render("job");
+      }
+    });
+    document.addEventListener("submit", (event) => {
+      if (event.target.id !== "filters") return;
+      event.preventDefault();
+      const form = new FormData(event.target);
+      const from = form.get("from");
+      const to = form.get("to");
+      const error = document.querySelector("#error");
+      if (!from || !to || from > to) { error.style.display = "block"; notify("Corrige el rango de fechas"); return; }
+      error.style.display = "none";
+      modal.innerHTML = `<section class="panel"><h2>Confirmar generación</h2><p>Se creará el reporte con los parámetros seleccionados.</p><button class="primary" data-confirm>Confirmar</button> <button data-close>Cancelar</button></section>`;
+      modal.style.display = "grid";
+    });
+    render("login");
+  </script>
+</body>
+</html>

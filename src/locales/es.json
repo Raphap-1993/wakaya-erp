@@ -1,0 +1,11 @@
+{
+  "app": {
+    "title": "Wakaya ERP",
+    "welcome": "Bienvenida a Wakaya ERP"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando"
+  }
+}

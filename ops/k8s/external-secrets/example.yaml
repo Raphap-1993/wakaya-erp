@@ -1,0 +1,39 @@
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: aws-secrets
+spec:
+  provider:
+    aws:
+      service: SecretsManager
+      region: us-east-1
+      auth:
+        jwt:
+          serviceAccountRef:
+            name: wakaya-erp-api
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: wakaya-erp-secrets
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets
+    kind: SecretStore
+  target:
+    name: wakaya-erp-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: DATABASE_URL
+      remoteRef:
+        key: wakaya-erp/prod/database
+        property: url
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: wakaya-erp/prod/auth
+        property: jwt_secret
+    - secretKey: OTEL_EXPORTER_OTLP_HEADERS
+      remoteRef:
+        key: wakaya-erp/prod/observability
+        property: otlp_headers

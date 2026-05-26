@@ -1,0 +1,337 @@
+name: preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  deploy-preview:
+    if: github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    env:
+      PREVIEW_NAMESPACE: wakaya-erp-pr-${{ github.event.number }}
+      PREVIEW_ARTIFACTS_JSON: ${{ vars.PREVIEW_ARTIFACTS_JSON || '' }}
+      PREVIEW_BUILD_CONTEXT: ${{ vars.PREVIEW_BUILD_CONTEXT || '' }}
+      PREVIEW_DOCKERFILE: ${{ vars.PREVIEW_DOCKERFILE || '' }}
+      PREVIEW_KUSTOMIZE_PATH: ${{ vars.PREVIEW_KUSTOMIZE_PATH || 'ops/k8s/overlays/dev' }}
+      PREVIEW_IMAGE_NAME: ${{ vars.PREVIEW_IMAGE_NAME || 'ghcr.io/raphaelparedes/wakaya-erp' }}
+      PREVIEW_PUBLIC_URL_TEMPLATE: ${{ vars.PREVIEW_PUBLIC_URL_TEMPLATE || '' }}
+      PREVIEW_REGISTRY_PROVIDER: ${{ vars.PREVIEW_REGISTRY_PROVIDER || 'ghcr' }}
+      PREVIEW_REGISTRY_SERVER: ${{ vars.PREVIEW_REGISTRY_SERVER || 'ghcr.io' }}
+      PREVIEW_REGISTRY_USERNAME: ${{ vars.PREVIEW_REGISTRY_USERNAME || '' }}
+      PREVIEW_AWS_ROLE_ARN: ${{ vars.PREVIEW_AWS_ROLE_ARN || '' }}
+      PREVIEW_AWS_REGION: ${{ vars.PREVIEW_AWS_REGION || '' }}
+      PREVIEW_GCP_WIF_PROVIDER: ${{ vars.PREVIEW_GCP_WIF_PROVIDER || '' }}
+      PREVIEW_GCP_SERVICE_ACCOUNT: ${{ vars.PREVIEW_GCP_SERVICE_ACCOUNT || '' }}
+      PREVIEW_AZURE_CLIENT_ID: ${{ vars.PREVIEW_AZURE_CLIENT_ID || '' }}
+      PREVIEW_AZURE_TENANT_ID: ${{ vars.PREVIEW_AZURE_TENANT_ID || '' }}
+      PREVIEW_AZURE_SUBSCRIPTION_ID: ${{ vars.PREVIEW_AZURE_SUBSCRIPTION_ID || '' }}
+      PREVIEW_ACR_NAME: ${{ vars.PREVIEW_ACR_NAME || '' }}
+      PREVIEW_KUBECONFIG: ${{ secrets.PREVIEW_KUBECONFIG }}
+      PREVIEW_REGISTRY_PASSWORD: ${{ secrets.PREVIEW_REGISTRY_PASSWORD }}
+      PR_NUMBER: ${{ github.event.number }}
+      IMAGE_TAG: pr-${{ github.event.number }}-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Check preview configuration
+        id: config
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const workspace = process.cwd();
+          const outputPath = process.env.GITHUB_OUTPUT;
+          const missingImage = [];
+          const missingRegistry = [];
+          const missingDeploy = [];
+          const artifactsRaw = (process.env.PREVIEW_ARTIFACTS_JSON || '').trim();
+          const publicUrlTemplate = (process.env.PREVIEW_PUBLIC_URL_TEMPLATE || '').trim();
+          const fallbackConfigured =
+            (process.env.PREVIEW_BUILD_CONTEXT || '').trim() !== '' ||
+            (process.env.PREVIEW_DOCKERFILE || '').trim() !== '' ||
+            (process.env.PREVIEW_IMAGE_NAME || '').trim() !== 'ghcr.io/raphaelparedes/wakaya-erp';
+          let plan = [];
+          const registryProvider = String(process.env.PREVIEW_REGISTRY_PROVIDER || 'ghcr').trim().toLowerCase();
+
+          const append = (name, value) => {
+            fs.appendFileSync(outputPath, `${name}=${value}\n`);
+          };
+
+          const appendMultiline = (name, value) => {
+            fs.appendFileSync(outputPath, `${name}<<EOF\n${value}\nEOF\n`);
+          };
+
+          const renderPublicUrl = (template) => template
+            .replaceAll('{pr}', String(process.env.PR_NUMBER || ''))
+            .replaceAll('{namespace}', String(process.env.PREVIEW_NAMESPACE || ''))
+            .replaceAll('{tag}', String(process.env.IMAGE_TAG || ''))
+            .replaceAll('{sha}', String(process.env.GITHUB_SHA || ''));
+
+          const validateArtifact = (artifact, index) => {
+            if (!artifact || typeof artifact !== 'object' || Array.isArray(artifact)) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}]`);
+              return null;
+            }
+
+            const context = String(artifact.context || '').trim();
+            const dockerfile = String(artifact.dockerfile || '').trim();
+            const image = String(artifact.image || '').trim();
+            const manifestImage = String(artifact.manifestImage || image).trim();
+
+            if (!context) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}].context`);
+            } else if (!fs.existsSync(path.resolve(workspace, context))) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}].context`);
+            }
+
+            if (!dockerfile) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}].dockerfile`);
+            } else if (!fs.existsSync(path.resolve(workspace, dockerfile))) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}].dockerfile`);
+            }
+
+            if (!image) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}].image`);
+            }
+
+            if (!manifestImage) {
+              missingImage.push(`PREVIEW_ARTIFACTS_JSON[${index}].manifestImage`);
+            }
+
+            if (!context || !dockerfile || !image || !manifestImage) {
+              return null;
+            }
+
+            return { context, dockerfile, image, manifestImage };
+          };
+
+          if (artifactsRaw) {
+            try {
+              const parsed = JSON.parse(artifactsRaw);
+              if (!Array.isArray(parsed) || parsed.length === 0) {
+                missingImage.push('PREVIEW_ARTIFACTS_JSON');
+              } else {
+                plan = parsed
+                  .map((artifact, index) => validateArtifact(artifact, index))
+                  .filter(Boolean);
+              }
+            } catch (error) {
+              missingImage.push('PREVIEW_ARTIFACTS_JSON');
+            }
+          } else if (fallbackConfigured) {
+            plan = [
+              validateArtifact(
+                {
+                  context: process.env.PREVIEW_BUILD_CONTEXT,
+                  dockerfile: process.env.PREVIEW_DOCKERFILE,
+                  image: process.env.PREVIEW_IMAGE_NAME,
+                  manifestImage: process.env.PREVIEW_IMAGE_NAME,
+                },
+                0,
+              ),
+            ].filter(Boolean);
+          } else {
+            missingImage.push('PREVIEW_ARTIFACTS_JSON');
+          }
+
+          if (plan.length === 0) {
+            missingImage.push('preview artifact plan');
+          }
+
+          const requireEnv = (condition, label) => {
+            if (!condition) {
+              missingRegistry.push(label);
+            }
+          };
+
+          if (!['ghcr', 'ecr', 'gar', 'acr', 'custom'].includes(registryProvider)) {
+            missingRegistry.push('PREVIEW_REGISTRY_PROVIDER');
+          } else if (registryProvider === 'ecr') {
+            requireEnv((process.env.PREVIEW_AWS_ROLE_ARN || '').trim() !== '', 'PREVIEW_AWS_ROLE_ARN');
+            requireEnv((process.env.PREVIEW_AWS_REGION || '').trim() !== '', 'PREVIEW_AWS_REGION');
+          } else if (registryProvider === 'gar') {
+            requireEnv((process.env.PREVIEW_REGISTRY_SERVER || '').trim() !== '', 'PREVIEW_REGISTRY_SERVER');
+            requireEnv((process.env.PREVIEW_GCP_WIF_PROVIDER || '').trim() !== '', 'PREVIEW_GCP_WIF_PROVIDER');
+            requireEnv((process.env.PREVIEW_GCP_SERVICE_ACCOUNT || '').trim() !== '', 'PREVIEW_GCP_SERVICE_ACCOUNT');
+          } else if (registryProvider === 'acr') {
+            requireEnv((process.env.PREVIEW_ACR_NAME || '').trim() !== '', 'PREVIEW_ACR_NAME');
+            requireEnv((process.env.PREVIEW_AZURE_CLIENT_ID || '').trim() !== '', 'PREVIEW_AZURE_CLIENT_ID');
+            requireEnv((process.env.PREVIEW_AZURE_TENANT_ID || '').trim() !== '', 'PREVIEW_AZURE_TENANT_ID');
+            requireEnv((process.env.PREVIEW_AZURE_SUBSCRIPTION_ID || '').trim() !== '', 'PREVIEW_AZURE_SUBSCRIPTION_ID');
+          } else if (registryProvider === 'custom') {
+            requireEnv((process.env.PREVIEW_REGISTRY_SERVER || '').trim() !== '', 'PREVIEW_REGISTRY_SERVER');
+            requireEnv((process.env.PREVIEW_REGISTRY_USERNAME || '').trim() !== '', 'PREVIEW_REGISTRY_USERNAME');
+            requireEnv((process.env.PREVIEW_REGISTRY_PASSWORD || '').trim() !== '', 'PREVIEW_REGISTRY_PASSWORD');
+          }
+
+          const kustomizePath = String(process.env.PREVIEW_KUSTOMIZE_PATH || '').trim();
+          if (!kustomizePath || !fs.existsSync(path.resolve(workspace, kustomizePath))) {
+            missingDeploy.push('PREVIEW_KUSTOMIZE_PATH');
+          }
+          if (!(process.env.PREVIEW_KUBECONFIG || '').trim()) {
+            missingDeploy.push('PREVIEW_KUBECONFIG');
+          }
+
+          append('image_ready', missingImage.length === 0 && missingRegistry.length === 0 ? 'true' : 'false');
+          append('deploy_ready', missingImage.length === 0 && missingRegistry.length === 0 && missingDeploy.length === 0 ? 'true' : 'false');
+          append('image_count', String(plan.length));
+          append('registry_provider', registryProvider);
+          appendMultiline('plan_json', JSON.stringify(plan));
+          appendMultiline('missing_image', missingImage.join('\n'));
+          appendMultiline('missing_registry', missingRegistry.join('\n'));
+          appendMultiline('missing_deploy', missingDeploy.join('\n'));
+          appendMultiline('public_url', publicUrlTemplate ? renderPublicUrl(publicUrlTemplate) : '');
+          NODE
+      - uses: docker/setup-buildx-action@v4
+        if: steps.config.outputs.image_ready == 'true'
+      - name: Configure AWS credentials for ECR
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'ecr'
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.PREVIEW_AWS_ROLE_ARN }}
+          aws-region: ${{ env.PREVIEW_AWS_REGION }}
+      - name: Configure GCP credentials for GAR
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'gar'
+        id: gcp_auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.PREVIEW_GCP_WIF_PROVIDER }}
+          service_account: ${{ env.PREVIEW_GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+      - name: Configure Azure credentials for ACR
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'acr'
+        uses: azure/login@v3
+        with:
+          client-id: ${{ env.PREVIEW_AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.PREVIEW_AZURE_TENANT_ID }}
+          subscription-id: ${{ env.PREVIEW_AZURE_SUBSCRIPTION_ID }}
+      - name: Login to GHCR
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'ghcr'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.PREVIEW_REGISTRY_SERVER }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Amazon ECR
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'ecr'
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Google Artifact Registry
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'gar'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.PREVIEW_REGISTRY_SERVER }}
+          username: oauth2accesstoken
+          password: ${{ steps.gcp_auth.outputs.access_token }}
+      - name: Login to Azure Container Registry
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'acr'
+        shell: bash
+        run: az acr login --name "$PREVIEW_ACR_NAME"
+      - name: Login to custom registry
+        if: steps.config.outputs.image_ready == 'true' && steps.config.outputs.registry_provider == 'custom'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.PREVIEW_REGISTRY_SERVER }}
+          username: ${{ env.PREVIEW_REGISTRY_USERNAME }}
+          password: ${{ env.PREVIEW_REGISTRY_PASSWORD }}
+      - name: Publish preview image(s)
+        if: steps.config.outputs.image_ready == 'true'
+        env:
+          PLAN_JSON: ${{ steps.config.outputs.plan_json }}
+        shell: bash
+        run: |
+          printf '%s' "$PLAN_JSON" | node -e "const fs=require('fs'); const plan=JSON.parse(fs.readFileSync(0,'utf8')); for (const item of plan) { console.log([item.context, item.dockerfile, item.image].join('\t')); }" |
+          while IFS=$'\t' read -r context dockerfile image; do
+            docker buildx build "$context" \
+              --file "$dockerfile" \
+              --push \
+              --tag "$image:$IMAGE_TAG"
+          done
+      - name: Setup kubectl
+        if: steps.config.outputs.deploy_ready == 'true'
+        uses: azure/setup-kubectl@v5
+      - name: Setup kustomize
+        if: steps.config.outputs.deploy_ready == 'true'
+        uses: imranismail/setup-kustomize@v3
+      - name: Deploy preview
+        if: steps.config.outputs.deploy_ready == 'true'
+        shell: bash
+        env:
+          PLAN_JSON: ${{ steps.config.outputs.plan_json }}
+        run: |
+          kubeconfig_file="$RUNNER_TEMP/preview.kubeconfig"
+          printf '%s' "$PREVIEW_KUBECONFIG" > "$kubeconfig_file"
+          export KUBECONFIG="$kubeconfig_file"
+          workdir="$RUNNER_TEMP/preview-overlay"
+          mkdir -p "$workdir"
+          cp -R "$PREVIEW_KUSTOMIZE_PATH"/. "$workdir"/
+          chmod -R u+w "$workdir"
+          cd "$workdir"
+          kustomize edit set namespace "$PREVIEW_NAMESPACE"
+          printf '%s' "$PLAN_JSON" | node -e "const fs=require('fs'); const plan=JSON.parse(fs.readFileSync(0,'utf8')); for (const item of plan) { console.log([item.manifestImage, item.image].join('\t')); }" |
+          while IFS=$'\t' read -r manifest_image image; do
+            kustomize edit set image "$manifest_image=$image:$IMAGE_TAG"
+          done
+          kubectl create namespace "$PREVIEW_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -k "$workdir"
+      - name: Comment preview status
+        uses: actions/github-script@v9
+        env:
+          PLAN_JSON: ${{ steps.config.outputs.plan_json }}
+        with:
+          script: |
+            const imageReady = '${{ steps.config.outputs.image_ready }}' === 'true';
+            const deployReady = '${{ steps.config.outputs.deploy_ready }}' === 'true';
+            const plan = JSON.parse(process.env.PLAN_JSON || '[]');
+            const publicUrl = `${{ steps.config.outputs.public_url || '' }}`.trim();
+            const missingImage = `${{ steps.config.outputs.missing_image || '' }}`.trim();
+            const missingRegistry = `${{ steps.config.outputs.missing_registry || '' }}`.trim();
+            const missingDeploy = `${{ steps.config.outputs.missing_deploy || '' }}`.trim();
+            const builtImages = plan.map((item) => `- ${item.image}:${process.env.IMAGE_TAG}`);
+            const body = deployReady
+              ? (
+                  publicUrl
+                    ? [
+                        `Preview environment desplegado: ${publicUrl} (namespace ${process.env.PREVIEW_NAMESPACE})`,
+                        '',
+                        'Imagenes publicadas:',
+                        ...builtImages,
+                      ].join('\n')
+                    : [
+                        `Preview deploy aplicado en namespace ${process.env.PREVIEW_NAMESPACE}.`,
+                        'La exposicion publica no esta declarada por defecto; define PREVIEW_PUBLIC_URL_TEMPLATE solo si el overlay tambien publica una ruta.',
+                        '',
+                        'Imagenes publicadas:',
+                        ...builtImages,
+                      ].join('\n')
+                )
+              : imageReady
+                ? [
+                    'Preview image(s) construidas:',
+                    ...builtImages,
+                    '',
+                    'El despliegue automatico aun no esta configurado.',
+                    'Faltan variables o secretos:',
+                    ...missingDeploy.split('\n').filter(Boolean).map((item) => `- ${item}`),
+                  ].join('\n')
+              : [
+                    'No se construyo la preview automatica.',
+                    'Faltan variables, credenciales o rutas validas para construir/publicar la imagen:',
+                    ...missingImage.split('\n').filter(Boolean).map((item) => `- ${item}`),
+                    ...missingRegistry.split('\n').filter(Boolean).map((item) => `- ${item}`),
+                  ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });

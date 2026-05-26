@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>OmniERP — Modulo Financiero</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#1E3A8A; --brand-light:#DBEAFE; --brand-dark:#1E2C5E; --brand-mid:#3B5BD9;
+  --accent:#F59E0B; --accent-light:#FEF3C7;
+  --success:#059669; --success-light:#D1FAE5;
+  --warning:#D97706; --warning-light:#FED7AA;
+  --danger:#DC2626; --danger-light:#FEE2E2;
+  --info:#0891B2; --info-light:#CFFAFE;
+  --neutral-50:#F8FAFC; --neutral-100:#F1F5F9; --neutral-200:#E2E8F0;
+  --neutral-300:#CBD5E1; --neutral-400:#94A3B8; --neutral-500:#64748B;
+  --neutral-700:#334155; --neutral-800:#1E293B; --neutral-900:#0F172A;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 28px rgba(15,23,42,.12);
+  --radius:6px; --radius-lg:10px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:56px; --modulebar-h:42px; --sidebar-w:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:13px;color:var(--neutral-900);background:var(--neutral-50);line-height:1.5}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+
+/* ── Topbar empresarial ── */
+.topbar{position:sticky;top:0;height:var(--topbar-h);background:var(--neutral-900);color:#fff;display:flex;align-items:center;padding:0 20px;gap:16px;z-index:20;box-shadow:var(--shadow-md)}
+.brand{font-weight:800;font-size:15px;display:flex;align-items:center;gap:10px}
+.brand-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--brand-mid) 0%,var(--accent) 100%);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+.org-selector{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:6px;cursor:pointer;font-size:12px;background:rgba(255,255,255,.05);transition:var(--transition)}
+.org-selector:hover{background:rgba(255,255,255,.12)}
+.org-fiscal{font-size:10px;color:var(--neutral-400)}
+.period-selector{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid rgba(245,158,11,.3);border-radius:6px;background:rgba(245,158,11,.1);color:var(--accent);font-size:12px;font-weight:600;cursor:pointer}
+.topbar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.topbar-btn{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:var(--transition);position:relative;color:#fff}
+.topbar-btn:hover{background:rgba(255,255,255,.1)}
+.topbar-badge{position:absolute;top:3px;right:3px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;border-radius:999px;padding:1px 5px}
+.profile{display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:var(--transition)}
+.profile:hover{background:rgba(255,255,255,.1)}
+.profile-avatar{width:28px;height:28px;background:var(--accent);color:var(--neutral-900);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+
+/* ── Modulebar: barra de modulos ERP (fija) ── */
+.modulebar{height:var(--modulebar-h);background:var(--neutral-800);border-bottom:1px solid var(--neutral-700);display:flex;padding:0 20px;align-items:stretch;overflow-x:auto;position:sticky;top:var(--topbar-h);z-index:19}
+.module{padding:0 16px;display:flex;align-items:center;color:var(--neutral-400);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);position:relative;white-space:nowrap;gap:6px;text-transform:uppercase;letter-spacing:.5px}
+.module:hover{color:#fff;background:rgba(255,255,255,.05)}
+.module.active{color:#fff;background:var(--neutral-900)}
+.module.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent)}
+.module-icon{font-size:14px}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h) - var(--modulebar-h))}
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--neutral-200);padding:14px 8px;flex-shrink:0}
+.sidebar-section{margin-bottom:14px}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--neutral-500);padding:6px 12px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:5px;cursor:pointer;transition:var(--transition);font-size:12px;color:var(--neutral-700);position:relative}
+.sidebar-item:hover{background:var(--neutral-100)}
+.sidebar-item.active{background:var(--brand-light);color:var(--brand-dark);font-weight:600}
+.sidebar-item.active::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--brand);border-radius:0 3px 3px 0}
+.sidebar-item .icon{width:16px;text-align:center;font-size:12px}
+.sidebar-item .badge{margin-left:auto;background:var(--neutral-200);color:var(--neutral-700);font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px}
+.sidebar-item.alert .badge{background:var(--danger);color:#fff}
+
+/* ── Main ── */
+.main{flex:1;padding:18px;overflow-x:auto}
+.page-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.page-title h1{font-size:20px;font-weight:700;color:var(--neutral-900)}
+.breadcrumb{font-size:11px;color:var(--neutral-500);margin-bottom:3px}
+.breadcrumb a:hover{color:var(--brand)}
+.page-actions{display:flex;gap:6px}
+
+.btn{padding:6px 12px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;transition:var(--transition);border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-secondary{background:#fff;color:var(--neutral-700);border-color:var(--neutral-200)}
+.btn-secondary:hover{background:var(--neutral-50);border-color:var(--neutral-300)}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:#C77E08}
+.btn-ghost{color:var(--neutral-500)}
+.btn-ghost:hover{color:var(--neutral-900);background:var(--neutral-100)}
+
+/* ── KPIs financieros ── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:14px;transition:var(--transition);position:relative;overflow:hidden}
+.kpi-card:hover{box-shadow:var(--shadow-md);border-color:var(--neutral-300)}
+.kpi-card::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--brand)}
+.kpi-card.positive::before{background:var(--success)}
+.kpi-card.negative::before{background:var(--danger)}
+.kpi-card.warning::before{background:var(--warning)}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700}
+.kpi-value{font-size:22px;font-weight:800;color:var(--neutral-900);margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi-meta{font-size:11px;color:var(--neutral-500);margin-top:2px}
+.kpi-delta{font-size:11px;margin-top:4px;display:flex;align-items:center;gap:3px;font-weight:600}
+.delta-up{color:var(--success)}
+.delta-down{color:var(--danger)}
+.kpi-spark{margin-top:8px;height:24px;display:flex;align-items:flex-end;gap:2px}
+.spark-bar{flex:1;background:var(--brand-light);border-radius:2px 2px 0 0;transition:var(--transition)}
+.spark-bar:hover{background:var(--brand)}
+
+/* ── Tabs internos ── */
+.tabs{display:flex;border-bottom:1px solid var(--neutral-200);margin-bottom:14px;gap:2px}
+.tab{padding:8px 14px;font-size:12px;font-weight:600;color:var(--neutral-500);cursor:pointer;border-bottom:2px solid transparent;transition:var(--transition);display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--neutral-900)}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+.tab-count{background:var(--neutral-200);color:var(--neutral-700);font-size:10px;padding:1px 6px;border-radius:999px;font-weight:700}
+.tab.active .tab-count{background:var(--brand);color:#fff}
+
+/* ── Filter bar ── */
+.filter-bar{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:var(--brand-light);color:var(--brand-dark);border-radius:999px;font-size:11px;font-weight:600}
+.filter-chip button{font-size:13px;line-height:1;color:var(--brand-dark);opacity:.6}
+.filter-chip button:hover{opacity:1}
+.filter-clear{font-size:11px;color:var(--neutral-500);margin-left:auto}
+
+/* ── Journal entries table ── */
+.table-wrap{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);overflow:hidden}
+.table-toolbar{padding:10px 14px;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;gap:10px;background:var(--neutral-50)}
+.toolbar-search{flex:1;max-width:280px;padding:5px 10px;border:1px solid var(--neutral-200);border-radius:5px;background:#fff;font-size:12px}
+.toolbar-search:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+.toolbar-summary{font-size:11px;color:var(--neutral-500);margin-left:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);background:var(--neutral-50);font-weight:700;border-bottom:1px solid var(--neutral-200);position:sticky;top:0}
+th[data-sort]{cursor:pointer;user-select:none}
+th[data-sort]:hover{color:var(--brand)}
+th.numeric{text-align:right}
+td{padding:9px 14px;border-bottom:1px solid var(--neutral-100);font-size:12px;vertical-align:middle}
+td.numeric{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--font-mono);font-weight:600}
+td.positive{color:var(--success)}
+td.negative{color:var(--danger)}
+tr{transition:background var(--transition)}
+tr:hover{background:var(--neutral-50)}
+tr:hover .row-actions{opacity:1}
+.row-actions{opacity:0;transition:opacity var(--transition);display:flex;gap:3px}
+.row-action{padding:3px 7px;border-radius:4px;font-size:11px;color:var(--neutral-700);background:transparent}
+.row-action:hover{background:var(--neutral-100)}
+
+.entry-num{font-family:var(--font-mono);font-size:11px;color:var(--brand);font-weight:600}
+.entry-ref{font-size:11px;color:var(--neutral-500)}
+.account-code{font-family:var(--font-mono);font-size:11px;color:var(--neutral-700)}
+.account-name{font-size:11px;color:var(--neutral-500);display:block}
+.amount{font-weight:600}
+.amount.debit{color:var(--brand-dark)}
+.amount.credit{color:var(--success)}
+
+.badge-status{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.badge-status::before{content:"";width:5px;height:5px;border-radius:50%}
+.badge-draft{background:var(--neutral-100);color:var(--neutral-700)}.badge-draft::before{background:var(--neutral-500)}
+.badge-pending{background:var(--warning-light);color:#92400E}.badge-pending::before{background:var(--warning)}
+.badge-posted{background:var(--success-light);color:#065F46}.badge-posted::before{background:var(--success)}
+.badge-reversed{background:var(--danger-light);color:#991B1B}.badge-reversed::before{background:var(--danger)}
+
+/* Pagination */
+.pagination{padding:10px 14px;border-top:1px solid var(--neutral-200);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--neutral-500);background:var(--neutral-50)}
+.pagination-controls{display:flex;gap:3px}
+.page-btn{padding:3px 8px;border-radius:4px;border:1px solid var(--neutral-200);background:#fff;cursor:pointer;font-size:11px}
+.page-btn:hover{background:var(--neutral-100)}
+.page-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Detail panel ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:50}
+.detail-overlay.open{opacity:1;pointer-events:auto}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:520px;background:#fff;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .3s ease;z-index:51;overflow-y:auto;display:flex;flex-direction:column}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{padding:16px 20px;border-bottom:1px solid var(--neutral-200);display:flex;justify-content:space-between;align-items:flex-start;background:var(--neutral-50)}
+.detail-close{font-size:18px;color:var(--neutral-500)}
+.detail-body{flex:1;padding:16px 20px;overflow-y:auto}
+.detail-section{margin-bottom:18px}
+.detail-section h4{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700;margin-bottom:8px}
+.detail-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--neutral-100);font-size:12px}
+.detail-row .label{color:var(--neutral-500)}
+.detail-row .value{font-weight:600;color:var(--neutral-900)}
+
+/* Journal lines en detail */
+.journal-lines{margin-top:8px;border:1px solid var(--neutral-200);border-radius:5px;overflow:hidden}
+.journal-line{display:grid;grid-template-columns:80px 1fr 90px 90px;padding:8px 10px;font-size:11px;border-bottom:1px solid var(--neutral-100);align-items:center}
+.journal-line:last-child{border-bottom:0}
+.journal-line:nth-child(odd){background:var(--neutral-50)}
+.journal-line.total{font-weight:700;background:var(--brand-light);color:var(--brand-dark)}
+
+.detail-footer{padding:12px 20px;border-top:1px solid var(--neutral-200);display:flex;gap:6px;background:var(--neutral-50)}
+
+/* ── States ── */
+.state-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:50px 24px;text-align:center}
+.state-icon{font-size:42px;margin-bottom:10px}
+.state-title{font-size:14px;font-weight:700;color:var(--neutral-900);margin-bottom:4px}
+.state-desc{font-size:12px;color:var(--neutral-500);margin-bottom:14px;max-width:340px;margin-left:auto;margin-right:auto}
+.spinner{width:28px;height:28px;border:3px solid var(--neutral-200);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Toast / Modal ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--neutral-900);color:#fff;padding:10px 16px;border-radius:5px;box-shadow:var(--shadow-lg);display:none;animation:slideIn .25s ease;z-index:100;align-items:center;gap:8px;font-size:12px}
+.toast.visible{display:flex}
+.toast.success{background:var(--success)}
+.toast.warning{background:var(--warning)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:520px;width:90%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:slideIn .25s ease}
+.modal h3{font-size:15px;margin-bottom:10px}
+.modal p{font-size:12px;color:var(--neutral-700);margin-bottom:14px}
+.modal-input{width:100%;padding:6px 10px;border:1px solid var(--neutral-200);border-radius:5px;font-size:12px;margin-bottom:10px}
+.modal-actions{display:flex;justify-content:flex-end;gap:6px}
+
+.hub-link{position:fixed;top:8px;right:14px;font-size:10px;color:rgba(255,255,255,.7);background:rgba(0,0,0,.3);padding:3px 8px;border-radius:4px;z-index:99}
+.hub-link:hover{color:#fff}
+
+/* ── Responsive ── */
+@media (max-width:1280px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:980px){
+  .sidebar{width:60px}
+  .sidebar-label,.sidebar-item span:not(.icon){display:none}
+  .sidebar-item{justify-content:center;padding:8px}
+  .modulebar{padding:0 10px}
+  .module{padding:0 10px;font-size:11px}
+  .detail-panel{width:90%}
+}
+@media (max-width:680px){
+  .kpis{grid-template-columns:1fr}
+  .main{padding:12px}
+  .topbar{padding:0 10px;gap:8px}
+  .org-selector,.period-selector,.profile-name{display:none}
+  table{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">Ω</span>
+    <span>OmniERP</span>
+  </div>
+  <div class="org-selector">
+    <span>🏢</span>
+    <div>
+      <div>Acme Holdings SA</div>
+      <div class="org-fiscal">RUC 20512345678 · FY 2026</div>
+    </div>
+    <span style="margin-left:6px">▾</span>
+  </div>
+  <div class="period-selector">
+    <span>📅</span>
+    <span>Periodo Mayo 2026 — ABIERTO</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Workflows">⚡<span class="topbar-badge">5</span></button>
+    <button class="topbar-btn" title="Notificaciones">🔔<span class="topbar-badge">12</span></button>
+    <button class="topbar-btn" title="Reportes">📊</button>
+    <div class="profile">
+      <div class="profile-avatar">LV</div>
+      <div>
+        <div class="profile-name" style="font-size:12px;font-weight:600">Luis Vargas</div>
+        <div style="font-size:10px;color:var(--neutral-400)">CFO · admin</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Modulebar: navegacion top-level entre modulos ERP -->
+<nav class="modulebar">
+  <div class="module">
+    <span class="module-icon">📊</span><span>Dashboard</span>
+  </div>
+  <div class="module active">
+    <span class="module-icon">💰</span><span>Financiero</span>
+  </div>
+  <div class="module">
+    <span class="module-icon">📦</span><span>Inventarios</span>
+  </div>
+  <div class="module">
+    <span class="module-icon">🛒</span><span>Ventas</span>
+  </div>
+  <div class="module">
+    <span class="module-icon">🚚</span><span>Compras</span>
+  </div>
+  <div class="module">
+    <span class="module-icon">👷</span><span>RRHH</span>
+  </div>
+  <div class="module">
+    <span class="module-icon">🏭</span><span>Manufactura</span>
+  </div>
+  <div class="module">
+    <span class="module-icon">⚙</span><span>Admin</span>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Contabilidad</div>
+      <div class="sidebar-item active" data-view="journal">
+        <span class="icon">📓</span><span>Asientos contables</span><span class="badge">247</span>
+      </div>
+      <div class="sidebar-item alert" data-view="approvals">
+        <span class="icon">✓</span><span>Por aprobar</span><span class="badge">8</span>
+      </div>
+      <div class="sidebar-item" data-view="recurring">
+        <span class="icon">🔄</span><span>Recurrentes</span>
+      </div>
+      <div class="sidebar-item" data-view="reverse">
+        <span class="icon">↩</span><span>Reversion</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Cuentas</div>
+      <div class="sidebar-item" data-view="receivable">
+        <span class="icon">📥</span><span>Por cobrar</span><span class="badge">142</span>
+      </div>
+      <div class="sidebar-item" data-view="payable">
+        <span class="icon">📤</span><span>Por pagar</span><span class="badge">89</span>
+      </div>
+      <div class="sidebar-item" data-view="bank">
+        <span class="icon">🏦</span><span>Bancos</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Reportes</div>
+      <div class="sidebar-item" data-view="bsheet">
+        <span class="icon">📑</span><span>Balance general</span>
+      </div>
+      <div class="sidebar-item" data-view="pnl">
+        <span class="icon">📈</span><span>P&L</span>
+      </div>
+      <div class="sidebar-item" data-view="cashflow">
+        <span class="icon">💸</span><span>Flujo de caja</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-title">
+        <div class="breadcrumb"><a href="#">Financiero</a> · <a href="#">Contabilidad</a> · Asientos contables</div>
+        <h1>Libro diario · Mayo 2026</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-ghost">📥 Importar Excel</button>
+        <button class="btn btn-secondary">📤 Exportar</button>
+        <button class="btn btn-accent">⏰ Cierre periodo</button>
+        <button class="btn btn-primary" onclick="openNewEntry()">+ Nuevo asiento</button>
+      </div>
+    </div>
+
+    <!-- KPIs financieros -->
+    <div class="kpis">
+      <div class="kpi-card positive">
+        <div class="kpi-label">Total Debe (MTD)</div>
+        <div class="kpi-value">S/ 1,247,839</div>
+        <div class="kpi-meta">247 asientos · 1,890 lineas</div>
+        <div class="kpi-spark">
+          <div class="spark-bar" style="height:30%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:42%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:88%"></div>
+          <div class="spark-bar" style="height:65%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+      </div>
+      <div class="kpi-card positive">
+        <div class="kpi-label">Total Haber (MTD)</div>
+        <div class="kpi-value">S/ 1,247,839</div>
+        <div class="kpi-meta">Diferencia: S/ 0.00 ✓ balanceado</div>
+        <div class="kpi-delta delta-up">↑ 12.4% vs Abr</div>
+      </div>
+      <div class="kpi-card warning">
+        <div class="kpi-label">Pendientes aprobacion</div>
+        <div class="kpi-value">8</div>
+        <div class="kpi-meta">S/ 84,200 en transito</div>
+        <div class="kpi-delta delta-down">2 vencen hoy</div>
+      </div>
+      <div class="kpi-card negative">
+        <div class="kpi-label">Cierre periodo</div>
+        <div class="kpi-value">14 dias</div>
+        <div class="kpi-meta">hasta cierre fiscal Mayo</div>
+        <div class="kpi-delta delta-down">3 reconciliaciones pendientes</div>
+      </div>
+    </div>
+
+    <!-- Tabs internos por estado -->
+    <div class="tabs">
+      <div class="tab active">Todos <span class="tab-count">247</span></div>
+      <div class="tab">Borradores <span class="tab-count">12</span></div>
+      <div class="tab">Pendientes <span class="tab-count">8</span></div>
+      <div class="tab">Posteados <span class="tab-count">221</span></div>
+      <div class="tab">Reversados <span class="tab-count">6</span></div>
+    </div>
+
+    <!-- Filter chips activos -->
+    <div class="filter-bar">
+      <span style="font-size:11px;color:var(--neutral-500);font-weight:600">Filtros activos:</span>
+      <span class="filter-chip">Periodo: 2026-05<button>×</button></span>
+      <span class="filter-chip">Cuenta: 6.x.x.x (Gastos)<button>×</button></span>
+      <span class="filter-chip">Centro de costo: Operaciones<button>×</button></span>
+      <button class="filter-clear">Limpiar todo</button>
+    </div>
+
+    <!-- Tabla de asientos -->
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input type="search" class="toolbar-search" placeholder="Buscar # asiento, ref, glosa...">
+        <button class="btn btn-secondary">⚙ Columnas</button>
+        <button class="btn btn-secondary">💾 Vista</button>
+        <span class="toolbar-summary">Mostrando 1-12 de 247 · Total S/ 487,392.50</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="num"># Asiento</th>
+            <th data-sort="date">Fecha</th>
+            <th data-sort="ref">Referencia</th>
+            <th data-sort="glosa">Glosa</th>
+            <th data-sort="account">Cuenta</th>
+            <th data-sort="cc">CC</th>
+            <th class="numeric" data-sort="debit">Debe</th>
+            <th class="numeric" data-sort="credit">Haber</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="openDetail('2026-05-0247')">
+            <td><span class="entry-num">2026-05-0247</span></td>
+            <td>17/05/26</td>
+            <td><span class="entry-ref">F-001-4521</span></td>
+            <td>Compra suministros oficina</td>
+            <td>
+              <span class="account-code">63.41.0</span>
+              <span class="account-name">Sumin. oficina</span>
+            </td>
+            <td>OPS-01</td>
+            <td class="numeric debit">2,450.00</td>
+            <td class="numeric">—</td>
+            <td><span class="badge-status badge-posted">Posteado</span></td>
+            <td><div class="row-actions"><button class="row-action">Ver</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0246')">
+            <td><span class="entry-num">2026-05-0246</span></td>
+            <td>17/05/26</td>
+            <td><span class="entry-ref">F-001-4521</span></td>
+            <td>Compra suministros oficina (IGV)</td>
+            <td>
+              <span class="account-code">40.11.1</span>
+              <span class="account-name">IGV credito fiscal</span>
+            </td>
+            <td>OPS-01</td>
+            <td class="numeric debit">441.00</td>
+            <td class="numeric">—</td>
+            <td><span class="badge-status badge-posted">Posteado</span></td>
+            <td><div class="row-actions"><button class="row-action">Ver</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0245')">
+            <td><span class="entry-num">2026-05-0245</span></td>
+            <td>17/05/26</td>
+            <td><span class="entry-ref">PROV-002</span></td>
+            <td>Compra suministros oficina (proveedor)</td>
+            <td>
+              <span class="account-code">42.12.1</span>
+              <span class="account-name">Cuentas por pagar</span>
+            </td>
+            <td>OPS-01</td>
+            <td class="numeric">—</td>
+            <td class="numeric credit">2,891.00</td>
+            <td><span class="badge-status badge-posted">Posteado</span></td>
+            <td><div class="row-actions"><button class="row-action">Ver</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0244')">
+            <td><span class="entry-num">2026-05-0244</span></td>
+            <td>17/05/26</td>
+            <td><span class="entry-ref">PLLA-MAY-1</span></td>
+            <td>Planilla quincenal mayo 1/2</td>
+            <td>
+              <span class="account-code">62.11.0</span>
+              <span class="account-name">Sueldos</span>
+            </td>
+            <td>RRHH</td>
+            <td class="numeric debit">142,500.00</td>
+            <td class="numeric">—</td>
+            <td><span class="badge-status badge-pending">Pendiente</span></td>
+            <td><div class="row-actions"><button class="row-action">Aprobar</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0243')">
+            <td><span class="entry-num">2026-05-0243</span></td>
+            <td>16/05/26</td>
+            <td><span class="entry-ref">DEPR-2026-5</span></td>
+            <td>Depreciacion activos fijos mayo</td>
+            <td>
+              <span class="account-code">68.14.0</span>
+              <span class="account-name">Depreciacion</span>
+            </td>
+            <td>ADM-01</td>
+            <td class="numeric debit">18,750.00</td>
+            <td class="numeric">—</td>
+            <td><span class="badge-status badge-posted">Posteado</span></td>
+            <td><div class="row-actions"><button class="row-action">Ver</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0242')">
+            <td><span class="entry-num">2026-05-0242</span></td>
+            <td>16/05/26</td>
+            <td><span class="entry-ref">REVERT-0238</span></td>
+            <td>Reversion asiento error de glosa</td>
+            <td>
+              <span class="account-code">73.42.0</span>
+              <span class="account-name">Gastos diversos</span>
+            </td>
+            <td>OPS-02</td>
+            <td class="numeric">—</td>
+            <td class="numeric credit">1,200.00</td>
+            <td><span class="badge-status badge-reversed">Reversado</span></td>
+            <td><div class="row-actions"><button class="row-action">Ver original</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0241')">
+            <td><span class="entry-num">2026-05-0241</span></td>
+            <td>16/05/26</td>
+            <td><span class="entry-ref">BANCO-BCP</span></td>
+            <td>Conciliacion bancaria BCP cta cte</td>
+            <td>
+              <span class="account-code">10.41.1</span>
+              <span class="account-name">BCP cta cte soles</span>
+            </td>
+            <td>—</td>
+            <td class="numeric debit">87,420.50</td>
+            <td class="numeric">—</td>
+            <td><span class="badge-status badge-pending">Pendiente</span></td>
+            <td><div class="row-actions"><button class="row-action">Aprobar</button></div></td>
+          </tr>
+          <tr onclick="openDetail('2026-05-0240')">
+            <td><span class="entry-num">2026-05-0240</span></td>
+            <td>15/05/26</td>
+            <td><span class="entry-ref">DRAFT</span></td>
+            <td>Provision tributo SUNAT estimado</td>
+            <td>
+              <span class="account-code">88.11.0</span>
+              <span class="account-name">Provisiones</span>
+            </td>
+            <td>FIN-01</td>
+            <td class="numeric debit">12,400.00</td>
+            <td class="numeric">—</td>
+            <td><span class="badge-status badge-draft">Borrador</span></td>
+            <td><div class="row-actions"><button class="row-action">Editar</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>Pagina 1 de 21 · 247 asientos</span>
+        <div class="pagination-controls">
+          <button class="page-btn" disabled>‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">…</button>
+          <button class="page-btn">21</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty / Error / Loading states -->
+    <div class="state-card" id="empty-state" style="display:none;margin-top:18px">
+      <div class="state-icon">📓</div>
+      <div class="state-title">No hay asientos para este filtro</div>
+      <div class="state-desc">Cambia el periodo o el centro de costo, o registra un nuevo asiento.</div>
+      <button class="btn btn-primary" onclick="openNewEntry()">+ Nuevo asiento</button>
+    </div>
+    <div class="state-card" id="error-state" style="display:none;margin-top:18px">
+      <div class="state-icon">⚠</div>
+      <div class="state-title">Error al cargar el libro diario</div>
+      <div class="state-desc">No pudimos conectar con el modulo financiero. Tus datos locales estan seguros.</div>
+      <button class="btn btn-primary" onclick="retryLoad()">Reintentar</button>
+    </div>
+    <div class="state-card" id="loading-state" style="display:none;margin-top:18px">
+      <div class="spinner"></div>
+      <div class="state-title">Cargando asientos...</div>
+      <div class="state-desc">Aplicando filtros y calculando totales.</div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Detail panel -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<aside class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;color:var(--neutral-500);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Asiento contable</div>
+      <div style="font-size:16px;font-weight:700;margin-top:4px"><span class="entry-num" id="detail-num">2026-05-0247</span></div>
+      <div style="font-size:11px;color:var(--neutral-500);margin-top:2px">17/05/2026 · OPS-01 · Compra suministros oficina</div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Cabecera</h4>
+      <div class="detail-row"><span class="label">Tipo</span><span class="value">Compra contado</span></div>
+      <div class="detail-row"><span class="label">Referencia</span><span class="value">F-001-4521 (Proveedor S.A.C.)</span></div>
+      <div class="detail-row"><span class="label">Glosa</span><span class="value">Compra suministros oficina</span></div>
+      <div class="detail-row"><span class="label">Moneda</span><span class="value">PEN (S/) · TC 1.000</span></div>
+      <div class="detail-row"><span class="label">Estado</span><span class="value"><span class="badge-status badge-posted">Posteado</span></span></div>
+    </div>
+    <div class="detail-section">
+      <h4>Lineas (3)</h4>
+      <div class="journal-lines">
+        <div class="journal-line" style="font-weight:700;background:var(--neutral-100)">
+          <span>Cuenta</span><span>Descripcion</span><span style="text-align:right">Debe</span><span style="text-align:right">Haber</span>
+        </div>
+        <div class="journal-line">
+          <span class="account-code">63.41.0</span><span>Sumin. oficina</span>
+          <span class="amount debit" style="text-align:right">2,450.00</span><span style="text-align:right">—</span>
+        </div>
+        <div class="journal-line">
+          <span class="account-code">40.11.1</span><span>IGV credito fiscal</span>
+          <span class="amount debit" style="text-align:right">441.00</span><span style="text-align:right">—</span>
+        </div>
+        <div class="journal-line">
+          <span class="account-code">42.12.1</span><span>Ctas por pagar</span>
+          <span style="text-align:right">—</span><span class="amount credit" style="text-align:right">2,891.00</span>
+        </div>
+        <div class="journal-line total">
+          <span></span><span>Total</span>
+          <span style="text-align:right">2,891.00</span><span style="text-align:right">2,891.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>Historial de cambios</h4>
+      <div class="detail-row"><span class="label">17/05 14:32 · Luis V.</span><span class="value">Posteado</span></div>
+      <div class="detail-row"><span class="label">17/05 14:28 · Maria S.</span><span class="value">Revisado y aprobado</span></div>
+      <div class="detail-row"><span class="label">17/05 14:15 · Ana R.</span><span class="value">Creado en borrador</span></div>
+    </div>
+  </div>
+  <div class="detail-footer">
+    <button class="btn btn-ghost">📋 Duplicar</button>
+    <button class="btn btn-secondary" style="margin-left:auto">↩ Reversar</button>
+    <button class="btn btn-primary">📥 Descargar PDF</button>
+  </div>
+</aside>
+
+<!-- Modal nuevo asiento -->
+<div class="modal-overlay" id="modal-new">
+  <div class="modal">
+    <h3>+ Nuevo asiento contable</h3>
+    <p>El sistema validara partida doble automaticamente al postear.</p>
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Tipo de asiento</label>
+    <input class="modal-input" placeholder="Compra / Venta / Ajuste / Provision...">
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Glosa</label>
+    <input class="modal-input" placeholder="Descripcion breve del asiento">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmNewEntry()">Crear borrador</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-text">Cambios guardados</span>
+</div>
+
+<script>
+function openDetail(num) {
+  document.getElementById('detail-num').textContent = num;
+  document.getElementById('detail-overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+function openNewEntry() { document.getElementById('modal-new').classList.add('open'); }
+function closeModal() { document.getElementById('modal-new').classList.remove('open'); }
+function confirmNewEntry() { closeModal(); showToast('✓ Borrador creado · pendiente postear', 'success'); }
+function showToast(text, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = text;
+  t.className = 'toast visible' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+function retryLoad() { showToast('Reintentando...', 'success'); }
+
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+document.querySelectorAll('.module').forEach(mod => {
+  mod.addEventListener('click', () => {
+    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+    mod.classList.add('active');
+    showToast('Modulo ' + mod.textContent.trim() + ' (mock)', 'success');
+  });
+});
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+document.querySelector('.filter-clear').addEventListener('click', () => {
+  document.querySelectorAll('.filter-chip').forEach(c => c.remove());
+  showToast('Filtros limpiados', 'success');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeDetail(); closeModal(); }
+});
+</script>
+</body>
+</html>

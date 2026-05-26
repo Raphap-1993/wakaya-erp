@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: wakaya-erp-prod
+
+resources:
+  - ../../base
+  - ../../rollouts/canary.yaml
+
+patches:
+  - target: { kind: HorizontalPodAutoscaler, name: wakaya-erp-api }
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+
+images:
+  - name: ghcr.io/raphaelparedes/wakaya-erp
+    newTag: prod

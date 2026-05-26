@@ -1,0 +1,73 @@
+# v12.35: workflow CI dedicado a la coherencia del template.
+#
+# Se dispara cuando un PR toca archivos del template (docs/, ai/, plantillas/,
+# specs/, ci/, scripts/, CHANGELOG.md, etc.) o el package.json.
+#
+# Ejecuta `npm run check:template` que cubre:
+#   - check:docs (links rotos, encoding, headings)
+#   - check:prototype-hub (10 secciones, paridad spec-cards)
+#   - check:ai-artifacts (skills + prompts + spec-tecnica con secciones obligatorias)
+#   - check:markdown-paths (rutas en backticks que deben existir)
+#
+# Este workflow NO valida proyectos generados (eso lo hace project-checks.yml).
+name: template-checks
+
+on:
+  pull_request:
+    paths:
+      - "ai/**"
+      - "ci/**"
+      - "docs/**"
+      - "plantillas/**"
+      - "specs/**"
+      - "scripts/**"
+      - "ejemplos/**"
+      - "*.md"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/template-checks.yml"
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+# v12.36: concurrency mas agresivo — cancela runs anteriores del mismo PR
+# (o del mismo branch en pushes a main) cuando llega un commit nuevo.
+# Para PRs usa el numero del PR; para pushes a main usa el ref.
+concurrency:
+  group: template-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  template-checks:
+    name: check:template
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install (skip lifecycle scripts)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+          else
+            npm install --ignore-scripts || true
+          fi
+
+      - name: Bootstrap memoria (lo necesitan los checks)
+        run: |
+          node scripts/ai-framework-agent.mjs init-memory
+          node scripts/ai-framework-agent.mjs index-docs
+          node scripts/ai-framework-agent.mjs sync-memory
+
+      - name: Run check:template
+        run: npm run check:template

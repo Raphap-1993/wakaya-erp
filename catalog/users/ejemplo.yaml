@@ -1,0 +1,15 @@
+# User: entrada canonica de ejemplo. Reemplazar por usuarios reales al adoptar.
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: ejemplo
+  title: Usuario Ejemplo
+  description: Placeholder para mostrar la forma del descriptor User de Backstage.
+spec:
+  profile:
+    displayName: Usuario Ejemplo
+    email: ejemplo@example.com
+  memberOf:
+    - team-wakaya
+    - team-plataforma

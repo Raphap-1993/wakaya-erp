@@ -1,0 +1,150 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  template-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+      - run: node ci/scripts/check-template-instantiation.mjs --mode template --root .
+      - run: node ci/scripts/check-markdown-paths.mjs .
+      - run: node ci/scripts/check-ai-artifacts.mjs .
+      - run: node ci/scripts/check-github-actions.mjs .
+
+  # Detect which stacks changed to only run their jobs.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      node-next: ${{ steps.filter.outputs.node-next }}
+      java-monolith: ${{ steps.filter.outputs.java-monolith }}
+      quarkus-angular: ${{ steps.filter.outputs.quarkus-angular }}
+      spring-react: ${{ steps.filter.outputs.spring-react }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            node-next:
+              - 'stacks/node-next/template/**'
+            java-monolith:
+              - 'stacks/java-monolith/template/**'
+            quarkus-angular:
+              - 'stacks/quarkus-angular/template/**'
+            spring-react:
+              - 'stacks/spring-react/template/**'
+
+  node-next:
+    needs: [template-integrity, changes]
+    if: needs.changes.outputs.node-next == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stacks/node-next/template
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  java-monolith:
+    needs: [template-integrity, changes]
+    if: needs.changes.outputs.java-monolith == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stacks/java-monolith/template
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '22'
+          cache: 'maven'
+      - run: mvn -B -ntp verify
+
+  quarkus-angular-backend:
+    needs: [template-integrity, changes]
+    if: needs.changes.outputs.quarkus-angular == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stacks/quarkus-angular/template/backend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '22'
+          cache: 'maven'
+      - run: mvn -B -ntp verify
+
+  quarkus-angular-frontend:
+    needs: [template-integrity, changes]
+    if: needs.changes.outputs.quarkus-angular == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stacks/quarkus-angular/template/frontend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  spring-react-backend:
+    needs: [template-integrity, changes]
+    if: needs.changes.outputs.spring-react == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stacks/spring-react/template/backend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '22'
+          cache: 'gradle'
+      - run: gradle build --no-daemon
+
+  spring-react-frontend:
+    needs: [template-integrity, changes]
+    if: needs.changes.outputs.spring-react == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stacks/spring-react/template/frontend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

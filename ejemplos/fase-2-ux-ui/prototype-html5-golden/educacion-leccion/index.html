@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kodex Academy — Inyección de dependencias con Spring Boot</title>
+<style>
+  :root {
+    --brand: #7C3AED;
+    --brand-dark: #6D28D9;
+    --brand-soft: #EDE9FE;
+    --accent: #0EA5E9;
+    --accent-soft: #E0F2FE;
+    --success: #16A34A;
+    --success-soft: #DCFCE7;
+    --warning: #D97706;
+    --warning-soft: #FEF3C7;
+    --danger: #DC2626;
+    --danger-soft: #FEE2E2;
+    --neutral-50: #F8FAFC;
+    --neutral-100: #F1F5F9;
+    --neutral-200: #E2E8F0;
+    --neutral-300: #CBD5E1;
+    --neutral-400: #94A3B8;
+    --neutral-500: #64748B;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1E293B;
+    --neutral-900: #0F172A;
+    --sidebar-w: 320px;
+    --topbar-h: 60px;
+    --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', Consolas, monospace;
+    --radius: 8px;
+    --radius-sm: 4px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.10);
+    --shadow-lg: 0 12px 32px rgba(15,23,42,0.14);
+    --transition: 0.2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--neutral-50); color: var(--neutral-800); min-height: 100vh; line-height: 1.55; }
+  button, input, select, textarea { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  .hub-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--neutral-400); padding: 4px 8px; border-radius: var(--radius); transition: var(--transition); }
+  .hub-link:hover { background: var(--neutral-100); color: var(--brand); }
+
+  /* === TOPBAR === */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    background: #fff; border-bottom: 1px solid var(--neutral-200);
+    display: flex; align-items: center; padding: 0 20px; gap: 18px;
+    z-index: 100; box-shadow: var(--shadow-sm);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; color: var(--brand); }
+  .brand .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--brand), var(--accent));
+    border-radius: 8px; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900;
+  }
+  .course-info { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+  .course-info .title { font-size: 13px; font-weight: 600; color: var(--neutral-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .course-info .meta { font-size: 11px; color: var(--neutral-500); }
+  .progress-bar-wrap {
+    flex: 0 0 200px; height: 8px; background: var(--neutral-200);
+    border-radius: 999px; overflow: hidden; position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%; background: linear-gradient(90deg, var(--brand), var(--accent));
+    transition: width var(--transition);
+  }
+  .progress-text { font-size: 11px; font-weight: 700; color: var(--neutral-700); white-space: nowrap; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: var(--neutral-100); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; transition: var(--transition);
+  }
+  .icon-btn:hover { background: var(--neutral-200); }
+  .icon-btn .dot { position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; background: var(--danger); border-radius: 50%; border: 2px solid #fff; }
+  .user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 20px; background: var(--neutral-100); cursor: pointer; transition: var(--transition); }
+  .user-chip:hover { background: var(--neutral-200); }
+  .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
+  /* === LAYOUT === */
+  .layout {
+    margin-top: var(--topbar-h);
+    display: grid; grid-template-columns: var(--sidebar-w) 1fr;
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  /* === SIDEBAR — módulos / lecciones === */
+  .sidebar {
+    background: #fff; border-right: 1px solid var(--neutral-200);
+    overflow-y: auto; padding: 18px 0;
+    position: sticky; top: var(--topbar-h);
+    height: calc(100vh - var(--topbar-h));
+  }
+  .sidebar-head { padding: 0 20px 14px; border-bottom: 1px solid var(--neutral-200); margin-bottom: 14px; }
+  .sidebar-head h2 { font-size: 15px; font-weight: 700; color: var(--neutral-900); }
+  .sidebar-head p { font-size: 12px; color: var(--neutral-500); margin-top: 2px; }
+  .module { margin-bottom: 12px; }
+  .module-head {
+    padding: 8px 20px; display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: var(--neutral-500); cursor: pointer;
+  }
+  .module-head .ico-fold { font-size: 10px; color: var(--neutral-400); }
+  .module-head .pill { margin-left: auto; padding: 2px 8px; background: var(--neutral-100); border-radius: 10px; color: var(--neutral-600); font-size: 10px; font-weight: 600; }
+  .lesson {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px 10px 30px; cursor: pointer;
+    font-size: 13px; color: var(--neutral-700); transition: var(--transition);
+    border-left: 3px solid transparent;
+  }
+  .lesson:hover { background: var(--neutral-50); }
+  .lesson.active { background: var(--brand-soft); color: var(--brand); font-weight: 600; border-left-color: var(--brand); }
+  .lesson.done { color: var(--neutral-500); }
+  .lesson.locked { color: var(--neutral-400); cursor: not-allowed; }
+  .lesson-status {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--neutral-100); color: var(--neutral-500);
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .lesson.done .lesson-status { background: var(--success-soft); color: var(--success); }
+  .lesson.active .lesson-status { background: var(--brand); color: #fff; }
+  .lesson.locked .lesson-status { background: var(--neutral-100); color: var(--neutral-400); }
+  .lesson-info { flex: 1; min-width: 0; }
+  .lesson-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lesson-meta { font-size: 11px; color: var(--neutral-400); margin-top: 2px; }
+
+  /* === MAIN === */
+  .main { padding: 28px 36px 80px; max-width: 980px; }
+  .breadcrumb { font-size: 12px; color: var(--neutral-500); margin-bottom: 8px; }
+  .breadcrumb a { color: var(--accent); }
+  .lesson-header { margin-bottom: 22px; }
+  .lesson-header h1 { font-size: 26px; font-weight: 800; color: var(--neutral-900); letter-spacing: -0.02em; }
+  .lesson-header .lesson-meta-row { display: flex; gap: 14px; align-items: center; margin-top: 8px; flex-wrap: wrap; font-size: 12px; color: var(--neutral-500); }
+  .lesson-header .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; background: var(--neutral-100); border-radius: 12px;
+    font-size: 11px; font-weight: 600; color: var(--neutral-600);
+  }
+  .pill.lvl-int { background: var(--accent-soft); color: var(--accent); }
+  .pill.duration { background: var(--brand-soft); color: var(--brand); }
+
+  /* === VIDEO PLAYER === */
+  .player {
+    background: var(--neutral-900); border-radius: var(--radius-lg);
+    aspect-ratio: 16/9; position: relative; overflow: hidden;
+    margin-bottom: 16px; cursor: pointer; box-shadow: var(--shadow-md);
+  }
+  .player-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #1E1B4B 0%, #4338CA 50%, #7C3AED 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500;
+  }
+  .player-play {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: rgba(255,255,255,0.95); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; transition: var(--transition); box-shadow: var(--shadow-lg);
+  }
+  .player:hover .player-play { transform: scale(1.05); }
+  .player.playing .player-play { opacity: 0; }
+  .player-controls {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 18px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7));
+    color: #fff; display: flex; align-items: center; gap: 12px;
+    opacity: 0; transition: opacity var(--transition);
+  }
+  .player:hover .player-controls, .player.playing .player-controls { opacity: 1; }
+  .player-time { font-family: var(--font-mono); font-size: 12px; }
+  .player-seek { flex: 1; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; cursor: pointer; position: relative; }
+  .player-seek-fill { height: 100%; background: #fff; border-radius: 2px; width: 14%; }
+  .player-ctrl-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; padding: 4px; }
+
+  /* === LESSON BODY === */
+  .lesson-body { line-height: 1.7; color: var(--neutral-700); font-size: 14px; }
+  .lesson-body h3 { font-size: 17px; font-weight: 700; color: var(--neutral-900); margin: 22px 0 10px; }
+  .lesson-body p { margin-bottom: 12px; }
+  .lesson-body ul { margin: 0 0 12px 24px; }
+  .lesson-body li { margin-bottom: 6px; }
+  .lesson-body code { font-family: var(--font-mono); background: var(--neutral-100); padding: 2px 6px; border-radius: 4px; font-size: 12.5px; color: var(--brand-dark); }
+  .lesson-body pre {
+    background: var(--neutral-900); color: #E2E8F0; padding: 16px 18px;
+    border-radius: var(--radius); font-family: var(--font-mono); font-size: 12.5px;
+    overflow-x: auto; line-height: 1.55; margin: 12px 0;
+  }
+  .lesson-body pre .kw { color: #C4B5FD; }
+  .lesson-body pre .str { color: #FCA5A5; }
+  .lesson-body pre .com { color: #64748B; font-style: italic; }
+
+  .callout {
+    padding: 12px 16px; border-radius: var(--radius);
+    background: var(--accent-soft); color: var(--neutral-800);
+    border-left: 4px solid var(--accent);
+    font-size: 13px; margin: 14px 0;
+  }
+  .callout.tip { background: var(--success-soft); border-left-color: var(--success); }
+  .callout.warn { background: var(--warning-soft); border-left-color: var(--warning); }
+  .callout strong { color: var(--neutral-900); }
+
+  /* === MATERIALS === */
+  .materials-section { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--neutral-200); }
+  .materials-section h2 { font-size: 15px; font-weight: 700; color: var(--neutral-900); margin-bottom: 12px; }
+  .material-list { display: grid; gap: 8px; }
+  .material {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius); transition: var(--transition);
+  }
+  .material:hover { border-color: var(--brand-soft); }
+  .material .mat-ico {
+    width: 36px; height: 36px; border-radius: var(--radius);
+    background: var(--brand-soft); color: var(--brand);
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .material .info { flex: 1; }
+  .material .info h4 { font-size: 13px; font-weight: 600; color: var(--neutral-900); }
+  .material .info p { font-size: 11px; color: var(--neutral-500); margin-top: 2px; }
+  .material .dl { font-size: 11px; padding: 6px 12px; background: var(--neutral-100); border-radius: 12px; color: var(--neutral-700); font-weight: 600; cursor: pointer; }
+  .material .dl:hover { background: var(--brand-soft); color: var(--brand); }
+
+  /* === QUIZ === */
+  .quiz-section { margin-top: 32px; }
+  .quiz-card {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .quiz-head {
+    padding: 18px 22px; background: linear-gradient(135deg, var(--brand-soft), var(--accent-soft));
+    border-bottom: 1px solid var(--neutral-200);
+  }
+  .quiz-head h2 { font-size: 17px; font-weight: 700; color: var(--neutral-900); }
+  .quiz-head p { font-size: 13px; color: var(--neutral-600); margin-top: 4px; }
+  .quiz-body { padding: 22px; }
+  .quiz-question { margin-bottom: 22px; }
+  .quiz-question:last-of-type { margin-bottom: 0; }
+  .quiz-question .q-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--brand); }
+  .quiz-question .q-text { font-size: 14px; font-weight: 600; color: var(--neutral-900); margin-top: 6px; }
+  .quiz-options { margin-top: 10px; display: grid; gap: 8px; }
+  .quiz-option {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1px solid var(--neutral-300);
+    border-radius: var(--radius); cursor: pointer;
+    font-size: 13px; transition: var(--transition);
+  }
+  .quiz-option:hover { border-color: var(--brand-soft); background: var(--neutral-50); }
+  .quiz-option.selected { border-color: var(--brand); background: var(--brand-soft); }
+  .quiz-option.correct { border-color: var(--success); background: var(--success-soft); }
+  .quiz-option.wrong { border-color: var(--danger); background: var(--danger-soft); }
+  .quiz-option .radio {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--neutral-400); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .quiz-option.selected .radio { border-color: var(--brand); }
+  .quiz-option.selected .radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+  .quiz-option.correct .radio { border-color: var(--success); }
+  .quiz-option.correct .radio::after { content: '✓'; color: var(--success); font-weight: 800; }
+  .quiz-feedback { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); font-size: 12px; display: none; }
+  .quiz-feedback.visible { display: block; }
+  .quiz-feedback.correct { background: var(--success-soft); color: #166534; }
+  .quiz-feedback.wrong { background: var(--danger-soft); color: #991B1B; }
+  .quiz-actions {
+    padding: 18px 22px; border-top: 1px solid var(--neutral-200);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--neutral-50);
+  }
+  .quiz-score { font-size: 13px; color: var(--neutral-700); }
+  .quiz-score strong { color: var(--success); }
+
+  /* === BUTTONS === */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 16px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: var(--transition);
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-primary:disabled { background: var(--neutral-300); cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: var(--neutral-700); border: 1px solid var(--neutral-300); }
+  .btn-secondary:hover { background: var(--neutral-50); }
+  .btn-ghost { background: transparent; color: var(--neutral-600); }
+  .btn-ghost:hover { background: var(--neutral-100); }
+  .btn-lg { padding: 12px 22px; font-size: 14px; }
+
+  /* === LESSON NAV (footer) === */
+  .lesson-nav {
+    margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--neutral-200);
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  .nav-card {
+    flex: 1; padding: 14px 18px; background: #fff;
+    border: 1px solid var(--neutral-200); border-radius: var(--radius);
+    transition: var(--transition); cursor: pointer;
+  }
+  .nav-card:hover { border-color: var(--brand-soft); box-shadow: var(--shadow-sm); }
+  .nav-card.locked { opacity: 0.5; cursor: not-allowed; }
+  .nav-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--neutral-500); font-weight: 700; }
+  .nav-card h4 { font-size: 13px; font-weight: 600; color: var(--neutral-900); margin-top: 4px; }
+  .nav-card.next { text-align: right; }
+
+  /* === STATES === */
+  .empty-state, .loading-state, .error-state {
+    text-align: center; padding: 64px 24px; display: none;
+  }
+  .empty-state.visible, .loading-state.visible, .error-state.visible { display: block; }
+  .state-ico { font-size: 46px; margin-bottom: 14px; opacity: 0.5; }
+  .empty-state h3, .error-state h3 { font-size: 17px; font-weight: 700; color: var(--neutral-700); margin-bottom: 6px; }
+  .empty-state p, .error-state p, .loading-state p { font-size: 13px; color: var(--neutral-500); margin-bottom: 18px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--neutral-200); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === TOAST === */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+  .toast { background: var(--neutral-900); color: #fff; padding: 12px 16px; border-radius: var(--radius); font-size: 13px; min-width: 280px; box-shadow: var(--shadow-lg); animation: slidein 0.25s ease; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.warning { background: var(--warning); }
+  @keyframes slidein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* === MODAL === */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 150; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition); }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: #fff; border-radius: var(--radius-lg); padding: 30px; width: 440px; max-width: 92vw; box-shadow: var(--shadow-lg); text-align: center; }
+  .modal .achievement-ico { font-size: 56px; margin-bottom: 14px; }
+  .modal h3 { font-size: 20px; font-weight: 800; color: var(--neutral-900); margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--neutral-600); margin-bottom: 22px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { padding: 22px 22px 80px; }
+  }
+  @media (max-width: 700px) {
+    .topbar { padding: 0 14px; gap: 10px; }
+    .progress-bar-wrap { display: none; }
+    .course-info .title { font-size: 12px; }
+    .lesson-header h1 { font-size: 20px; }
+    .player-play { width: 64px; height: 64px; font-size: 26px; }
+    .lesson-nav { flex-direction: column; }
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand">
+    <div class="logo">K</div>
+    Kodex Academy
+  </a>
+  <div class="course-info">
+    <div>
+      <div class="title">Java Backend Moderno con Spring</div>
+      <div class="meta">Módulo 3 · Lección 5 de 12</div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap" title="Progreso del curso">
+    <div class="progress-bar-fill" id="progressFill" style="width:38%"></div>
+  </div>
+  <span class="progress-text" id="progressText">38%</span>
+  <div class="topbar-right">
+    <a class="hub-link" href="../../../../prototype/index.html" title="Volver al hub del producto">← Hub</a>
+    <button class="icon-btn" onclick="showToast('Tienes 2 notificaciones · 1 nuevo comentario en el foro','default')" title="Notificaciones">
+      🔔 <span class="dot"></span>
+    </button>
+    <button class="icon-btn" onclick="showToast('Tus apuntes se guardan automáticamente')" title="Mis apuntes">📝</button>
+    <div class="user-chip" onclick="cycleRole()" title="Click para alternar rol">
+      <div class="user-avatar" id="userAvatar">AM</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR: Lecciones del curso -->
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-head">
+      <h2>Contenido del curso</h2>
+      <p>12 lecciones · 8h 24m · 1 proyecto final</p>
+    </div>
+
+    <div class="module">
+      <div class="module-head" onclick="toggleModule(this)">
+        <span class="ico-fold">▼</span> Módulo 1: Fundamentos
+        <span class="pill">3/3</span>
+      </div>
+      <a class="lesson done" onclick="selectLesson(this, 1)"><span class="lesson-status">✓</span><div class="lesson-info"><span class="lesson-title">1.1 Anatomía de Spring Boot</span><span class="lesson-meta">12 min · video</span></div></a>
+      <a class="lesson done" onclick="selectLesson(this, 2)"><span class="lesson-status">✓</span><div class="lesson-info"><span class="lesson-title">1.2 Tu primer proyecto con Spring Initializr</span><span class="lesson-meta">18 min · video + práctica</span></div></a>
+      <a class="lesson done" onclick="selectLesson(this, 3)"><span class="lesson-status">✓</span><div class="lesson-info"><span class="lesson-title">1.3 Estructura de un proyecto Maven</span><span class="lesson-meta">15 min · video</span></div></a>
+    </div>
+
+    <div class="module">
+      <div class="module-head" onclick="toggleModule(this)">
+        <span class="ico-fold">▼</span> Módulo 2: Bean Lifecycle
+        <span class="pill">2/2</span>
+      </div>
+      <a class="lesson done" onclick="selectLesson(this, 4)"><span class="lesson-status">✓</span><div class="lesson-info"><span class="lesson-title">2.1 IoC y el contenedor de Spring</span><span class="lesson-meta">22 min · video</span></div></a>
+      <a class="lesson done" onclick="selectLesson(this, 5)"><span class="lesson-status">✓</span><div class="lesson-info"><span class="lesson-title">2.2 Anotaciones @Component, @Service, @Repository</span><span class="lesson-meta">19 min · video</span></div></a>
+    </div>
+
+    <div class="module">
+      <div class="module-head" onclick="toggleModule(this)">
+        <span class="ico-fold">▼</span> Módulo 3: Inyección de dependencias
+        <span class="pill">1/4</span>
+      </div>
+      <a class="lesson active" onclick="selectLesson(this, 6)"><span class="lesson-status">▶</span><div class="lesson-info"><span class="lesson-title">3.1 Inyección por constructor vs setter</span><span class="lesson-meta">28 min · video + quiz</span></div></a>
+      <a class="lesson" onclick="selectLesson(this, 7)"><span class="lesson-status">7</span><div class="lesson-info"><span class="lesson-title">3.2 @Autowired y @Qualifier</span><span class="lesson-meta">21 min · video</span></div></a>
+      <a class="lesson locked" onclick="lockedClick()"><span class="lesson-status">🔒</span><div class="lesson-info"><span class="lesson-title">3.3 Profiles y @Conditional</span><span class="lesson-meta">25 min · video + proyecto</span></div></a>
+      <a class="lesson locked" onclick="lockedClick()"><span class="lesson-status">🔒</span><div class="lesson-info"><span class="lesson-title">3.4 Lazy initialization</span><span class="lesson-meta">14 min · video</span></div></a>
+    </div>
+
+    <div class="module">
+      <div class="module-head" onclick="toggleModule(this)">
+        <span class="ico-fold">▼</span> Módulo 4: REST APIs
+        <span class="pill">0/3</span>
+      </div>
+      <a class="lesson locked" onclick="lockedClick()"><span class="lesson-status">🔒</span><div class="lesson-info"><span class="lesson-title">4.1 @RestController y verbos HTTP</span><span class="lesson-meta">32 min · video + lab</span></div></a>
+      <a class="lesson locked" onclick="lockedClick()"><span class="lesson-status">🔒</span><div class="lesson-info"><span class="lesson-title">4.2 Validación con Bean Validation</span><span class="lesson-meta">26 min · video</span></div></a>
+      <a class="lesson locked" onclick="lockedClick()"><span class="lesson-status">🔒</span><div class="lesson-info"><span class="lesson-title">4.3 Manejo global de errores</span><span class="lesson-meta">23 min · video + práctica</span></div></a>
+    </div>
+  </aside>
+
+  <!-- MAIN: contenido de la lección -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a>Java Backend Moderno con Spring</a> · <a>Módulo 3: Inyección de dependencias</a>
+    </div>
+
+    <div class="loading-state" id="loadingState">
+      <div class="spinner"></div>
+      <p>Cargando lección…</p>
+    </div>
+
+    <div class="error-state" id="errorState">
+      <div class="state-ico">⚠️</div>
+      <h3>No se pudo cargar el video</h3>
+      <p>Verifica tu conexión e intenta nuevamente. Tu progreso está a salvo.</p>
+      <button class="btn btn-primary" onclick="retryLoad()">Reintentar reproducción</button>
+    </div>
+
+    <div id="lessonContent">
+
+      <div class="lesson-header">
+        <h1 id="lessonTitle">3.1 Inyección por constructor vs setter</h1>
+        <div class="lesson-meta-row">
+          <span class="pill duration">⏱ 28 min</span>
+          <span class="pill lvl-int">Intermedio</span>
+          <span>Última actualización: 12 oct 2024</span>
+          <span>·</span>
+          <span>👁 4,287 estudiantes</span>
+          <span>·</span>
+          <span>★ 4.8</span>
+        </div>
+      </div>
+
+      <!-- PLAYER -->
+      <div class="player" id="player" onclick="togglePlay()">
+        <div class="player-bg">Click para reproducir</div>
+        <div class="player-play" id="playerPlay">▶</div>
+        <div class="player-controls">
+          <button class="player-ctrl-btn" onclick="event.stopPropagation();togglePlay();">⏸</button>
+          <span class="player-time">04:12 / 28:00</span>
+          <div class="player-seek" onclick="event.stopPropagation()"><div class="player-seek-fill"></div></div>
+          <button class="player-ctrl-btn" title="Velocidad" onclick="event.stopPropagation();cycleSpeed()">1.0x</button>
+          <button class="player-ctrl-btn" title="Subtítulos" onclick="event.stopPropagation();showToast('Subtítulos activados (ES)','success')">CC</button>
+          <button class="player-ctrl-btn" title="Pantalla completa" onclick="event.stopPropagation();showToast('Pantalla completa')">⛶</button>
+        </div>
+      </div>
+
+      <!-- LESSON BODY -->
+      <div class="lesson-body">
+        <h3>¿Por qué inyectar dependencias?</h3>
+        <p>La inyección de dependencias permite que Spring se encargue de crear y conectar los objetos por nosotros. En lugar de escribir <code>new MiServicio()</code> en cualquier lugar, declaramos qué necesitamos y Spring lo provee. Esto hace el código más testeable, desacoplado y configurable.</p>
+
+        <h3>Inyección por constructor (recomendada)</h3>
+        <p>Es la forma preferida desde Spring 4.3+. El constructor se anota implícitamente con <code>@Autowired</code> cuando es el único, y las dependencias quedan inmutables (<code>final</code>):</p>
+<pre><span class="com">// CustomerService.java</span>
+<span class="kw">@Service</span>
+<span class="kw">public class</span> CustomerService {
+  <span class="kw">private final</span> CustomerRepository repository;
+  <span class="kw">private final</span> NotificationGateway notifier;
+
+  <span class="kw">public</span> CustomerService(CustomerRepository repository, NotificationGateway notifier) {
+    <span class="kw">this</span>.repository = repository;
+    <span class="kw">this</span>.notifier = notifier;
+  }
+}</pre>
+
+        <div class="callout tip"><strong>Tip:</strong> al ser <code>final</code>, el compilador garantiza que las dependencias se inyectan en el momento de la construcción. Esto previene <code>NullPointerException</code> tardíos.</div>
+
+        <h3>Inyección por setter</h3>
+        <p>Útil para dependencias opcionales o cuando hay ciclos legítimos. Anota cada setter con <code>@Autowired</code>:</p>
+<pre><span class="kw">@Service</span>
+<span class="kw">public class</span> ReportService {
+  <span class="kw">private</span> AuditTrail audit;
+
+  <span class="kw">@Autowired</span>(required = <span class="kw">false</span>)
+  <span class="kw">public void</span> setAudit(AuditTrail audit) {
+    <span class="kw">this</span>.audit = audit;
+  }
+}</pre>
+
+        <div class="callout warn"><strong>Cuidado:</strong> los setters dejan la dependencia mutable. Usar solo cuando la inyección por constructor no aplica.</div>
+
+        <h3>Comparativa rápida</h3>
+        <ul>
+          <li><strong>Constructor</strong> → inmutable, obligatoria, ideal por defecto.</li>
+          <li><strong>Setter</strong> → opcional, mutable, útil para ciclos.</li>
+          <li><strong>Field injection</strong> (<code>@Autowired</code> directo en el campo) → desaconsejada en código productivo; bloquea pruebas unitarias sin contenedor.</li>
+        </ul>
+      </div>
+
+      <!-- MATERIALS -->
+      <section class="materials-section">
+        <h2>Materiales de la lección</h2>
+        <div class="material-list">
+          <div class="material">
+            <div class="mat-ico">📄</div>
+            <div class="info">
+              <h4>Slides — Inyección por constructor vs setter</h4>
+              <p>PDF · 24 láminas · 1.2 MB</p>
+            </div>
+            <span class="dl" onclick="showToast('Descargando slides…','success')">⬇ PDF</span>
+          </div>
+          <div class="material">
+            <div class="mat-ico">💻</div>
+            <div class="info">
+              <h4>Código fuente de la demo</h4>
+              <p>Proyecto Maven · Spring Boot 3.2 · Java 21</p>
+            </div>
+            <span class="dl" onclick="showToast('Descargando código…','success')">⬇ ZIP</span>
+          </div>
+          <div class="material">
+            <div class="mat-ico">📚</div>
+            <div class="info">
+              <h4>Lectura complementaria</h4>
+              <p>Capítulo 4 — "Effective Spring" · 18 páginas</p>
+            </div>
+            <span class="dl" onclick="showToast('Abriendo lectura…','default')">↗ Abrir</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUIZ -->
+      <section class="quiz-section">
+        <div class="quiz-card">
+          <div class="quiz-head">
+            <h2>📝 Quiz de la lección</h2>
+            <p>3 preguntas · 2 minutos · necesitas 2 correctas para avanzar</p>
+          </div>
+          <div class="quiz-body" id="quizBody">
+
+            <div class="quiz-question" data-q="1" data-correct="b">
+              <span class="q-num">Pregunta 1 de 3</span>
+              <div class="q-text">¿Cuál es la forma recomendada de inyección de dependencias en Spring 4.3+?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-opt="a" onclick="answer(this)"><div class="radio"></div>Por campo (`@Autowired` en el atributo)</div>
+                <div class="quiz-option" data-opt="b" onclick="answer(this)"><div class="radio"></div>Por constructor</div>
+                <div class="quiz-option" data-opt="c" onclick="answer(this)"><div class="radio"></div>Por setter</div>
+                <div class="quiz-option" data-opt="d" onclick="answer(this)"><div class="radio"></div>Es indiferente, las tres son equivalentes</div>
+              </div>
+              <div class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-question" data-q="2" data-correct="c">
+              <span class="q-num">Pregunta 2 de 3</span>
+              <div class="q-text">Si marco un campo como `private final`, ¿qué garantía obtengo?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-opt="a" onclick="answer(this)"><div class="radio"></div>Que Spring lo inyecta más rápido</div>
+                <div class="quiz-option" data-opt="b" onclick="answer(this)"><div class="radio"></div>Que se inyecta de forma lazy</div>
+                <div class="quiz-option" data-opt="c" onclick="answer(this)"><div class="radio"></div>Que la dependencia es inmutable tras la construcción</div>
+                <div class="quiz-option" data-opt="d" onclick="answer(this)"><div class="radio"></div>Que se inyecta solo en producción</div>
+              </div>
+              <div class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-question" data-q="3" data-correct="a">
+              <span class="q-num">Pregunta 3 de 3</span>
+              <div class="q-text">¿Cuándo es razonable usar inyección por setter en lugar de constructor?</div>
+              <div class="quiz-options">
+                <div class="quiz-option" data-opt="a" onclick="answer(this)"><div class="radio"></div>Cuando la dependencia es opcional o hay un ciclo legítimo</div>
+                <div class="quiz-option" data-opt="b" onclick="answer(this)"><div class="radio"></div>Siempre, porque es más legible</div>
+                <div class="quiz-option" data-opt="c" onclick="answer(this)"><div class="radio"></div>Cuando hay más de 3 dependencias</div>
+                <div class="quiz-option" data-opt="d" onclick="answer(this)"><div class="radio"></div>Nunca, está deprecada</div>
+              </div>
+              <div class="quiz-feedback"></div>
+            </div>
+
+          </div>
+          <div class="quiz-actions">
+            <span class="quiz-score" id="quizScore">Aún sin responder</span>
+            <div>
+              <button class="btn btn-secondary" onclick="resetQuiz()">Reiniciar</button>
+              <button class="btn btn-primary" onclick="checkQuiz()">Verificar respuestas</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LESSON NAV -->
+      <div class="lesson-nav">
+        <div class="nav-card" onclick="navigateLesson('prev')">
+          <div class="label">← Lección anterior</div>
+          <h4>2.2 Anotaciones @Component, @Service, @Repository</h4>
+        </div>
+        <div class="nav-card next" onclick="navigateLesson('next')">
+          <div class="label">Lección siguiente →</div>
+          <h4>3.2 @Autowired y @Qualifier</h4>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ACHIEVEMENT MODAL -->
+<div class="modal-overlay" id="achievementModal">
+  <div class="modal">
+    <div class="achievement-ico">🎉</div>
+    <h3 id="achievementTitle">¡Quiz aprobado!</h3>
+    <p id="achievementText">Has completado la lección 3.1. Tu progreso del curso subió a 46%. La siguiente lección "3.2 @Autowired y @Qualifier" ya está disponible.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeAchievement()">Quedarme aquí</button>
+      <button class="btn btn-primary" onclick="goNext()">Ir a la siguiente lección →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ======================================================================
+//  Datos mock de la sesión
+// ======================================================================
+const LESSONS = {
+  1: { title:'1.1 Anatomía de Spring Boot', dur:'12 min', state:'done' },
+  2: { title:'1.2 Tu primer proyecto con Spring Initializr', dur:'18 min', state:'done' },
+  3: { title:'1.3 Estructura de un proyecto Maven', dur:'15 min', state:'done' },
+  4: { title:'2.1 IoC y el contenedor de Spring', dur:'22 min', state:'done' },
+  5: { title:'2.2 Anotaciones @Component, @Service, @Repository', dur:'19 min', state:'done' },
+  6: { title:'3.1 Inyección por constructor vs setter', dur:'28 min', state:'active' },
+  7: { title:'3.2 @Autowired y @Qualifier', dur:'21 min', state:'next' },
+};
+
+const ROLES = [
+  { name:'Ana M.', abbr:'AM', role:'Estudiante regular', canQuiz:true },
+  { name:'Profesor J.', abbr:'PJ', role:'Instructor', canQuiz:true },
+  { name:'Visor', abbr:'VI', role:'Visor / preview', canQuiz:false },
+];
+
+let currentLesson = 6;
+let currentRoleIdx = 0;
+let playerPlaying = false;
+let playerSpeed = 1.0;
+let quizAnswers = {};
+
+// ======================================================================
+//  Init
+// ======================================================================
+window.addEventListener('DOMContentLoaded', () => simulateLoad());
+
+function simulateLoad() {
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('lessonContent').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('lessonContent').style.display = '';
+  }, 700);
+}
+
+function retryLoad() {
+  document.getElementById('errorState').classList.remove('visible');
+  document.getElementById('lessonContent').style.display = 'none';
+  simulateLoad();
+}
+
+// ======================================================================
+//  Sidebar — navegación de lecciones
+// ======================================================================
+function selectLesson(el, n) {
+  if (el.classList.contains('locked')) return;
+  document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+  el.classList.add('active');
+  currentLesson = n;
+  const L = LESSONS[n];
+  if (L) {
+    document.getElementById('lessonTitle').textContent = L.title;
+    showToast('Lección cargada: ' + L.title, 'success');
+  }
+}
+
+function lockedClick() {
+  showToast('Esta lección está bloqueada. Aprueba el quiz de la lección anterior para desbloquear.','warning');
+}
+
+function toggleModule(el) {
+  const ico = el.querySelector('.ico-fold');
+  let next = el.nextElementSibling;
+  const expanded = ico.textContent === '▼';
+  ico.textContent = expanded ? '▶' : '▼';
+  while (next && next.classList.contains('lesson')) {
+    next.style.display = expanded ? 'none' : '';
+    next = next.nextElementSibling;
+  }
+}
+
+function navigateLesson(dir) {
+  const target = dir === 'next' ? currentLesson + 1 : currentLesson - 1;
+  if (target === 8 || target === 9) { lockedClick(); return; }
+  if (LESSONS[target]) {
+    const el = document.querySelectorAll('.lesson')[target - 1];
+    if (el) selectLesson(el, target);
+  }
+}
+
+// ======================================================================
+//  Player
+// ======================================================================
+function togglePlay() {
+  playerPlaying = !playerPlaying;
+  const p = document.getElementById('player');
+  const btn = document.getElementById('playerPlay');
+  p.classList.toggle('playing', playerPlaying);
+  btn.textContent = playerPlaying ? '' : '▶';
+  showToast(playerPlaying ? 'Reproduciendo · 4:12 / 28:00' : 'Pausado', playerPlaying ? 'success' : 'default');
+}
+
+function cycleSpeed() {
+  const speeds = [0.75, 1.0, 1.25, 1.5, 2.0];
+  const idx = speeds.indexOf(playerSpeed);
+  playerSpeed = speeds[(idx + 1) % speeds.length];
+  document.querySelectorAll('.player-ctrl-btn').forEach(b => {
+    if (b.title === 'Velocidad') b.textContent = playerSpeed.toFixed(2).replace('.00','.0') + 'x';
+  });
+  showToast('Velocidad: ' + playerSpeed + 'x','default');
+}
+
+// ======================================================================
+//  Quiz
+// ======================================================================
+function answer(opt) {
+  const q = opt.closest('.quiz-question');
+  q.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected','correct','wrong'));
+  opt.classList.add('selected');
+  quizAnswers[q.dataset.q] = opt.dataset.opt;
+}
+
+function checkQuiz() {
+  const r = ROLES[currentRoleIdx];
+  if (!r.canQuiz) {
+    showToast('Necesitas iniciar sesión como estudiante para responder el quiz','warning');
+    return;
+  }
+  let correct = 0;
+  document.querySelectorAll('.quiz-question').forEach(q => {
+    const right = q.dataset.correct;
+    const fb = q.querySelector('.quiz-feedback');
+    q.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('correct','wrong'));
+    const sel = q.querySelector('.quiz-option.selected');
+    if (sel && sel.dataset.opt === right) {
+      sel.classList.add('correct');
+      fb.className = 'quiz-feedback visible correct';
+      fb.textContent = '✓ Correcto. Esta es la respuesta esperada.';
+      correct++;
+    } else if (sel) {
+      sel.classList.add('wrong');
+      const rightEl = q.querySelector(`.quiz-option[data-opt="${right}"]`);
+      if (rightEl) rightEl.classList.add('correct');
+      fb.className = 'quiz-feedback visible wrong';
+      fb.textContent = '✗ Respuesta incorrecta. La opción correcta queda resaltada en verde.';
+    } else {
+      fb.className = 'quiz-feedback visible wrong';
+      fb.textContent = 'No respondiste esta pregunta.';
+    }
+  });
+  document.getElementById('quizScore').innerHTML = `Puntaje: <strong>${correct}/3</strong>`;
+  if (correct >= 2) {
+    setTimeout(() => {
+      document.getElementById('progressFill').style.width = '46%';
+      document.getElementById('progressText').textContent = '46%';
+      document.getElementById('achievementModal').classList.add('open');
+    }, 500);
+  } else {
+    showToast('Necesitas al menos 2 correctas para avanzar. Revisa el video y vuelve a intentarlo.','warning');
+  }
+}
+
+function resetQuiz() {
+  document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected','correct','wrong'));
+  document.querySelectorAll('.quiz-feedback').forEach(f => { f.className = 'quiz-feedback'; f.textContent = ''; });
+  document.getElementById('quizScore').textContent = 'Aún sin responder';
+  quizAnswers = {};
+  showToast('Quiz reiniciado','default');
+}
+
+function closeAchievement() { document.getElementById('achievementModal').classList.remove('open'); }
+function goNext() {
+  closeAchievement();
+  navigateLesson('next');
+}
+
+// ======================================================================
+//  Roles
+// ======================================================================
+function cycleRole() {
+  currentRoleIdx = (currentRoleIdx + 1) % ROLES.length;
+  const r = ROLES[currentRoleIdx];
+  document.getElementById('userAvatar').textContent = r.abbr;
+  showToast('Vista: ' + r.role, 'default');
+}
+
+// ======================================================================
+//  Misc
+// ======================================================================
+function showToast(msg, kind) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 3000);
+}
+
+// Demo: doble-click en avatar dispara error
+document.querySelector('.user-avatar').addEventListener('dblclick', () => {
+  document.getElementById('lessonContent').style.display = 'none';
+  document.getElementById('errorState').classList.add('visible');
+  showToast('Error simulado de reproducción','error');
+});
+</script>
+</body>
+</html>

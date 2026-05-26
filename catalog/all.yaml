@@ -1,0 +1,27 @@
+# Punto de entrada raiz del catalogo Backstage.
+# Referenciar desde app-config.yaml de Backstage:
+#   catalog.locations:
+#     - type: url
+#       target: https://github.com/<org>/<repo>/blob/main/catalog/all.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: project-template-root
+  description: Catalogo raiz organizacional de la plantilla (Domains, Systems, Groups, Users, Templates).
+spec:
+  type: url
+  targets:
+    - ./domains/producto.yaml
+    - ./domains/plataforma.yaml
+    - ./systems/expedientes.yaml
+    - ./systems/plataforma-core.yaml
+    - ./groups/team-expedientes.yaml
+    - ./groups/team-plataforma.yaml
+    - ./users/ejemplo.yaml
+    - ./templates/new-service.yaml
+    - ./apis/expedientes-rest.yaml
+    - ./apis/expedientes-events.yaml
+    - ./resources/expedientes-db.yaml
+    - ./resources/expedientes-cache.yaml
+    - ./resources/expedientes-events-bus.yaml

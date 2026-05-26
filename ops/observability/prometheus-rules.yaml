@@ -1,0 +1,72 @@
+# Reglas de alertas Prometheus para la plantilla.
+# Se cargan en el Prometheus del cluster o en Thanos Ruler.
+# Ver docs/fase-8-operacion/08.01-observabilidad.md.
+
+groups:
+  - name: wakaya-erp-api.slo
+    interval: 30s
+    rules:
+      - record: job:http_requests_total:rate5m
+        expr: sum by (service, code) (rate(http_requests_total[5m]))
+
+      - record: job:http_request_duration_seconds:p95_5m
+        expr: |
+          histogram_quantile(0.95,
+            sum by (service, le) (rate(http_request_duration_seconds_bucket[5m]))
+          )
+
+      - alert: ApiErrorRateHigh
+        expr: |
+          (
+            sum by (service) (rate(http_requests_total{code=~"5.."}[5m]))
+            /
+            sum by (service) (rate(http_requests_total[5m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "Tasa de errores 5xx sobre 1% en {{ $labels.service }}"
+          description: "Ver runbook ops/fase-8-operacion/runbooks/api-error-rate.md"
+
+      - alert: ApiLatencyP95High
+        expr: job:http_request_duration_seconds:p95_5m > 0.4
+        for: 10m
+        labels:
+          severity: major
+          slo: latency
+        annotations:
+          summary: "Latencia p95 > 400ms en {{ $labels.service }}"
+          description: "Revisar saturacion, BD y dependencias externas."
+
+      - alert: ServiceHealthCheckDown
+        expr: up{job="wakaya-erp-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Health check caido para {{ $labels.instance }}"
+
+  - name: wakaya-erp-api.sli-budget
+    interval: 1m
+    rules:
+      - record: slo:availability:ratio_rate30d
+        expr: |
+          sum(rate(http_requests_total{code!~"5.."}[30d]))
+          /
+          sum(rate(http_requests_total[30d]))
+
+      - alert: ErrorBudgetBurnFast
+        expr: |
+          (
+            sum(rate(http_requests_total{code=~"5.."}[1h]))
+            /
+            sum(rate(http_requests_total[1h]))
+          ) > (14.4 * (1 - 0.995))
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "Quema rapida de error budget (1h, factor 14.4)"

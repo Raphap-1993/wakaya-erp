@@ -1,0 +1,30 @@
+# Backstage Software Catalog entry.
+# Ver docs/transversal/90.04-stacks-de-referencia.md.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: wakaya-erp-web
+  title: Wakaya ERP Web (Next.js)
+  description: SPA + API routes Next.js con TypeScript, Prisma y Playwright.
+  annotations:
+    github.com/project-slug: raphaelparedes/wakaya-erp
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - node
+    - nextjs
+    - typescript
+    - web
+  links:
+    - url: https://wakayaecolodge.com
+      title: Portal
+      icon: web
+spec:
+  type: service
+  lifecycle: production
+  owner: team-wakaya
+  system: wakaya-erp
+  providesApis:
+    - wakaya-erp-api
+  dependsOn:
+    - resource:default/wakaya-erp-db

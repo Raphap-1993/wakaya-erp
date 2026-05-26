@@ -1,0 +1,13 @@
+# Group: equipo producto canonico.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-wakaya
+  title: Wakaya ERP Team
+  description: Equipo de producto responsable del sistema wakaya-erp.
+spec:
+  type: team
+  children: []
+  members:
+    - ejemplo

@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aseguranza Andina — Cotizar póliza de auto</title>
+<style>
+  :root {
+    --brand: #1E40AF;
+    --brand-dark: #1E3A8A;
+    --brand-soft: #DBEAFE;
+    --accent: #0891B2;
+    --accent-soft: #CFFAFE;
+    --success: #16A34A;
+    --success-soft: #DCFCE7;
+    --warning: #D97706;
+    --warning-soft: #FEF3C7;
+    --danger: #DC2626;
+    --danger-soft: #FEE2E2;
+    --neutral-50: #F8FAFC;
+    --neutral-100: #F1F5F9;
+    --neutral-200: #E2E8F0;
+    --neutral-300: #CBD5E1;
+    --neutral-400: #94A3B8;
+    --neutral-500: #64748B;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1E293B;
+    --neutral-900: #0F172A;
+    --topbar-h: 60px;
+    --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', Consolas, monospace;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.10);
+    --shadow-lg: 0 10px 30px rgba(15,23,42,0.14);
+    --transition: 0.2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--neutral-100); color: var(--neutral-800); min-height: 100vh; line-height: 1.5; }
+  button, input, select, textarea { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  .hub-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--neutral-400); padding: 4px 8px; border-radius: var(--radius); transition: var(--transition); }
+  .hub-link:hover { background: var(--neutral-100); color: var(--brand); }
+
+  /* === TOPBAR === */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    background: #fff; border-bottom: 1px solid var(--neutral-200);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    z-index: 100; box-shadow: var(--shadow-sm);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; color: var(--brand); }
+  .brand .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--brand), var(--accent));
+    border-radius: 8px; color: #fff; font-size: 16px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .save-state {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 14px;
+    background: var(--neutral-100); font-size: 11px; color: var(--neutral-600);
+  }
+  .save-state .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+  .help-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--neutral-300);
+    background: #fff; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; color: var(--neutral-600);
+  }
+  .help-btn:hover { background: var(--neutral-50); border-color: var(--brand); color: var(--brand); }
+
+  /* === LAYOUT === */
+  .main {
+    max-width: 1100px; margin: 0 auto;
+    padding: calc(var(--topbar-h) + 24px) 24px 100px;
+    display: grid; grid-template-columns: 1fr 340px; gap: 28px;
+  }
+  @media (max-width: 1024px) { .main { grid-template-columns: 1fr; padding: calc(var(--topbar-h) + 18px) 16px 100px; } .sidebar { order: -1; } }
+
+  /* === STEP INDICATOR === */
+  .steps-rail {
+    grid-column: 1 / -1; margin-bottom: 24px;
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); padding: 18px 22px; box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 8px; overflow-x: auto;
+  }
+  .step-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px 6px 6px; border-radius: 18px;
+    color: var(--neutral-500); font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: var(--transition); white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .step-pill:hover { background: var(--neutral-50); }
+  .step-pill.active { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-soft); }
+  .step-pill.done { color: var(--success); }
+  .step-pill .num {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--neutral-200); color: var(--neutral-500);
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
+  }
+  .step-pill.active .num { background: var(--brand); color: #fff; }
+  .step-pill.done .num { background: var(--success); color: #fff; }
+  .step-pill .label { display: flex; flex-direction: column; line-height: 1.15; }
+  .step-pill .label small { font-size: 10px; opacity: 0.7; font-weight: 500; }
+  .step-arrow { color: var(--neutral-300); font-size: 14px; }
+
+  /* === PAGE HEAD === */
+  .page-head { margin-bottom: 18px; }
+  .page-head h1 { font-size: 24px; font-weight: 800; color: var(--neutral-900); letter-spacing: -0.02em; }
+  .page-head p { font-size: 14px; color: var(--neutral-500); margin-top: 4px; }
+  .page-head .meta { font-size: 12px; color: var(--neutral-500); margin-top: 8px; }
+  .page-head .meta strong { color: var(--neutral-700); font-family: var(--font-mono); }
+
+  /* === PANELS === */
+  .panel {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .panel-head {
+    padding: 16px 22px; border-bottom: 1px solid var(--neutral-200);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-head h2 { font-size: 15px; font-weight: 700; color: var(--neutral-900); }
+  .panel-head .step-tag { font-size: 11px; padding: 2px 10px; background: var(--brand-soft); color: var(--brand); border-radius: 10px; font-weight: 700; }
+  .panel-body { padding: 22px; }
+  .panel-foot {
+    padding: 16px 22px; background: var(--neutral-50);
+    border-top: 1px solid var(--neutral-200);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* === FORM FIELDS === */
+  .form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 700px) { .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; } }
+  .field label {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 600; color: var(--neutral-700); margin-bottom: 6px;
+  }
+  .field label .req { color: var(--danger); }
+  .field label .opt { color: var(--neutral-400); font-weight: 400; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--neutral-300);
+    border-radius: var(--radius); font-size: 13px; background: #fff;
+    outline: none; transition: var(--transition);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+  .field .help { font-size: 11px; color: var(--neutral-500); margin-top: 4px; }
+  .field .error { font-size: 11px; color: var(--danger); margin-top: 4px; display: none; align-items: center; gap: 4px; }
+  .field.has-error input, .field.has-error select { border-color: var(--danger); }
+  .field.has-error .error { display: flex; }
+  .field.is-valid input, .field.is-valid select { border-color: var(--success); }
+  .field.is-valid .help::before { content: '✓ '; color: var(--success); font-weight: 800; }
+
+  /* Radio / Checkbox cards */
+  .option-grid { display: grid; gap: 10px; }
+  .option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .option-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 700px) { .option-grid.cols-2, .option-grid.cols-3 { grid-template-columns: 1fr; } }
+  .option-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border: 1px solid var(--neutral-300);
+    border-radius: var(--radius); cursor: pointer;
+    transition: var(--transition); background: #fff;
+  }
+  .option-card:hover { border-color: var(--brand-soft); }
+  .option-card.selected { border-color: var(--brand); background: var(--brand-soft); }
+  .option-card .radio {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--neutral-400); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .option-card.selected .radio { border-color: var(--brand); }
+  .option-card.selected .radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+  .option-card .info { flex: 1; }
+  .option-card h4 { font-size: 13px; font-weight: 700; color: var(--neutral-900); }
+  .option-card p { font-size: 11px; color: var(--neutral-500); margin-top: 2px; }
+  .option-card .ico { font-size: 22px; opacity: 0.8; }
+  .option-card .price { font-size: 14px; font-weight: 800; color: var(--neutral-900); }
+
+  /* Checkbox simple */
+  .check { display: inline-flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .check input { margin-top: 3px; accent-color: var(--brand); width: 16px; height: 16px; }
+  .check span { font-size: 13px; color: var(--neutral-700); line-height: 1.5; }
+  .check span a { color: var(--brand); text-decoration: underline; }
+
+  /* === COVERAGE GRID === */
+  .coverage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 768px) { .coverage-grid { grid-template-columns: 1fr; } }
+  .coverage-card {
+    border: 1px solid var(--neutral-300); border-radius: var(--radius);
+    padding: 18px; cursor: pointer; transition: var(--transition);
+    position: relative; background: #fff;
+  }
+  .coverage-card:hover { border-color: var(--brand-soft); }
+  .coverage-card.selected { border-color: var(--brand); background: var(--brand-soft); }
+  .coverage-card.recommended::before {
+    content: 'Recomendado'; position: absolute; top: -10px; right: 14px;
+    background: var(--accent); color: #fff; padding: 2px 8px;
+    border-radius: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+  }
+  .coverage-card h4 { font-size: 15px; font-weight: 800; color: var(--neutral-900); }
+  .coverage-card .price { font-size: 24px; font-weight: 800; color: var(--brand); margin: 8px 0; letter-spacing: -0.02em; }
+  .coverage-card .price small { font-size: 11px; color: var(--neutral-500); font-weight: 500; }
+  .coverage-card .features { list-style: none; padding: 0; margin-top: 12px; }
+  .coverage-card .features li { font-size: 12px; color: var(--neutral-600); padding: 4px 0; display: flex; align-items: center; gap: 6px; }
+  .coverage-card .features li.in::before { content: '✓'; color: var(--success); font-weight: 800; }
+  .coverage-card .features li.out::before { content: '✕'; color: var(--neutral-400); font-weight: 800; }
+
+  /* === FILE UPLOAD === */
+  .upload-zone {
+    border: 2px dashed var(--neutral-300); border-radius: var(--radius);
+    padding: 28px; text-align: center; cursor: pointer;
+    background: var(--neutral-50); transition: var(--transition);
+  }
+  .upload-zone:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .upload-zone .ico { font-size: 36px; opacity: 0.6; }
+  .upload-zone .title { font-size: 14px; font-weight: 700; color: var(--neutral-900); margin-top: 8px; }
+  .upload-zone .sub { font-size: 12px; color: var(--neutral-500); margin-top: 4px; }
+  .uploaded-file {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; background: var(--success-soft);
+    border: 1px solid #BBF7D0; border-radius: var(--radius); margin-top: 8px;
+    font-size: 13px;
+  }
+  .uploaded-file .ico { font-size: 18px; }
+  .uploaded-file .info { flex: 1; }
+  .uploaded-file .info h5 { font-size: 13px; font-weight: 600; color: var(--neutral-900); }
+  .uploaded-file .info p { font-size: 11px; color: var(--neutral-600); }
+  .uploaded-file button { background: none; border: none; cursor: pointer; color: var(--neutral-500); font-size: 16px; }
+
+  /* === REVIEW PAGE === */
+  .review-section { margin-bottom: 18px; }
+  .review-section h3 {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--neutral-500); padding-bottom: 6px; border-bottom: 1px solid var(--neutral-200);
+    margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .review-section h3 a { font-size: 11px; color: var(--brand); cursor: pointer; }
+  .review-row { display: flex; gap: 14px; padding: 6px 0; font-size: 13px; }
+  .review-row .label { color: var(--neutral-500); min-width: 160px; }
+  .review-row .value { color: var(--neutral-900); font-weight: 600; flex: 1; }
+
+  /* === BUTTONS === */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 18px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    border: none; transition: var(--transition);
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-primary:disabled { background: var(--neutral-300); cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: var(--neutral-700); border: 1px solid var(--neutral-300); }
+  .btn-secondary:hover { background: var(--neutral-50); }
+  .btn-ghost { background: transparent; color: var(--neutral-600); }
+  .btn-ghost:hover { color: var(--brand); }
+  .btn-lg { padding: 12px 22px; font-size: 14px; }
+
+  /* === SIDEBAR (quote summary) === */
+  .sidebar { position: sticky; top: calc(var(--topbar-h) + 18px); align-self: flex-start; }
+  .quote-summary {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .quote-head {
+    padding: 18px 22px; background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
+    color: #fff;
+  }
+  .quote-head .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.9; font-weight: 600; }
+  .quote-head .price { font-size: 32px; font-weight: 800; margin-top: 4px; letter-spacing: -0.02em; }
+  .quote-head .price small { font-size: 13px; font-weight: 500; opacity: 0.9; }
+  .quote-head .sub { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+  .quote-body { padding: 18px 22px; }
+  .quote-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--neutral-700); margin-bottom: 10px; }
+  .quote-row strong { color: var(--neutral-900); }
+  .quote-divider { height: 1px; background: var(--neutral-200); margin: 14px 0; }
+  .quote-foot { padding: 0 22px 22px; }
+  .trust-items { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .trust-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--neutral-500); }
+  .trust-item .ico { color: var(--success); font-weight: 800; }
+
+  /* === STATES === */
+  .empty-state, .loading-state, .error-state { text-align: center; padding: 56px 24px; display: none; }
+  .empty-state.visible, .loading-state.visible, .error-state.visible { display: block; }
+  .state-ico { font-size: 42px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state h3, .error-state h3 { font-size: 16px; font-weight: 700; color: var(--neutral-700); margin-bottom: 6px; }
+  .empty-state p, .error-state p, .loading-state p { font-size: 13px; color: var(--neutral-500); margin-bottom: 18px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--neutral-200); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === TOAST / MODAL === */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+  .toast { background: var(--neutral-900); color: #fff; padding: 12px 16px; border-radius: var(--radius); font-size: 13px; min-width: 280px; box-shadow: var(--shadow-lg); animation: slidein 0.25s ease; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.warning { background: var(--warning); }
+  @keyframes slidein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 150; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition); }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: #fff; border-radius: var(--radius-lg); padding: 30px; width: 460px; max-width: 92vw; box-shadow: var(--shadow-lg); text-align: center; }
+  .modal .ico { font-size: 52px; margin-bottom: 12px; }
+  .modal h3 { font-size: 20px; font-weight: 800; color: var(--neutral-900); margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--neutral-600); margin-bottom: 18px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* Conditional fields */
+  .conditional { display: none; }
+  .conditional.visible { display: block; animation: slidein 0.2s ease; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand">
+    <div class="logo">A</div>
+    Aseguranza Andina
+  </a>
+  <a class="hub-link" href="../../../../prototype/index.html" title="Volver al hub del producto">← Hub</a>
+  <div class="save-state" id="saveState">
+    <span class="dot"></span>
+    <span id="saveText">Borrador guardado · hace 14s</span>
+  </div>
+  <button class="help-btn" onclick="openHelp()" title="Ayuda">?</button>
+</header>
+
+<main class="main">
+
+  <!-- STEP RAIL -->
+  <div class="steps-rail" id="stepsRail">
+    <div class="step-pill active" data-step="vehicle" onclick="goStep('vehicle')">
+      <span class="num">1</span>
+      <span class="label">Vehículo<small>marca, modelo, año</small></span>
+    </div>
+    <span class="step-arrow">›</span>
+    <div class="step-pill" data-step="owner" onclick="goStep('owner')">
+      <span class="num">2</span>
+      <span class="label">Titular<small>conductor principal</small></span>
+    </div>
+    <span class="step-arrow">›</span>
+    <div class="step-pill" data-step="coverage" onclick="goStep('coverage')">
+      <span class="num">3</span>
+      <span class="label">Cobertura<small>plan y deducible</small></span>
+    </div>
+    <span class="step-arrow">›</span>
+    <div class="step-pill" data-step="docs" onclick="goStep('docs')">
+      <span class="num">4</span>
+      <span class="label">Documentos<small>licencia y factura</small></span>
+    </div>
+    <span class="step-arrow">›</span>
+    <div class="step-pill" data-step="review" onclick="goStep('review')">
+      <span class="num">5</span>
+      <span class="label">Revisar<small>confirmar y emitir</small></span>
+    </div>
+  </div>
+
+  <!-- COLUMNA IZQUIERDA -->
+  <div>
+
+    <!-- ===== STEP 1: VEHICLE ===== -->
+    <section class="panel" data-pane="vehicle">
+      <div class="panel-head">
+        <h2>Datos del vehículo</h2>
+        <span class="step-tag">Paso 1 de 5</span>
+      </div>
+      <div class="panel-body">
+        <div class="page-head">
+          <h1>Cuéntanos sobre tu vehículo</h1>
+          <p>Necesitamos algunos datos para calcular la prima exacta. Toda la información viaja cifrada.</p>
+        </div>
+
+        <div class="form-row cols-3">
+          <div class="field">
+            <label>Marca <span class="req">*</span></label>
+            <select id="vehBrand" onchange="onVehicleChange()">
+              <option value="">Selecciona…</option>
+              <option value="Toyota" selected>Toyota</option>
+              <option value="Mazda">Mazda</option>
+              <option value="Volkswagen">Volkswagen</option>
+              <option value="Nissan">Nissan</option>
+              <option value="Honda">Honda</option>
+              <option value="Kia">Kia</option>
+              <option value="otro">Otro…</option>
+            </select>
+            <span class="help">Más de 80 marcas reconocidas</span>
+          </div>
+          <div class="field">
+            <label>Modelo <span class="req">*</span></label>
+            <select id="vehModel" onchange="onVehicleChange()">
+              <option value="">Selecciona modelo…</option>
+              <option value="Corolla" selected>Corolla</option>
+              <option value="Camry">Camry</option>
+              <option value="RAV4">RAV4</option>
+              <option value="Yaris">Yaris</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Año <span class="req">*</span></label>
+            <select id="vehYear" onchange="onVehicleChange()">
+              <option value="">Año…</option>
+              <option value="2024">2024</option>
+              <option value="2023" selected>2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field" id="fieldPlate">
+            <label>Placa <span class="req">*</span></label>
+            <input type="text" id="vehPlate" placeholder="ABC-123-D" maxlength="9" oninput="validatePlate(this)">
+            <span class="help">Formato: 3 letras, 3 dígitos, 1 letra (ej. ABC-123-D)</span>
+            <span class="error">⚠ El formato de placa no es válido</span>
+          </div>
+          <div class="field">
+            <label>VIN <span class="opt">(opcional)</span></label>
+            <input type="text" placeholder="17 caracteres" maxlength="17">
+            <span class="help">Permite descuento adicional si lo proporcionas</span>
+          </div>
+        </div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--neutral-700);margin:18px 0 10px">Uso principal del vehículo</h3>
+        <div class="option-grid cols-3">
+          <div class="option-card selected" data-use="personal" onclick="selectUse(this)">
+            <div class="radio"></div>
+            <div class="info">
+              <h4>🚗 Personal</h4>
+              <p>Para uso familiar y trabajo</p>
+            </div>
+          </div>
+          <div class="option-card" data-use="commercial" onclick="selectUse(this)">
+            <div class="radio"></div>
+            <div class="info">
+              <h4>🚚 Comercial</h4>
+              <p>Reparto, traslados, flotilla</p>
+            </div>
+          </div>
+          <div class="option-card" data-use="rideshare" onclick="selectUse(this)">
+            <div class="radio"></div>
+            <div class="info">
+              <h4>📱 Aplicaciones</h4>
+              <p>Uber, DiDi, Cabify</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campo condicional según uso -->
+        <div class="conditional" id="condCommercial">
+          <div class="form-row full">
+            <div class="field">
+              <label>Carga máxima estimada (kg) <span class="req">*</span></label>
+              <input type="number" placeholder="ej. 1500" min="0">
+              <span class="help">Necesario para uso comercial</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-ghost" onclick="saveDraft()">💾 Guardar y continuar después</button>
+        <button class="btn btn-primary" onclick="nextStep()">Siguiente: Titular →</button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 2: OWNER ===== -->
+    <section class="panel hidden" data-pane="owner">
+      <div class="panel-head">
+        <h2>Datos del titular</h2>
+        <span class="step-tag">Paso 2 de 5</span>
+      </div>
+      <div class="panel-body">
+        <div class="page-head">
+          <h1>Conductor principal del vehículo</h1>
+          <p>La edad, género e historial impactan en la prima.</p>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Nombre completo <span class="req">*</span></label>
+            <input type="text" value="Camila Andrea Vargas Solís">
+          </div>
+          <div class="field">
+            <label>Fecha de nacimiento <span class="req">*</span></label>
+            <input type="date" value="1990-04-12">
+            <span class="help">Edad: 34 años</span>
+          </div>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>CURP / RFC <span class="req">*</span></label>
+            <input type="text" value="VASC900412MDFRRM05">
+          </div>
+          <div class="field">
+            <label>Estado civil <span class="req">*</span></label>
+            <select>
+              <option>Soltera/o</option>
+              <option selected>Casada/o</option>
+              <option>Unión libre</option>
+              <option>Divorciada/o</option>
+              <option>Viuda/o</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" value="camila.vargas@email.mx">
+          </div>
+          <div class="field">
+            <label>Teléfono móvil <span class="req">*</span></label>
+            <input type="tel" value="+52 55 9871 2340">
+          </div>
+        </div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--neutral-700);margin:18px 0 10px">Historial de manejo</h3>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>¿Tienes licencia vigente? <span class="req">*</span></label>
+            <select id="hasLicense" onchange="toggleConditional('condLicense', this.value === 'si')">
+              <option value="">Selecciona…</option>
+              <option value="si" selected>Sí</option>
+              <option value="no">No, aún no tramito</option>
+            </select>
+          </div>
+          <div class="field conditional visible" id="condLicense">
+            <label>Años con licencia <span class="req">*</span></label>
+            <input type="number" value="12" min="0" max="60">
+            <span class="help">A más años, mejor descuento</span>
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="field">
+            <label class="check">
+              <input type="checkbox" id="hasAccident" onchange="toggleConditional('condAccident', this.checked)">
+              <span>He tenido un siniestro reportado en los últimos 24 meses</span>
+            </label>
+          </div>
+        </div>
+        <div class="conditional" id="condAccident">
+          <div class="form-row cols-2">
+            <div class="field">
+              <label>Fecha del último siniestro</label>
+              <input type="date">
+            </div>
+            <div class="field">
+              <label>Tipo</label>
+              <select>
+                <option>Choque sin lesionados</option>
+                <option>Robo total</option>
+                <option>Robo parcial</option>
+                <option>Daños por terceros</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field">
+              <label>Descripción breve</label>
+              <textarea rows="2" placeholder="Cuéntanos brevemente qué pasó…"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+        <button class="btn btn-primary" onclick="nextStep()">Siguiente: Cobertura →</button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 3: COVERAGE ===== -->
+    <section class="panel hidden" data-pane="coverage">
+      <div class="panel-head">
+        <h2>Plan y cobertura</h2>
+        <span class="step-tag">Paso 3 de 5</span>
+      </div>
+      <div class="panel-body">
+        <div class="page-head">
+          <h1>Elige tu plan</h1>
+          <p>3 planes calculados para tu Toyota Corolla 2023 · uso personal · 34 años</p>
+        </div>
+
+        <div class="coverage-grid" id="coverageGrid">
+          <div class="coverage-card" data-plan="basic" onclick="selectPlan(this)">
+            <h4>Esencial</h4>
+            <div class="price">$8,420<small> / año</small></div>
+            <ul class="features">
+              <li class="in">Responsabilidad civil $1M</li>
+              <li class="in">Gastos médicos $50K</li>
+              <li class="in">Asistencia vial 24/7</li>
+              <li class="out">Daños materiales</li>
+              <li class="out">Robo total</li>
+              <li class="out">Auto sustituto</li>
+            </ul>
+          </div>
+          <div class="coverage-card selected recommended" data-plan="full" onclick="selectPlan(this)">
+            <h4>Amplia</h4>
+            <div class="price">$14,890<small> / año</small></div>
+            <ul class="features">
+              <li class="in">Responsabilidad civil $3M</li>
+              <li class="in">Gastos médicos $150K</li>
+              <li class="in">Asistencia vial 24/7</li>
+              <li class="in">Daños materiales</li>
+              <li class="in">Robo total</li>
+              <li class="out">Auto sustituto</li>
+            </ul>
+          </div>
+          <div class="coverage-card" data-plan="premium" onclick="selectPlan(this)">
+            <h4>Premium</h4>
+            <div class="price">$22,400<small> / año</small></div>
+            <ul class="features">
+              <li class="in">Responsabilidad civil $5M</li>
+              <li class="in">Gastos médicos $300K</li>
+              <li class="in">Asistencia vial 24/7</li>
+              <li class="in">Daños materiales sin deducible</li>
+              <li class="in">Robo total</li>
+              <li class="in">Auto sustituto 30 días</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--neutral-700);margin:22px 0 10px">Deducible y forma de pago</h3>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Deducible para daños materiales</label>
+            <select id="deductible" onchange="updateQuote()">
+              <option value="5">5% del valor comercial (más bajo)</option>
+              <option value="10" selected>10% del valor comercial (estándar)</option>
+              <option value="15">15% del valor comercial (más bajo)</option>
+              <option value="20">20% del valor comercial (mucho más bajo)</option>
+            </select>
+            <span class="help">Mayor deducible = prima más baja</span>
+          </div>
+          <div class="field">
+            <label>Forma de pago</label>
+            <select id="payMode" onchange="updateQuote()">
+              <option value="annual" selected>Anual (un solo pago, 5% descuento)</option>
+              <option value="quarterly">Trimestral (4 pagos)</option>
+              <option value="monthly">Mensual (12 pagos)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="field">
+            <label class="check">
+              <input type="checkbox" checked> <span>Agregar cobertura de cristales rotos (+$680/año)</span>
+            </label>
+            <label class="check" style="margin-top:8px">
+              <input type="checkbox"> <span>Auto sustituto en caso de siniestro (+$1,420/año)</span>
+            </label>
+            <label class="check" style="margin-top:8px">
+              <input type="checkbox" checked> <span>Asistencia legal en accidentes (incluido sin costo)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+        <button class="btn btn-primary" onclick="nextStep()">Siguiente: Documentos →</button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 4: DOCS ===== -->
+    <section class="panel hidden" data-pane="docs">
+      <div class="panel-head">
+        <h2>Documentación</h2>
+        <span class="step-tag">Paso 4 de 5</span>
+      </div>
+      <div class="panel-body">
+        <div class="page-head">
+          <h1>Sube tus documentos</h1>
+          <p>Formatos aceptados: JPG, PNG, PDF · máximo 8 MB por archivo.</p>
+        </div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--neutral-700);margin-bottom:10px">Licencia de conducir <span class="req" style="color:var(--danger)">*</span></h3>
+        <div class="upload-zone" onclick="simulateUpload('licenseFront')">
+          <div class="ico">📷</div>
+          <div class="title">Frente de la licencia</div>
+          <div class="sub">Arrastra el archivo aquí o haz clic para seleccionar</div>
+        </div>
+        <div id="licenseFrontList"></div>
+
+        <div class="upload-zone" style="margin-top:14px" onclick="simulateUpload('licenseBack')">
+          <div class="ico">📷</div>
+          <div class="title">Reverso de la licencia</div>
+          <div class="sub">Asegúrate que se lea la fecha de vencimiento</div>
+        </div>
+        <div id="licenseBackList"></div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--neutral-700);margin:22px 0 10px">Tarjeta de circulación / factura</h3>
+        <div class="upload-zone" onclick="simulateUpload('vehicleDoc')">
+          <div class="ico">📄</div>
+          <div class="title">Documento del vehículo</div>
+          <div class="sub">Tarjeta de circulación o factura</div>
+        </div>
+        <div id="vehicleDocList"></div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--neutral-700);margin:22px 0 10px">Comprobante de domicilio <span class="opt" style="color:var(--neutral-400);font-weight:400">(opcional · descuento adicional)</span></h3>
+        <div class="upload-zone" onclick="simulateUpload('addressDoc')">
+          <div class="ico">🏠</div>
+          <div class="title">Comprobante reciente</div>
+          <div class="sub">No mayor a 3 meses</div>
+        </div>
+        <div id="addressDocList"></div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+        <button class="btn btn-primary" onclick="nextStep()">Siguiente: Revisar →</button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 5: REVIEW ===== -->
+    <section class="panel hidden" data-pane="review">
+      <div class="panel-head">
+        <h2>Revisa y emite tu póliza</h2>
+        <span class="step-tag">Paso 5 de 5</span>
+      </div>
+      <div class="panel-body">
+        <div class="page-head">
+          <h1>Confirma tus datos antes de emitir</h1>
+          <p>Una vez confirmada, recibirás la póliza en PDF y por email.</p>
+        </div>
+
+        <div class="review-section">
+          <h3>Vehículo <a onclick="goStep('vehicle')">Editar</a></h3>
+          <div class="review-row"><span class="label">Marca y modelo</span><span class="value">Toyota Corolla 2023</span></div>
+          <div class="review-row"><span class="label">Placa</span><span class="value">ABC-123-D</span></div>
+          <div class="review-row"><span class="label">Uso</span><span class="value">Personal</span></div>
+        </div>
+
+        <div class="review-section">
+          <h3>Titular <a onclick="goStep('owner')">Editar</a></h3>
+          <div class="review-row"><span class="label">Nombre</span><span class="value">Camila Andrea Vargas Solís</span></div>
+          <div class="review-row"><span class="label">Edad</span><span class="value">34 años</span></div>
+          <div class="review-row"><span class="label">CURP</span><span class="value">VASC900412MDFRRM05</span></div>
+          <div class="review-row"><span class="label">Email</span><span class="value">camila.vargas@email.mx</span></div>
+          <div class="review-row"><span class="label">Historial de siniestros</span><span class="value">Sin siniestros en últimos 24 meses</span></div>
+        </div>
+
+        <div class="review-section">
+          <h3>Cobertura <a onclick="goStep('coverage')">Editar</a></h3>
+          <div class="review-row"><span class="label">Plan</span><span class="value">Amplia (recomendado)</span></div>
+          <div class="review-row"><span class="label">Deducible</span><span class="value">10% del valor comercial</span></div>
+          <div class="review-row"><span class="label">Forma de pago</span><span class="value">Anual con 5% de descuento</span></div>
+          <div class="review-row"><span class="label">Extras</span><span class="value">Cristales rotos · Asistencia legal</span></div>
+        </div>
+
+        <div class="review-section">
+          <h3>Documentos <a onclick="goStep('docs')">Editar</a></h3>
+          <div class="review-row"><span class="label">Licencia (frente)</span><span class="value" style="color:var(--success)">✓ Cargada</span></div>
+          <div class="review-row"><span class="label">Licencia (reverso)</span><span class="value" style="color:var(--success)">✓ Cargada</span></div>
+          <div class="review-row"><span class="label">Documento del vehículo</span><span class="value" style="color:var(--success)">✓ Cargada</span></div>
+          <div class="review-row"><span class="label">Comprobante de domicilio</span><span class="value" style="color:var(--neutral-400)">Pendiente · opcional</span></div>
+        </div>
+
+        <div class="form-row full" style="margin-top:18px">
+          <label class="check">
+            <input type="checkbox" id="acceptTerms"> <span>He leído y acepto las <a>condiciones generales</a> y el <a>aviso de privacidad</a></span>
+          </label>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+        <button class="btn btn-primary btn-lg" id="emitBtn" onclick="emitPolicy()">✓ Emitir póliza por $14,150 / año</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- COLUMNA DERECHA: cotización viva -->
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="quote-summary">
+      <div class="quote-head">
+        <div class="label">Tu cotización</div>
+        <div class="price">$<span id="quoteValue">14,150</span><small> / año</small></div>
+        <div class="sub">o <span id="quoteMonthly">$1,180</span> por mes</div>
+      </div>
+      <div class="quote-body">
+        <div class="quote-row"><span>Plan Amplia</span> <strong>$14,890</strong></div>
+        <div class="quote-row" style="color:var(--success)"><span>Descuento pago anual −5%</span> <strong>−$744</strong></div>
+        <div class="quote-row"><span>Cristales rotos</span> <strong>+$680</strong></div>
+        <div class="quote-row"><span>Asistencia legal</span> <strong>Incluida</strong></div>
+        <div class="quote-row" style="color:var(--success)"><span>Descuento sin siniestros</span> <strong>−$676</strong></div>
+        <div class="quote-divider"></div>
+        <div class="quote-row" style="font-weight:700;font-size:14px;color:var(--neutral-900)"><span>Total anual</span> <strong>$14,150</strong></div>
+        <div class="trust-items">
+          <div class="trust-item"><span class="ico">✓</span> Emisión inmediata al confirmar</div>
+          <div class="trust-item"><span class="ico">✓</span> Cancela sin penalización los primeros 15 días</div>
+          <div class="trust-item"><span class="ico">✓</span> Datos cifrados extremo a extremo</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div class="ico">🎉</div>
+    <h3>¡Póliza emitida!</h3>
+    <p>Tu póliza <strong>POL-2024-58291</strong> está activa. Te enviamos el PDF a <strong>camila.vargas@email.mx</strong>. Vigencia: 12 meses.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeSuccess()">Cerrar</button>
+      <button class="btn btn-primary" onclick="downloadPolicy()">⬇ Descargar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal">
+    <div class="ico">💬</div>
+    <h3>¿Necesitas ayuda?</h3>
+    <p>Llámanos al <strong>800 123 4567</strong> o chatea con un asesor. Atención lunes a domingo de 7:00 a 22:00.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeHelp()">Cerrar</button>
+      <button class="btn btn-primary" onclick="closeHelp();showToast('Abriendo chat con asesor','default')">Abrir chat</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ======================================================================
+//  Datos mock — wizard de cotización de póliza de auto
+// ======================================================================
+const PLAN_PRICES = { basic: 8420, full: 14890, premium: 22400 };
+let currentStep = 'vehicle';
+let selectedPlan = 'full';
+let uploads = {};
+
+const ROLES = [
+  { name:'Camila V.', initials:'CV', role:'Cliente nueva' },
+  { name:'Asesor IT', initials:'AS', role:'Asesor interno' },
+  { name:'Visor',     initials:'VI', role:'Sin sesión' },
+];
+let currentRoleIdx = 0;
+
+// ======================================================================
+//  Step navigation
+// ======================================================================
+const STEPS = ['vehicle','owner','coverage','docs','review'];
+
+function goStep(target) {
+  // No permitir saltar a review si no completaste antes (simulado: siempre OK)
+  document.querySelectorAll('[data-pane]').forEach(p => p.classList.add('hidden'));
+  const pane = document.querySelector('[data-pane="' + target + '"]');
+  if (pane) pane.classList.remove('hidden');
+
+  document.querySelectorAll('.step-pill').forEach(s => s.classList.remove('active','done'));
+  const idx = STEPS.indexOf(target);
+  STEPS.forEach((s, i) => {
+    const pill = document.querySelector('.step-pill[data-step="' + s + '"]');
+    if (!pill) return;
+    if (i < idx) pill.classList.add('done');
+    if (i === idx) pill.classList.add('active');
+  });
+  currentStep = target;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep() {
+  // Validación simple en el paso de vehículo: placa obligatoria
+  if (currentStep === 'vehicle') {
+    const plate = document.getElementById('vehPlate').value.trim();
+    if (!plate) {
+      document.getElementById('fieldPlate').classList.add('has-error');
+      showToast('Completa la placa antes de continuar','warning');
+      document.getElementById('vehPlate').focus();
+      return;
+    }
+  }
+  const idx = STEPS.indexOf(currentStep);
+  if (idx < STEPS.length - 1) goStep(STEPS[idx + 1]);
+}
+function prevStep() {
+  const idx = STEPS.indexOf(currentStep);
+  if (idx > 0) goStep(STEPS[idx - 1]);
+}
+
+// ======================================================================
+//  Vehicle step
+// ======================================================================
+function onVehicleChange() {
+  showToast('Cotización actualizada según vehículo','default');
+  saveDraft(true);
+}
+
+function validatePlate(input) {
+  const v = input.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  let formatted = v;
+  if (v.length > 3) formatted = v.slice(0,3) + '-' + v.slice(3);
+  if (v.length > 6) formatted = formatted.slice(0,7) + '-' + v.slice(6,7);
+  input.value = formatted;
+  const valid = /^[A-Z]{3}-\d{3}-[A-Z]$/.test(formatted);
+  const field = document.getElementById('fieldPlate');
+  if (formatted.length === 9) {
+    if (valid) {
+      field.classList.remove('has-error');
+      field.classList.add('is-valid');
+    } else {
+      field.classList.add('has-error');
+      field.classList.remove('is-valid');
+    }
+  } else {
+    field.classList.remove('has-error', 'is-valid');
+  }
+}
+
+function selectUse(card) {
+  document.querySelectorAll('[data-use]').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const use = card.dataset.use;
+  toggleConditional('condCommercial', use === 'commercial');
+  if (use === 'rideshare') showToast('Uso por aplicaciones requiere cobertura especial — aplicamos recargo','warning');
+}
+
+// ======================================================================
+//  Owner step
+// ======================================================================
+function toggleConditional(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('visible', show);
+}
+
+// ======================================================================
+//  Coverage step
+// ======================================================================
+function selectPlan(card) {
+  document.querySelectorAll('.coverage-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedPlan = card.dataset.plan;
+  updateQuote();
+  showToast('Plan: ' + card.querySelector('h4').textContent,'success');
+}
+
+function updateQuote() {
+  let base = PLAN_PRICES[selectedPlan] || PLAN_PRICES.full;
+  const ded = document.getElementById('deductible')?.value || '10';
+  const dedMod = { '5': 1.04, '10': 1.0, '15': 0.96, '20': 0.92 }[ded] || 1;
+  const payMode = document.getElementById('payMode')?.value || 'annual';
+  const payMod = payMode === 'annual' ? 0.95 : payMode === 'quarterly' ? 1.02 : 1.05;
+  const total = Math.round(base * dedMod * payMod);
+  document.getElementById('quoteValue').textContent = total.toLocaleString('es-MX');
+  document.getElementById('quoteMonthly').textContent = '$' + Math.round(total / 12).toLocaleString('es-MX');
+  document.getElementById('emitBtn').textContent = '✓ Emitir póliza por $' + total.toLocaleString('es-MX') + ' / año';
+}
+
+// ======================================================================
+//  Docs / upload
+// ======================================================================
+function simulateUpload(slot) {
+  const labels = {
+    licenseFront: { name:'licencia_frente.jpg', size:'2.1 MB' },
+    licenseBack:  { name:'licencia_reverso.jpg', size:'1.8 MB' },
+    vehicleDoc:   { name:'tarjeta_circulacion.pdf', size:'612 KB' },
+    addressDoc:   { name:'comprobante_cfe.pdf', size:'480 KB' },
+  };
+  uploads[slot] = labels[slot];
+  const list = document.getElementById(slot + 'List');
+  if (list) list.innerHTML = `
+    <div class="uploaded-file">
+      <div class="ico">📎</div>
+      <div class="info">
+        <h5>${labels[slot].name}</h5>
+        <p>${labels[slot].size} · subido exitosamente</p>
+      </div>
+      <button onclick="removeUpload('${slot}')" title="Quitar">✕</button>
+    </div>`;
+  showToast('Archivo cargado: ' + labels[slot].name, 'success');
+}
+function removeUpload(slot) {
+  delete uploads[slot];
+  document.getElementById(slot + 'List').innerHTML = '';
+  showToast('Archivo eliminado','default');
+}
+
+// ======================================================================
+//  Emit policy
+// ======================================================================
+function emitPolicy() {
+  const accept = document.getElementById('acceptTerms')?.checked;
+  if (!accept) { showToast('Acepta los términos y el aviso de privacidad','warning'); return; }
+  const r = ROLES[currentRoleIdx];
+  if (r.role === 'Sin sesión') { showToast('Necesitas iniciar sesión para emitir la póliza','warning'); return; }
+  document.getElementById('emitBtn').disabled = true;
+  document.getElementById('emitBtn').textContent = 'Emitiendo póliza…';
+  setTimeout(() => {
+    document.getElementById('successModal').classList.add('open');
+    document.getElementById('emitBtn').disabled = false;
+    document.getElementById('emitBtn').textContent = '✓ Emitida';
+  }, 1200);
+}
+
+function closeSuccess() { document.getElementById('successModal').classList.remove('open'); }
+function downloadPolicy() { closeSuccess(); showToast('Descargando POL-2024-58291.pdf','success'); }
+
+// ======================================================================
+//  Auto-save draft
+// ======================================================================
+function saveDraft(silent) {
+  const el = document.getElementById('saveText');
+  if (el) el.textContent = 'Guardando…';
+  setTimeout(() => {
+    if (el) el.textContent = 'Borrador guardado · hace un momento';
+    if (!silent) showToast('Borrador guardado · puedes retomar cuando quieras','success');
+  }, 400);
+}
+
+setInterval(saveDraft, 60000);
+
+// ======================================================================
+//  Help / Roles
+// ======================================================================
+function openHelp() { document.getElementById('helpModal').classList.add('open'); }
+function closeHelp() { document.getElementById('helpModal').classList.remove('open'); }
+
+function cycleRole() {
+  currentRoleIdx = (currentRoleIdx + 1) % ROLES.length;
+  const r = ROLES[currentRoleIdx];
+  showToast('Perfil cambiado: ' + r.role, 'default');
+}
+
+// ======================================================================
+//  Toast
+// ======================================================================
+function showToast(msg, kind) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 3000);
+}
+
+// Demo: doble-click en logo dispara estado de error simulado
+document.querySelector('.brand .logo').addEventListener('dblclick', () => {
+  showToast('Error simulado de cotización · vuelve a intentar','error');
+});
+
+// Init
+window.addEventListener('DOMContentLoaded', () => updateQuote());
+</script>
+</body>
+</html>

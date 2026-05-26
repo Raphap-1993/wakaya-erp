@@ -1,0 +1,78 @@
+# v12.35: workflow CI dedicado a la trazabilidad del proyecto.
+#
+# Se dispara cuando un PR toca codigo (src/, backend/, frontend/, tests/)
+# o el manifest de matriz (specs/.../traceability.md). Tambien cuando se
+# tocan los validadores `check-trace-*` y los validadores `check-*-documented`.
+#
+# Ejecuta `npm run check:project` que cubre:
+#   - check:trace-drift (links a artefactos inexistentes)
+#   - check:trace-coverage (phases granulares 4 vs 5 vs 6 con cobertura por fase)
+#   - check:bd-documented (cada BD declarada tiene Tabla `<name>` con columnas/PK/indices)
+#   - check:api-documented (cada API declarada tiene endpoint en algun api-contract.md)
+#   - check:test-documented (cada Test declarado tiene archivo real cuando phase >= 6)
+#
+# Si el proyecto aun no tiene codigo (template canonico), `check:project` pasa
+# en verde tambien porque ninguna feature esta en fase >= 5.
+name: project-checks
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "backend/**"
+      - "frontend/**"
+      - "tests/**"
+      - "qa/**"
+      - "specs/**/traceability.md"
+      - "specs/**/spec-tecnica.md"
+      - "specs/**/api-contract.md"
+      - "TRACEABILITY_MATRIX.md"
+      - "ci/scripts/check-trace-*"
+      - "ci/scripts/check-bd-documented.mjs"
+      - "ci/scripts/check-api-documented.mjs"
+      - "ci/scripts/check-test-documented.mjs"
+      - ".github/workflows/project-checks.yml"
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+# v12.36: concurrency mas agresivo — cancela runs anteriores del mismo PR
+# (o del mismo branch en pushes a main) cuando llega un commit nuevo.
+concurrency:
+  group: project-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  project-checks:
+    name: check:project
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install (skip lifecycle scripts)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+          else
+            npm install --ignore-scripts || true
+          fi
+
+      - name: Bootstrap memoria
+        run: |
+          node scripts/ai-framework-agent.mjs init-memory
+          node scripts/ai-framework-agent.mjs index-docs
+          node scripts/ai-framework-agent.mjs sync-memory
+
+      - name: Run check:project
+        run: npm run check:project

@@ -1,0 +1,21 @@
+# API asincrona (eventos) del dominio wakaya-erp. La definicion canonica vive en contracts/events/asyncapi.yaml.
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: wakaya-erp-events
+  title: Wakaya ERP Events
+  description: Eventos publicados por el sistema wakaya-erp (AsyncAPI 3.0).
+  tags:
+    - asyncapi
+    - eventos
+  links:
+    - url: ../../contracts/events/asyncapi.yaml
+      title: Contrato AsyncAPI 3.0
+spec:
+  type: asyncapi
+  lifecycle: production
+  owner: group:team-wakaya
+  system: wakaya-erp
+  definition:
+    $text: ../../contracts/events/asyncapi.yaml

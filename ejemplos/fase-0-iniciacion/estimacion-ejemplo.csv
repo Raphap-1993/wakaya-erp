@@ -1,0 +1,9 @@
+Fase,Rol,Semanas,Dedicacion,Costo_Aprox
+Iniciacion,PO,1,50%,800
+Analisis,BA,2,100%,2200
+UX,UX,2,75%,1800
+Arquitectura,Arquitecto,2,100%,2500
+Construccion,Frontend Dev,7,100%,7000
+Construccion,Backend Dev,7,100%,8000
+QA,QA,3,100%,2700
+Deploy,DevOps,1,50%,900

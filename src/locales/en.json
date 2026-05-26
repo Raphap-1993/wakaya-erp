@@ -1,0 +1,11 @@
+{
+  "app": {
+    "title": "Case Files",
+    "welcome": "Welcome to the case files portal"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading"
+  }
+}

@@ -1,0 +1,21 @@
+# Recurso de base de datos asociado al sistema wakaya-erp.
+# El nombre concreto se materializa via Terraform; aqui solo se registra el handle logico.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: wakaya-erp-db
+  title: Wakaya ERP DB
+  description: Base de datos PostgreSQL primaria del sistema wakaya-erp (Tier 1, multi-AZ).
+  tags:
+    - postgres
+    - tier-1
+  links:
+    - url: ../../docs/fase-3-arquitectura/03.06-modelo-datos.md
+      title: Modelo de datos
+    - url: ../../ops/data/backup-restore.md
+      title: Backup y restore
+spec:
+  type: database
+  owner: group:team-wakaya
+  system: wakaya-erp

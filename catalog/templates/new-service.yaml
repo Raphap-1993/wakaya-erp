@@ -1,0 +1,57 @@
+# Software Template Backstage: ejecuta scripts/new-service.mjs para instanciar un servicio nuevo.
+# Documentado en docs/transversal/90.04-stacks-de-referencia.md y scripts/new-service.mjs.
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: new-service
+  title: Nuevo servicio desde stack de referencia
+  description: Crea un servicio nuevo a partir de uno de los stacks ejecutables (node-next, java-monolith, quarkus-angular, spring-react).
+  tags:
+    - golden-path
+    - scaffolder
+spec:
+  owner: group:team-plataforma
+  type: service
+  parameters:
+    - title: Identidad del servicio
+      required:
+        - stack
+        - name
+        - owner
+      properties:
+        stack:
+          title: Stack de referencia
+          type: string
+          enum:
+            - node-next
+            - java-monolith
+            - quarkus-angular
+            - spring-react
+        name:
+          title: Nombre kebab-case
+          type: string
+          pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+        owner:
+          title: Equipo responsable (Backstage group)
+          type: string
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+  steps:
+    - id: scaffold
+      name: Instanciar stack
+      action: debug:log
+      input:
+        message: |
+          Este template es un contrato declarativo. En una instalacion real de Backstage,
+          reemplazar por acciones custom (publish:github, fetch:template) que repliquen
+          el flujo de scripts/new-service.mjs:
+            1. Copiar stacks/${{ parameters.stack }}/template/
+            2. Ejecutar scripts/init-project.mjs con template.config.example.json
+            3. Publicar repo en GitHub y registrar catalog-info.yaml
+  output:
+    links:
+      - title: Ver golden path
+        url: https://github.com/anthropics/project-template/blob/main/scripts/new-service.mjs

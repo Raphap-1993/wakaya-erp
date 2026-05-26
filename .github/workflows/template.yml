@@ -1,0 +1,103 @@
+name: template
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'stacks/**'
+      - 'scripts/**'
+      - 'ci/scripts/check-template-instantiation.mjs'
+      - 'template.config.example.json'
+      - '.github/workflows/template.yml'
+  pull_request:
+    paths:
+      - 'stacks/**'
+      - 'scripts/**'
+      - 'ci/scripts/**'
+      - 'template.config.example.json'
+      - 'contracts/**'
+      - '.github/workflows/template.yml'
+
+jobs:
+  validate-config:
+    name: Validar template.config.example.json contra schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Validar config contra schema
+        run: node scripts/validate-template-config.mjs --config template.config.example.json
+
+  check-template-tokens:
+    name: Verificar tokens en plantilla sin instanciar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Verificar tokens canonicos
+        run: node ci/scripts/check-template-instantiation.mjs --mode template --root .
+
+  dry-run-new-service:
+    name: Dry-run new-service.mjs (${{ matrix.stack }}) en ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        stack: [node-next, java-monolith, quarkus-angular, spring-react]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Instanciar stack ${{ matrix.stack }}
+        shell: bash
+        run: |
+          node scripts/new-service.mjs \
+            --stack ${{ matrix.stack }} \
+            --config template.config.example.json \
+            --dest "${RUNNER_TEMP}/dry-run-${{ matrix.stack }}" \
+            --no-git
+
+      - name: Verificar que no queden tokens estructurados en la salida
+        shell: bash
+        run: |
+          node ci/scripts/check-template-instantiation.mjs \
+            --mode instantiated \
+            --root "${RUNNER_TEMP}/dry-run-${{ matrix.stack }}"
+
+  rbac-consistency:
+    name: Verificar matriz RBAC consistente entre stacks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Comparar matrices Role -> Permission
+        run: node ci/scripts/check-rbac-consistency.mjs
+
+  contract-governance:
+    name: Detectar breakings en contracts/api/openapi.yaml
+    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'contract-breaking-approved') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Diff contra rama base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node ci/scripts/check-openapi-diff.mjs \
+            --base "$BASE_SHA" \
+            --head WORKING \
+            --file contracts/api/openapi.yaml

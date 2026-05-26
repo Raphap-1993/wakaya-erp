@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ShopPOS — Terminal Punto de Venta</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#DC2626; --brand-light:#FEE2E2; --brand-dark:#991B1B; --brand-mid:#EF4444;
+  --accent:#F59E0B; --accent-light:#FEF3C7;
+  --success:#10B981; --success-light:#D1FAE5;
+  --warning:#F59E0B; --warning-light:#FEF3C7;
+  --danger:#DC2626; --danger-light:#FEE2E2;
+  --info:#0EA5E9; --info-light:#E0F2FE;
+  --neutral-50:#FAFAFA; --neutral-100:#F4F4F5; --neutral-200:#E4E4E7;
+  --neutral-300:#D4D4D8; --neutral-500:#71717A; --neutral-700:#3F3F46; --neutral-900:#18181B;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06); --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 28px rgba(0,0,0,.12);
+  --radius:8px; --radius-lg:12px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:52px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:14px;color:var(--neutral-900);background:var(--neutral-100);line-height:1.4;overflow:hidden;height:100vh}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+
+/* Topbar POS */
+.topbar{height:var(--topbar-h);background:var(--neutral-900);color:#fff;display:flex;align-items:center;padding:0 16px;gap:14px;z-index:20}
+.brand{font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px}
+.brand-icon{width:30px;height:30px;background:var(--brand);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.store-info{font-size:11px;color:var(--neutral-300);display:flex;gap:14px}
+.store-info strong{color:#fff}
+.cashier{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px}
+.cashier-avatar{width:28px;height:28px;background:var(--accent);color:var(--neutral-900);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.shift-info{font-size:11px;color:var(--neutral-300)}
+.shift-info strong{color:var(--success)}
+.btn-logout{padding:4px 10px;background:rgba(255,255,255,.1);border-radius:5px;font-size:11px;color:#fff}
+
+/* Layout principal: catalogo izquierda | cart derecha */
+.pos-layout{display:grid;grid-template-columns:1fr 420px;height:calc(100vh - var(--topbar-h));gap:0}
+
+/* Catalogo izquierdo */
+.catalog{background:#fff;display:flex;flex-direction:column;border-right:1px solid var(--neutral-200);overflow:hidden}
+.catalog-toolbar{padding:12px 16px;border-bottom:1px solid var(--neutral-200);background:var(--neutral-50);display:flex;gap:10px;align-items:center}
+.barcode-input{flex:1;padding:10px 14px 10px 38px;border:2px solid var(--brand);border-radius:6px;font-size:14px;font-weight:600;font-family:var(--font-mono);background:#fff;position:relative}
+.barcode-wrap{flex:1;position:relative}
+.barcode-wrap::before{content:"📷";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;z-index:1}
+.barcode-input:focus{outline:none;border-color:var(--brand-dark);box-shadow:0 0 0 3px var(--brand-light)}
+.btn-search{padding:10px 14px;background:var(--brand);color:#fff;border-radius:6px;font-weight:600;font-size:13px}
+
+.categories{padding:12px 16px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--neutral-200);background:#fff}
+.cat-chip{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;background:var(--neutral-100);color:var(--neutral-700);cursor:pointer;white-space:nowrap;transition:var(--transition)}
+.cat-chip:hover{background:var(--neutral-200)}
+.cat-chip.active{background:var(--brand);color:#fff}
+
+.products{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;background:var(--neutral-50)}
+.product-card{background:#fff;border:1px solid var(--neutral-200);border-radius:8px;padding:10px;cursor:pointer;transition:var(--transition);position:relative}
+.product-card:hover{box-shadow:var(--shadow-md);border-color:var(--brand);transform:translateY(-2px)}
+.product-img{width:100%;height:80px;background:linear-gradient(135deg,var(--brand-light) 0%,var(--accent-light) 100%);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px}
+.product-sku{font-family:var(--font-mono);font-size:9px;color:var(--neutral-500);font-weight:700}
+.product-name{font-size:11px;font-weight:600;margin-top:2px;line-height:1.3;min-height:28px}
+.product-price{font-size:14px;font-weight:800;color:var(--brand);margin-top:4px}
+.product-stock{font-size:9px;text-align:right;margin-top:2px}
+.stock-ok{color:var(--success)}
+.stock-low{color:var(--warning)}
+.stock-out{color:var(--danger)}
+.badge-promo{position:absolute;top:6px;right:6px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;text-transform:uppercase}
+
+/* Cart derecha */
+.cart{background:var(--neutral-900);color:#fff;display:flex;flex-direction:column}
+.cart-header{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center}
+.cart-title{font-size:14px;font-weight:700}
+.cart-count{background:var(--brand);color:#fff;font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700}
+.btn-clear{font-size:11px;color:var(--neutral-300);background:transparent}
+.btn-clear:hover{color:#fff}
+
+.customer-row{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.customer-info{color:var(--neutral-300)}
+.customer-info strong{color:#fff}
+.btn-change{font-size:10px;color:var(--brand-mid);background:transparent}
+
+.cart-items{flex:1;overflow-y:auto;padding:8px 0}
+.cart-item{padding:10px 18px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);transition:var(--transition)}
+.cart-item:hover{background:rgba(255,255,255,.03)}
+.cart-item-name{font-size:12px;font-weight:600}
+.cart-item-meta{font-size:10px;color:var(--neutral-300);margin-top:2px}
+.cart-item-meta del{color:var(--neutral-500)}
+.qty-controls{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border-radius:6px;padding:2px}
+.qty-btn{width:22px;height:22px;border-radius:4px;background:rgba(255,255,255,.05);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:rgba(255,255,255,.15)}
+.qty-val{font-family:var(--font-mono);font-size:12px;font-weight:700;min-width:24px;text-align:center}
+.cart-item-price{font-family:var(--font-mono);font-weight:700;font-size:13px;text-align:right;min-width:70px}
+
+.cart-empty{padding:40px 24px;text-align:center;color:var(--neutral-300)}
+.cart-empty-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+
+.cart-summary{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.3);font-size:12px}
+.summary-row{display:flex;justify-content:space-between;padding:4px 0}
+.summary-row .label{color:var(--neutral-300)}
+.summary-row .value{font-family:var(--font-mono);font-weight:600}
+.discount-row .value{color:var(--success)}
+.summary-row.total{border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:10px;font-size:18px;font-weight:800}
+.summary-row.total .value{color:var(--accent);font-size:22px}
+
+.payment-options{padding:0 18px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pay-opt{padding:10px;border:2px solid rgba(255,255,255,.1);border-radius:6px;text-align:center;cursor:pointer;transition:var(--transition);font-size:11px;font-weight:600}
+.pay-opt:hover{border-color:var(--brand-mid);background:rgba(220,38,38,.1)}
+.pay-opt-icon{font-size:18px;margin-bottom:4px}
+.pay-opt.active{border-color:var(--brand);background:var(--brand);color:#fff}
+
+.cart-actions{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:8px}
+.btn-pay{background:var(--success);color:#fff;padding:14px;border-radius:8px;font-size:15px;font-weight:800;display:flex;justify-content:space-between;align-items:center;transition:var(--transition)}
+.btn-pay:hover{background:#0F9D58;transform:translateY(-1px);box-shadow:0 6px 16px rgba(16,185,129,.3)}
+.btn-pay:disabled{background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);cursor:not-allowed}
+.btn-hold{padding:8px;background:rgba(255,255,255,.05);color:#fff;border-radius:6px;font-size:12px;font-weight:600}
+.btn-hold:hover{background:rgba(255,255,255,.15)}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:480px;width:90%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.modal-success{text-align:center}
+.modal-icon{font-size:64px;margin-bottom:12px}
+.modal h3{font-size:18px;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--neutral-700);margin-bottom:18px}
+.receipt-preview{background:var(--neutral-50);padding:14px;border-radius:6px;font-family:var(--font-mono);font-size:11px;text-align:left;margin-bottom:14px}
+.receipt-row{display:flex;justify-content:space-between;padding:2px 0}
+.receipt-row.total{border-top:1px dashed var(--neutral-300);margin-top:6px;padding-top:6px;font-weight:700;font-size:13px}
+.modal-input{width:100%;padding:8px 12px;border:1px solid var(--neutral-200);border-radius:6px;font-size:13px;margin-bottom:12px}
+.modal-actions{display:flex;gap:8px;justify-content:center}
+.btn{padding:10px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-secondary{background:#fff;color:var(--neutral-700);border:1px solid var(--neutral-200)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--neutral-900);color:#fff;padding:12px 24px;border-radius:6px;box-shadow:var(--shadow-lg);display:none;z-index:100;animation:slideUp .25s ease;align-items:center;gap:8px;font-size:13px}
+.toast.visible{display:flex}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+@keyframes slideUp{from{transform:translate(-50%,20px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
+.hub-link{position:fixed;top:8px;right:14px;font-size:11px;color:rgba(255,255,255,.7);background:rgba(0,0,0,.4);padding:3px 9px;border-radius:5px;z-index:99}
+.hub-link:hover{color:#fff}
+
+/* Responsive */
+@media (max-width:1100px){.pos-layout{grid-template-columns:1fr 380px}.products{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+@media (max-width:900px){.pos-layout{grid-template-columns:1fr;grid-template-rows:1fr auto}.cart{max-height:50vh}.store-info{display:none}}
+@media (max-width:540px){.payment-options{grid-template-columns:repeat(2,1fr)}.products{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">$</span>
+    <span>ShopPOS</span>
+  </div>
+  <div class="store-info">
+    <span><strong>Tienda Centro #03</strong></span>
+    <span>Caja: <strong>02</strong></span>
+    <span>Turno: <strong>Mañana</strong></span>
+    <span>Ticket: <strong>#2026-0847</strong></span>
+  </div>
+  <div class="cashier">
+    <div class="shift-info">Apertura caja: <strong>S/ 200.00</strong> · 6 ventas hoy</div>
+    <div class="cashier-avatar">LR</div>
+    <div>
+      <div style="font-weight:600">Luis Ramirez</div>
+      <div style="font-size:10px;color:var(--neutral-300)">Cajero · 4h 23min</div>
+    </div>
+    <button class="btn-logout">Cerrar caja</button>
+  </div>
+</header>
+
+<div class="pos-layout">
+
+  <!-- Catalogo / busqueda productos -->
+  <section class="catalog">
+    <div class="catalog-toolbar">
+      <div class="barcode-wrap">
+        <input class="barcode-input" placeholder="Escanea codigo de barras o busca producto (F2)..." autofocus>
+      </div>
+      <button class="btn-search">🔍 Buscar</button>
+      <button class="btn-search" style="background:var(--neutral-200);color:var(--neutral-700)">⏸ Espera</button>
+    </div>
+
+    <div class="categories">
+      <button class="cat-chip active">Todos</button>
+      <button class="cat-chip">🥤 Bebidas</button>
+      <button class="cat-chip">🍞 Panaderia</button>
+      <button class="cat-chip">🧴 Cuidado personal</button>
+      <button class="cat-chip">🍝 Abarrotes</button>
+      <button class="cat-chip">🧹 Limpieza</button>
+      <button class="cat-chip">🍫 Snacks</button>
+      <button class="cat-chip">🥫 Conservas</button>
+      <button class="cat-chip">🍼 Bebes</button>
+    </div>
+
+    <div class="products">
+      <div class="product-card" onclick="addToCart('SKU-001', 'Inca Kola 500ml', 3.50)">
+        <div class="product-img">🥤</div>
+        <div class="product-sku">SKU-7501-001</div>
+        <div class="product-name">Inca Kola 500ml</div>
+        <div class="product-price">S/ 3.50</div>
+        <div class="product-stock stock-ok">stock: 47</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-002', 'Pan Frances x2', 1.20)">
+        <div class="product-img">🥖</div>
+        <div class="product-sku">SKU-7501-002</div>
+        <div class="product-name">Pan Frances x2</div>
+        <div class="product-price">S/ 1.20</div>
+        <div class="product-stock stock-ok">stock: 124</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-003', 'Leche Gloria 1L', 5.80)">
+        <span class="badge-promo">2x1</span>
+        <div class="product-img">🥛</div>
+        <div class="product-sku">SKU-7501-003</div>
+        <div class="product-name">Leche Gloria 1L</div>
+        <div class="product-price">S/ 5.80</div>
+        <div class="product-stock stock-ok">stock: 32</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-004', 'Arroz Costeno 5kg', 24.90)">
+        <div class="product-img">🍚</div>
+        <div class="product-sku">SKU-7501-004</div>
+        <div class="product-name">Arroz Costeno 5kg</div>
+        <div class="product-price">S/ 24.90</div>
+        <div class="product-stock stock-low">stock: 8 ⚠</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-005', 'Aceite Primor 1L', 9.50)">
+        <div class="product-img">🛢</div>
+        <div class="product-sku">SKU-7501-005</div>
+        <div class="product-name">Aceite Primor 1L</div>
+        <div class="product-price">S/ 9.50</div>
+        <div class="product-stock stock-ok">stock: 28</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-006', 'Shampoo H&S 400ml', 21.90)">
+        <span class="badge-promo">-15%</span>
+        <div class="product-img">🧴</div>
+        <div class="product-sku">SKU-7501-006</div>
+        <div class="product-name">Shampoo H&S 400ml</div>
+        <div class="product-price">S/ 18.60</div>
+        <div class="product-stock stock-ok">stock: 14</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-007', 'Atun Florida x2', 12.40)">
+        <div class="product-img">🥫</div>
+        <div class="product-sku">SKU-7501-007</div>
+        <div class="product-name">Atun Florida lata x2</div>
+        <div class="product-price">S/ 12.40</div>
+        <div class="product-stock stock-ok">stock: 56</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-008', 'Detergente Bolivar 2.5kg', 18.90)">
+        <div class="product-img">🧼</div>
+        <div class="product-sku">SKU-7501-008</div>
+        <div class="product-name">Detergente Bolivar 2.5kg</div>
+        <div class="product-price">S/ 18.90</div>
+        <div class="product-stock stock-low">stock: 4 ⚠</div>
+      </div>
+      <div class="product-card" onclick="alert('Producto sin stock')" style="opacity:.5">
+        <div class="product-img">🍫</div>
+        <div class="product-sku">SKU-7501-009</div>
+        <div class="product-name">Chocolate Sublime x6</div>
+        <div class="product-price">S/ 9.60</div>
+        <div class="product-stock stock-out">SIN STOCK</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-010', 'Cafe Altomayo 250g', 18.50)">
+        <div class="product-img">☕</div>
+        <div class="product-sku">SKU-7501-010</div>
+        <div class="product-name">Cafe Altomayo 250g</div>
+        <div class="product-price">S/ 18.50</div>
+        <div class="product-stock stock-ok">stock: 21</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-011', 'Galletas Soda Field', 1.50)">
+        <div class="product-img">🍪</div>
+        <div class="product-sku">SKU-7501-011</div>
+        <div class="product-name">Galletas Soda Field</div>
+        <div class="product-price">S/ 1.50</div>
+        <div class="product-stock stock-ok">stock: 87</div>
+      </div>
+      <div class="product-card" onclick="addToCart('SKU-012', 'Papel higienico Suave 4u', 6.90)">
+        <div class="product-img">🧻</div>
+        <div class="product-sku">SKU-7501-012</div>
+        <div class="product-name">Papel higienico Suave 4u</div>
+        <div class="product-price">S/ 6.90</div>
+        <div class="product-stock stock-ok">stock: 38</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart derecha -->
+  <aside class="cart">
+    <div class="cart-header">
+      <div>
+        <div class="cart-title">🛒 Venta actual</div>
+        <span class="cart-count" id="cart-count">3 items</span>
+      </div>
+      <button class="btn-clear" onclick="clearCart()">Limpiar</button>
+    </div>
+
+    <div class="customer-row">
+      <div class="customer-info">
+        Cliente: <strong id="customer-name">Consumidor final</strong>
+      </div>
+      <button class="btn-change" onclick="openCustomer()">Cambiar</button>
+    </div>
+
+    <div class="cart-items" id="cart-items">
+      <div class="cart-item">
+        <div>
+          <div class="cart-item-name">Inca Kola 500ml</div>
+          <div class="cart-item-meta">S/ 3.50 c/u · SKU-001</div>
+        </div>
+        <div class="qty-controls">
+          <button class="qty-btn">−</button>
+          <span class="qty-val">2</span>
+          <button class="qty-btn">+</button>
+        </div>
+        <div class="cart-item-price">S/ 7.00</div>
+      </div>
+      <div class="cart-item">
+        <div>
+          <div class="cart-item-name">Leche Gloria 1L</div>
+          <div class="cart-item-meta">S/ 5.80 c/u · <del>S/ 5.80</del> 2x1 promo</div>
+        </div>
+        <div class="qty-controls">
+          <button class="qty-btn">−</button>
+          <span class="qty-val">2</span>
+          <button class="qty-btn">+</button>
+        </div>
+        <div class="cart-item-price">S/ 5.80</div>
+      </div>
+      <div class="cart-item">
+        <div>
+          <div class="cart-item-name">Arroz Costeno 5kg</div>
+          <div class="cart-item-meta">S/ 24.90 c/u · SKU-004</div>
+        </div>
+        <div class="qty-controls">
+          <button class="qty-btn">−</button>
+          <span class="qty-val">1</span>
+          <button class="qty-btn">+</button>
+        </div>
+        <div class="cart-item-price">S/ 24.90</div>
+      </div>
+    </div>
+
+    <div class="cart-summary">
+      <div class="summary-row"><span class="label">Subtotal (5 items)</span><span class="value">S/ 37.70</span></div>
+      <div class="summary-row discount-row"><span class="label">Descuentos (2x1)</span><span class="value">- S/ 5.80</span></div>
+      <div class="summary-row"><span class="label">IGV (18%)</span><span class="value">S/ 5.74</span></div>
+      <div class="summary-row total"><span>Total</span><span class="value">S/ 37.64</span></div>
+    </div>
+
+    <div class="payment-options">
+      <button class="pay-opt active"><div class="pay-opt-icon">💵</div>Efectivo</button>
+      <button class="pay-opt"><div class="pay-opt-icon">💳</div>Tarjeta</button>
+      <button class="pay-opt"><div class="pay-opt-icon">📱</div>Yape/Plin</button>
+      <button class="pay-opt"><div class="pay-opt-icon">🔀</div>Mixto</button>
+    </div>
+
+    <div class="cart-actions">
+      <button class="btn-pay" onclick="completeSale()">
+        <span>💰 Cobrar</span>
+        <span>S/ 37.64</span>
+      </button>
+      <button class="btn-hold">⏸ Suspender (F5) · 🧾 Reimprimir ultimo</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Modal venta exitosa -->
+<div class="modal-overlay" id="modal-success">
+  <div class="modal modal-success">
+    <div class="modal-icon">✅</div>
+    <h3>Venta completada</h3>
+    <p>Ticket #2026-0847 procesado correctamente</p>
+    <div class="receipt-preview">
+      <div class="receipt-row"><strong>ShopPOS · Tienda Centro #03</strong></div>
+      <div class="receipt-row">RUC: 20512345678</div>
+      <div class="receipt-row">Ticket: #2026-0847 · 17/05/2026 16:42</div>
+      <div class="receipt-row">Cajero: Luis Ramirez (Caja 02)</div>
+      <div class="receipt-row">───────────────────────────</div>
+      <div class="receipt-row"><span>Inca Kola 500ml x2</span><span>7.00</span></div>
+      <div class="receipt-row"><span>Leche Gloria 1L 2x1</span><span>5.80</span></div>
+      <div class="receipt-row"><span>Arroz Costeno 5kg</span><span>24.90</span></div>
+      <div class="receipt-row total"><span>TOTAL</span><span>S/ 37.64</span></div>
+      <div class="receipt-row"><span>Pago: Efectivo</span><span>S/ 50.00</span></div>
+      <div class="receipt-row"><span>Vuelto</span><span>S/ 12.36</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">🧾 Reimprimir</button>
+      <button class="btn btn-primary" onclick="newSale()">+ Nueva venta (F1)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cliente -->
+<div class="modal-overlay" id="modal-customer">
+  <div class="modal">
+    <h3>Cliente para esta venta</h3>
+    <p>Ingresa DNI/RUC para boleta o factura. Sin datos, sale como consumidor final.</p>
+    <label style="font-size:11px;font-weight:700;color:var(--neutral-700);display:block;margin-bottom:4px">DNI / RUC</label>
+    <input class="modal-input" placeholder="12345678 o 20123456789" id="customer-doc">
+    <label style="font-size:11px;font-weight:700;color:var(--neutral-700);display:block;margin-bottom:4px">Nombre / Razon social</label>
+    <input class="modal-input" placeholder="Se autocompleta tras buscar">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="setCustomer()">Asignar cliente</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-text">OK</span></div>
+
+<script>
+function addToCart(sku,name,price){showToast('+ '+name+' agregado','success');}
+function clearCart(){if(confirm('Limpiar venta actual?')){showToast('Venta limpiada','success');}}
+function openCustomer(){document.getElementById('modal-customer').classList.add('open');}
+function setCustomer(){var doc=document.getElementById('customer-doc').value;if(doc){document.getElementById('customer-name').textContent='DNI '+doc.slice(0,3)+'***';}closeModal();showToast('Cliente asignado','success');}
+function completeSale(){document.getElementById('modal-success').classList.add('open');}
+function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));}
+function newSale(){closeModal();showToast('Nueva venta · Ticket #2026-0848','success');}
+function showToast(text,type){var t=document.getElementById('toast');document.getElementById('toast-text').textContent=text;t.className='toast visible'+(type?' '+type:'');setTimeout(function(){t.classList.remove('visible')},2500);}
+
+document.querySelectorAll('.cat-chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');}));
+document.querySelectorAll('.pay-opt').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.pay-opt').forEach(x=>x.classList.remove('active'));p.classList.add('active');}));
+document.querySelectorAll('.qty-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();var v=b.parentElement.querySelector('.qty-val');var n=parseInt(v.textContent);if(b.textContent==='+')v.textContent=n+1;else if(n>1)v.textContent=n-1;}));
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='F1'){e.preventDefault();newSale();}
+  if(e.key==='F5'){e.preventDefault();showToast('Venta suspendida (F5)','success');}
+});
+
+// v12.52 shared helpers inline.
+(function(){if(window.__protoHelpers)return;function getCtx(){var p=new URLSearchParams(location.search);return Object.freeze({from:p.get('from'),role:p.get('role'),id:p.get('id'),demoMode:p.get('demo-mode')==='true'||p.get('from')==='hub',specOrigin:p.get('spec')});}function apply(c){var h=document.querySelector('[data-hub-link]');if(h&&c.demoMode)h.style.display='';}window.__protoHelpers={getCtx,apply};window.getPrototypeContext=getCtx;window.applyContextualUI=apply;apply(getCtx());})();
+</script>
+</body>
+</html>

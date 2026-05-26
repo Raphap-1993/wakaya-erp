@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wakaya-erp-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/raphaelparedes/wakaya-erp.git
+    targetRevision: main
+    path: ops/k8s/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wakaya-erp-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

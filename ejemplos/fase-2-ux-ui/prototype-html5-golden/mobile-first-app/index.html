@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Caribe Pay — banca móvil</title>
+<style>
+  :root {
+    --brand: #0D9488;
+    --brand-dark: #0F766E;
+    --brand-soft: #CCFBF1;
+    --accent: #F59E0B;
+    --accent-soft: #FEF3C7;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --neutral-50: #FAFAF9;
+    --neutral-100: #F5F5F4;
+    --neutral-200: #E7E5E4;
+    --neutral-300: #D6D3D1;
+    --neutral-400: #A8A29E;
+    --neutral-500: #78716C;
+    --neutral-600: #57534E;
+    --neutral-700: #44403C;
+    --neutral-800: #292524;
+    --neutral-900: #1C1917;
+    --bottom-nav-h: 64px;
+    --topbar-h: 56px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg: 0 20px 40px rgba(0,0,0,0.18);
+    --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: var(--font); background: var(--neutral-100); color: var(--neutral-900);
+    min-height: 100vh; -webkit-font-smoothing: antialiased; line-height: 1.45;
+  }
+  button, input, select { font: inherit; }
+
+  .hub-link { position: fixed; top: 10px; right: 10px; z-index: 1000; display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #fff; padding: 4px 8px; background: rgba(0,0,0,0.4); border-radius: 12px; backdrop-filter: blur(4px); text-decoration: none; transition: var(--transition); }
+  .hub-link:hover { background: rgba(0,0,0,0.6); }
+
+  /* === DEVICE FRAME (mobile-first; en desktop se ve como un teléfono centrado) === */
+  .phone {
+    max-width: 440px; margin: 0 auto;
+    min-height: 100vh; background: #fff;
+    position: relative; box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    body { background: linear-gradient(135deg, var(--brand-dark), var(--neutral-900)); padding: 30px 0; }
+    .phone { border-radius: 36px; max-height: 92vh; min-height: 800px; }
+  }
+
+  /* === STATUS BAR (mock-up) === */
+  .status-bar {
+    height: 28px; padding: 6px 22px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 700; color: var(--neutral-900);
+  }
+  .status-icons { display: flex; gap: 4px; font-size: 11px; }
+
+  /* === HERO HEADER === */
+  .hero {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 50%, #134E4A 100%);
+    color: #fff; padding: 14px 22px 80px; position: relative;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 30px;
+    background: var(--neutral-100); border-radius: 30px 30px 0 0;
+  }
+  .hero-top {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+  }
+  .hero-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; backdrop-filter: blur(4px);
+  }
+  .hero-greeting { font-size: 12px; opacity: 0.85; }
+  .hero-greeting strong { font-size: 14px; opacity: 1; display: block; font-weight: 700; }
+  .hero-actions { display: flex; gap: 8px; align-items: center; }
+  .hero-actions .icon-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer; backdrop-filter: blur(4px);
+    position: relative; transition: var(--transition);
+  }
+  .hero-actions .icon-btn:hover { background: rgba(255,255,255,0.25); }
+  .hero-actions .icon-btn .dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid var(--brand-dark); }
+
+  .balance-label { font-size: 11px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+  .balance-amount {
+    font-size: 36px; font-weight: 800; margin-top: 4px; letter-spacing: -0.02em;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .balance-amount .currency { font-size: 16px; opacity: 0.8; font-weight: 600; }
+  .balance-amount .toggle { font-size: 14px; opacity: 0.7; cursor: pointer; margin-left: auto; padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.1); }
+  .balance-sub { font-size: 11px; opacity: 0.75; margin-top: 6px; }
+
+  /* === QUICK ACTIONS === */
+  .actions-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    padding: 0 18px; margin-top: -50px; margin-bottom: 22px; position: relative; z-index: 1;
+  }
+  .action-card {
+    background: #fff; border-radius: var(--radius); padding: 14px 6px;
+    text-align: center; box-shadow: var(--shadow-sm);
+    cursor: pointer; transition: var(--transition);
+    border: 1px solid var(--neutral-200);
+  }
+  .action-card:active { transform: scale(0.96); }
+  .action-card .ico {
+    width: 40px; height: 40px; margin: 0 auto 6px;
+    border-radius: 12px; background: var(--brand-soft); color: var(--brand);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .action-card .ico.accent { background: var(--accent-soft); color: var(--accent); }
+  .action-card .label { font-size: 11px; font-weight: 600; color: var(--neutral-700); }
+
+  /* === SECTION === */
+  .section { padding: 0 18px 16px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+  }
+  .section-head h2 { font-size: 15px; font-weight: 700; color: var(--neutral-900); }
+  .section-head a { font-size: 12px; color: var(--brand); font-weight: 600; cursor: pointer; }
+
+  /* === CARDS HORIZONTAL SCROLL === */
+  .cards-scroll {
+    display: flex; gap: 10px; overflow-x: auto;
+    padding-bottom: 4px; margin: 0 -18px; padding-left: 18px; padding-right: 18px;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  .cards-scroll::-webkit-scrollbar { display: none; }
+  .card-product {
+    flex: 0 0 220px; padding: 14px; border-radius: var(--radius);
+    color: #fff; scroll-snap-align: start;
+    box-shadow: var(--shadow-sm); cursor: pointer;
+    transition: var(--transition); position: relative; overflow: hidden;
+  }
+  .card-product:active { transform: scale(0.98); }
+  .card-product.debit { background: linear-gradient(135deg, var(--brand), var(--brand-dark)); }
+  .card-product.credit { background: linear-gradient(135deg, #1F2937, #111827); }
+  .card-product.savings { background: linear-gradient(135deg, #7C3AED, #5B21B6); }
+  .card-product .ctype { font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+  .card-product .cnum { font-family: var(--font-mono); font-size: 11px; opacity: 0.85; margin-top: 4px; letter-spacing: 1px; }
+  .card-product .cbalance { font-size: 18px; font-weight: 800; margin-top: 14px; letter-spacing: -0.01em; }
+  .card-product .cmeta { font-size: 10px; opacity: 0.75; margin-top: 4px; }
+
+  /* === TRANSACTIONS === */
+  .tx-list { background: #fff; }
+  .tx-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--neutral-100); cursor: pointer;
+    transition: var(--transition);
+  }
+  .tx-row:active { background: var(--neutral-50); }
+  .tx-row:last-child { border-bottom: none; }
+  .tx-ico {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .tx-ico.in { background: var(--brand-soft); color: var(--brand); }
+  .tx-ico.out { background: var(--neutral-100); color: var(--neutral-600); }
+  .tx-ico.fee { background: var(--accent-soft); color: var(--accent); }
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-info h4 { font-size: 13px; font-weight: 600; color: var(--neutral-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tx-info .meta { font-size: 11px; color: var(--neutral-500); margin-top: 2px; }
+  .tx-amount { text-align: right; font-weight: 700; font-size: 13px; font-family: var(--font-mono); }
+  .tx-amount.in { color: var(--success); }
+  .tx-amount.out { color: var(--neutral-900); }
+  .tx-amount .sub { display: block; font-size: 10px; color: var(--neutral-400); font-weight: 400; font-family: var(--font); }
+
+  /* === PULL-TO-REFRESH HINT === */
+  .ptr-hint {
+    text-align: center; padding: 10px 0; font-size: 11px; color: var(--neutral-400);
+    transition: var(--transition); height: 0; overflow: hidden;
+  }
+  .ptr-hint.visible { height: 32px; }
+
+  /* === BOTTOM NAV === */
+  .bottom-nav {
+    position: sticky; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid var(--neutral-200);
+    padding: 8px 14px calc(8px + env(safe-area-inset-bottom)); height: var(--bottom-nav-h);
+    display: flex; justify-content: space-around;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.04); z-index: 50;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 4px; background: none; border: none; cursor: pointer;
+    color: var(--neutral-500); font-size: 10px; font-weight: 600;
+    transition: var(--transition); position: relative;
+  }
+  .nav-item .ico { font-size: 20px; }
+  .nav-item.active { color: var(--brand); }
+  .nav-item.active .ico { transform: translateY(-1px); }
+  .nav-item.fab {
+    position: relative; transform: translateY(-12px);
+  }
+  .nav-item.fab .ico {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 24px; box-shadow: 0 6px 16px rgba(13,148,136,0.4);
+  }
+  .nav-item.fab .label { display: none; }
+
+  /* === PAGE (vista) — los 4 panes principales === */
+  .page { display: none; min-height: calc(100vh - var(--bottom-nav-h) - 28px); }
+  .page.active { display: block; }
+
+  /* PAGE: Tarjetas */
+  .cards-page { padding: 18px 18px 100px; background: var(--neutral-100); }
+  .page-title { font-size: 22px; font-weight: 800; color: var(--neutral-900); margin-bottom: 6px; letter-spacing: -0.02em; }
+  .page-subtitle { font-size: 13px; color: var(--neutral-500); margin-bottom: 18px; }
+  .card-detail { background: #fff; border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); margin-bottom: 12px; }
+  .card-detail h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .card-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--neutral-100); font-size: 13px; }
+  .card-stat:last-child { border-bottom: none; }
+  .card-stat strong { color: var(--neutral-900); }
+
+  /* PAGE: Movimientos */
+  .moves-page { padding: 18px 18px 100px; background: var(--neutral-100); }
+  .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin: 0 -18px 14px; padding: 0 18px; scrollbar-width: none; }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; padding: 6px 14px; border-radius: 16px; background: var(--neutral-200); color: var(--neutral-700); font-size: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; }
+  .chip.active { background: var(--brand); color: #fff; }
+  .moves-day { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--neutral-500); margin: 14px 0 6px; }
+  .moves-card { background: #fff; border-radius: var(--radius); padding: 0 14px; box-shadow: var(--shadow-sm); }
+
+  /* PAGE: Perfil */
+  .profile-page { padding: 0 0 100px; background: var(--neutral-100); }
+  .profile-head { background: linear-gradient(135deg, var(--brand), var(--brand-dark)); color: #fff; padding: 30px 18px; text-align: center; }
+  .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; }
+  .profile-head h2 { font-size: 20px; font-weight: 700; }
+  .profile-head p { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .profile-list { background: #fff; margin-top: 12px; }
+  .profile-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--neutral-100); cursor: pointer; }
+  .profile-item:active { background: var(--neutral-50); }
+  .profile-item:last-child { border-bottom: none; }
+  .profile-item .ico { font-size: 20px; width: 30px; }
+  .profile-item .label { flex: 1; font-size: 14px; }
+  .profile-item .arrow { color: var(--neutral-400); }
+
+  /* === BOTTOM SHEET (modal mobile) === */
+  .sheet-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+    opacity: 0; pointer-events: none; transition: opacity var(--transition);
+  }
+  .sheet-overlay.open { opacity: 1; pointer-events: all; }
+  .sheet {
+    position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%);
+    width: 100%; max-width: 440px;
+    background: #fff; border-radius: 24px 24px 0 0;
+    padding: 22px 22px calc(22px + env(safe-area-inset-bottom));
+    transition: transform var(--transition); max-height: 80vh; overflow-y: auto;
+  }
+  .sheet-overlay.open .sheet { transform: translate(-50%, 0); }
+  .sheet-handle { width: 40px; height: 4px; background: var(--neutral-300); border-radius: 2px; margin: 0 auto 16px; }
+  .sheet h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .sheet p { font-size: 13px; color: var(--neutral-600); margin-bottom: 16px; }
+  .sheet-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+
+  /* === BUTTONS === */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px 18px; border-radius: var(--radius);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    border: none; transition: var(--transition);
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:active { transform: scale(0.97); background: var(--brand-dark); }
+  .btn-secondary { background: var(--neutral-100); color: var(--neutral-700); }
+  .btn-secondary:active { background: var(--neutral-200); }
+  .btn-danger { background: transparent; color: var(--danger); }
+  .btn-full { width: 100%; }
+
+  /* === STATES === */
+  .empty-state, .loading-state, .error-state { text-align: center; padding: 56px 24px; display: none; }
+  .empty-state.visible, .loading-state.visible, .error-state.visible { display: block; }
+  .state-ico { font-size: 42px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state h3, .error-state h3 { font-size: 16px; font-weight: 700; color: var(--neutral-700); margin-bottom: 6px; }
+  .empty-state p, .error-state p, .loading-state p { font-size: 13px; color: var(--neutral-500); margin-bottom: 18px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--neutral-200); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === TOAST === */
+  .toast-container { position: fixed; left: 50%; transform: translateX(-50%); top: 18px; z-index: 250; display: flex; flex-direction: column; gap: 8px; max-width: 92%; }
+  .toast { background: var(--neutral-900); color: #fff; padding: 12px 18px; border-radius: 22px; font-size: 13px; box-shadow: var(--shadow-md); animation: slidein 0.25s ease; text-align: center; min-width: 220px; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.warning { background: var(--warning); }
+  @keyframes slidein { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Hide ON DESKTOP fallback for phone-only behavior */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<a class="hub-link" href="../../../../prototype/index.html" title="Volver al hub del producto">← Hub</a>
+
+<div class="phone">
+
+  <!-- STATUS BAR (decorativa) -->
+  <div class="status-bar">
+    <span id="statusTime">9:41</span>
+    <div class="status-icons">📶 📡 🔋</div>
+  </div>
+
+  <!-- ============= PAGE: HOME ============= -->
+  <div class="page active" id="page-home">
+
+    <div class="hero">
+      <div class="hero-top">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="hero-avatar" id="heroAvatar">MJ</div>
+          <div class="hero-greeting">
+            ¡Buen día,<br>
+            <strong id="userName">María José</strong>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="icon-btn" onclick="openSheet('search')" title="Buscar">🔍</button>
+          <button class="icon-btn" onclick="openSheet('notifs')" title="Notificaciones">
+            🔔 <span class="dot"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="balance-label">Cuenta principal MXN</div>
+      <div class="balance-amount">
+        <span class="currency">$</span>
+        <span id="balanceValue">12,847.50</span>
+        <span class="toggle" id="balanceToggle" onclick="toggleBalance()" title="Mostrar/ocultar">👁</span>
+      </div>
+      <div class="balance-sub">Disponible · Última actualización hace 2 min</div>
+    </div>
+
+    <div class="actions-grid">
+      <div class="action-card" onclick="quickAction('transfer')">
+        <div class="ico">↗</div>
+        <div class="label">Transferir</div>
+      </div>
+      <div class="action-card" onclick="quickAction('pay')">
+        <div class="ico">💳</div>
+        <div class="label">Pagar</div>
+      </div>
+      <div class="action-card" onclick="quickAction('topup')">
+        <div class="ico accent">📱</div>
+        <div class="label">Recargar</div>
+      </div>
+      <div class="action-card" onclick="quickAction('qr')">
+        <div class="ico">⊞</div>
+        <div class="label">QR</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Tus tarjetas</h2>
+        <a onclick="goPage('cards')">Ver todas →</a>
+      </div>
+      <div class="cards-scroll">
+        <div class="card-product debit" onclick="openSheet('cardDebit')">
+          <div class="ctype">Débito</div>
+          <div class="cnum">•••• •••• •••• 4782</div>
+          <div class="cbalance">$12,847.50</div>
+          <div class="cmeta">Vence 08/27 · activa</div>
+        </div>
+        <div class="card-product credit" onclick="openSheet('cardCredit')">
+          <div class="ctype">Crédito</div>
+          <div class="cnum">•••• •••• •••• 1290</div>
+          <div class="cbalance">$8,420.30 usado</div>
+          <div class="cmeta">Límite $30,000 · paga el 15</div>
+        </div>
+        <div class="card-product savings" onclick="openSheet('cardSavings')">
+          <div class="ctype">Ahorros</div>
+          <div class="cnum">•••• •••• •••• 9907</div>
+          <div class="cbalance">$48,300.00</div>
+          <div class="cmeta">Tasa anual 11.2%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Últimos movimientos</h2>
+        <a onclick="goPage('moves')">Ver todos →</a>
+      </div>
+      <div class="ptr-hint" id="ptrHint">Soltando para refrescar…</div>
+
+      <div class="loading-state" id="loadingMoves">
+        <div class="spinner"></div>
+        <p>Cargando movimientos…</p>
+      </div>
+
+      <div class="error-state" id="errorMoves">
+        <div class="state-ico">⚠️</div>
+        <h3>No se pudieron cargar tus movimientos</h3>
+        <p>Tira para abajo para reintentar o verifica tu conexión.</p>
+        <button class="btn btn-primary" onclick="retryLoad()">Reintentar</button>
+      </div>
+
+      <div class="tx-list" id="txList"></div>
+    </div>
+
+  </div>
+
+  <!-- ============= PAGE: CARDS ============= -->
+  <div class="page" id="page-cards">
+    <div class="cards-page">
+      <h1 class="page-title">Mis tarjetas</h1>
+      <p class="page-subtitle">3 tarjetas activas · gestiona límites y bloqueos</p>
+
+      <div class="cards-scroll" style="margin-bottom:20px">
+        <div class="card-product debit" onclick="openSheet('cardDebit')">
+          <div class="ctype">Débito</div>
+          <div class="cnum">•••• •••• •••• 4782</div>
+          <div class="cbalance">$12,847.50</div>
+          <div class="cmeta">Vence 08/27 · activa</div>
+        </div>
+        <div class="card-product credit" onclick="openSheet('cardCredit')">
+          <div class="ctype">Crédito</div>
+          <div class="cnum">•••• •••• •••• 1290</div>
+          <div class="cbalance">$8,420.30 usado</div>
+          <div class="cmeta">Límite $30,000 · paga el 15</div>
+        </div>
+        <div class="card-product savings" onclick="openSheet('cardSavings')">
+          <div class="ctype">Ahorros</div>
+          <div class="cnum">•••• •••• •••• 9907</div>
+          <div class="cbalance">$48,300.00</div>
+          <div class="cmeta">Tasa anual 11.2%</div>
+        </div>
+      </div>
+
+      <div class="card-detail">
+        <h3>Débito principal · 4782</h3>
+        <div class="card-stat"><span>Estado</span> <strong style="color:var(--success)">● Activa</strong></div>
+        <div class="card-stat"><span>Límite diario en cajero</span> <strong>$15,000</strong></div>
+        <div class="card-stat"><span>Compras online</span> <strong>Permitidas</strong></div>
+        <div class="card-stat"><span>Compras en el extranjero</span> <strong>Bloqueadas</strong></div>
+        <div class="card-stat"><span>Última transacción</span> <strong>Hace 12 min</strong></div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="showToast('Solicitando nueva tarjeta…','default')">+ Solicitar nueva tarjeta</button>
+    </div>
+  </div>
+
+  <!-- ============= PAGE: MOVEMENTS ============= -->
+  <div class="page" id="page-moves">
+    <div class="moves-page">
+      <h1 class="page-title">Movimientos</h1>
+      <p class="page-subtitle">Últimos 30 días</p>
+
+      <div class="filter-chips">
+        <button class="chip active" onclick="filterMoves(this,'all')">Todos</button>
+        <button class="chip" onclick="filterMoves(this,'in')">Ingresos</button>
+        <button class="chip" onclick="filterMoves(this,'out')">Egresos</button>
+        <button class="chip" onclick="filterMoves(this,'cards')">Tarjetas</button>
+        <button class="chip" onclick="filterMoves(this,'transfers')">Transferencias</button>
+        <button class="chip" onclick="filterMoves(this,'pending')">Pendientes</button>
+      </div>
+
+      <div class="empty-state" id="emptyMoves">
+        <div class="state-ico">🔍</div>
+        <h3>Sin movimientos con este filtro</h3>
+        <p>Cambia el chip o vuelve a "Todos" para ver tus movimientos.</p>
+        <button class="btn btn-secondary" onclick="resetFilter()">Limpiar filtro</button>
+      </div>
+
+      <div id="movesContent">
+        <div class="moves-day">Hoy</div>
+        <div class="moves-card" id="movesToday"></div>
+        <div class="moves-day">Ayer</div>
+        <div class="moves-card" id="movesYesterday"></div>
+        <div class="moves-day">Esta semana</div>
+        <div class="moves-card" id="movesWeek"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= PAGE: PROFILE ============= -->
+  <div class="page" id="page-profile">
+    <div class="profile-page">
+      <div class="profile-head">
+        <div class="profile-avatar" id="profileAvatar">MJ</div>
+        <h2 id="profileName">María José Pérez</h2>
+        <p>maria.perez@caribe.mx · Cuenta premium</p>
+      </div>
+      <div class="profile-list">
+        <div class="profile-item" onclick="showToast('Apertura: 12 mar 2022')"><span class="ico">👤</span><span class="label">Mi información</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="showToast('Documentos al día')"><span class="ico">📄</span><span class="label">Documentos</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="showToast('PIN biométrico activo')"><span class="ico">🔐</span><span class="label">Seguridad y biometría</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="showToast('3 dispositivos activos')"><span class="ico">📱</span><span class="label">Dispositivos conectados</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="showToast('Notificaciones push activas')"><span class="ico">🔔</span><span class="label">Notificaciones</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="showToast('Idioma: Español (México)')"><span class="ico">🌐</span><span class="label">Idioma y región</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="cycleRole()"><span class="ico">🔄</span><span class="label">Cambiar de perfil (demo)</span><span class="arrow">›</span></div>
+        <div class="profile-item" onclick="openSheet('logout')"><span class="ico">🚪</span><span class="label" style="color:var(--danger)">Cerrar sesión</span><span class="arrow">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-page="home" onclick="goPage('home',this)">
+      <span class="ico">🏠</span> Inicio
+    </button>
+    <button class="nav-item" data-page="cards" onclick="goPage('cards',this)">
+      <span class="ico">💳</span> Tarjetas
+    </button>
+    <button class="nav-item fab" onclick="openSheet('quickPay')">
+      <span class="ico">＋</span>
+    </button>
+    <button class="nav-item" data-page="moves" onclick="goPage('moves',this)">
+      <span class="ico">📋</span> Movimientos
+    </button>
+    <button class="nav-item" data-page="profile" onclick="goPage('profile',this)">
+      <span class="ico">👤</span> Perfil
+    </button>
+  </nav>
+
+</div>
+
+<!-- BOTTOM SHEET -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <h3 id="sheetTitle">Acción rápida</h3>
+    <p id="sheetText">Descripción de la acción…</p>
+    <div id="sheetBody"></div>
+    <div class="sheet-actions" id="sheetActions">
+      <button class="btn btn-primary btn-full" onclick="closeSheet()">Aceptar</button>
+      <button class="btn btn-secondary btn-full" onclick="closeSheet()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ======================================================================
+//  Mock data — dominio banca móvil
+// ======================================================================
+const TRANSACTIONS = [
+  { id:'TX-9821', kind:'in',  cat:'transfers', ico:'↙', name:'Transferencia recibida · Roberto P.', meta:'09:14 · ref pago renta',  amount:+8500.00 },
+  { id:'TX-9820', kind:'out', cat:'cards',     ico:'☕', name:'Café Brevia Polanco',                  meta:'08:42 · débito 4782',     amount:-184.00 },
+  { id:'TX-9819', kind:'out', cat:'cards',     ico:'🚇', name:'Metrobús · viaje 4',                   meta:'08:15 · débito 4782',     amount:-7.00   },
+  { id:'TX-9818', kind:'out', cat:'cards',     ico:'🛒', name:'Northmart Centro',                     meta:'Ayer · débito 4782',      amount:-642.75 },
+  { id:'TX-9817', kind:'out', cat:'transfers', ico:'📤', name:'Transferencia a Sofía · split cena',  meta:'Ayer · SPEI BBVA',        amount:-450.00 },
+  { id:'TX-9816', kind:'in',  cat:'transfers', ico:'💰', name:'Nómina · Brevia Industries',          meta:'2 nov · SPEI Banorte',    amount:+24850.00 },
+  { id:'TX-9815', kind:'out', cat:'cards',     ico:'⛽', name:'Servicio Pemex 4527',                  meta:'1 nov · débito 4782',     amount:-820.00 },
+  { id:'TX-9814', kind:'fee', cat:'pending',   ico:'⚠',  name:'Comisión por retiro en otro banco',    meta:'30 oct · pendiente',      amount:-25.00 },
+];
+
+const ROLES = [
+  { name:'María José Pérez', initials:'MJ', tier:'Premium' },
+  { name:'Daniel Rivas',     initials:'DR', tier:'Plus'    },
+  { name:'Modo invitado',    initials:'IN', tier:'Lectura' },
+];
+
+let currentRoleIdx = 0;
+let balanceVisible = true;
+let activeFilter = 'all';
+let currentPage = 'home';
+
+// ======================================================================
+//  Init
+// ======================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  // Loading inicial
+  document.getElementById('loadingMoves').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('loadingMoves').classList.remove('visible');
+    renderTxList('txList', TRANSACTIONS.slice(0, 4));
+    renderMovesPage();
+  }, 700);
+  // Tiempo del status bar
+  setInterval(() => {
+    const d = new Date();
+    document.getElementById('statusTime').textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+  }, 30000);
+});
+
+function retryLoad() {
+  document.getElementById('errorMoves').classList.remove('visible');
+  document.getElementById('loadingMoves').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('loadingMoves').classList.remove('visible');
+    renderTxList('txList', TRANSACTIONS.slice(0, 4));
+  }, 700);
+}
+
+// ======================================================================
+//  Render transacciones
+// ======================================================================
+function renderTxList(target, items) {
+  const wrap = document.getElementById(target);
+  if (!wrap) return;
+  if (items.length === 0) {
+    wrap.innerHTML = '<div style="padding:24px;text-align:center;color:var(--neutral-500);font-size:13px">Sin movimientos</div>';
+    return;
+  }
+  wrap.innerHTML = items.map(t => `
+    <div class="tx-row" onclick="openTxDetail('${t.id}')">
+      <div class="tx-ico ${t.kind}">${t.ico}</div>
+      <div class="tx-info">
+        <h4>${t.name}</h4>
+        <div class="meta">${t.meta}</div>
+      </div>
+      <div class="tx-amount ${t.kind==='in'?'in':'out'}">
+        ${t.amount > 0 ? '+' : ''}$${Math.abs(t.amount).toLocaleString('es-MX',{minimumFractionDigits:2})}
+        <span class="sub">${t.kind==='fee'?'comisión':t.kind==='in'?'ingreso':'egreso'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMovesPage() {
+  let filtered = TRANSACTIONS;
+  if (activeFilter === 'in') filtered = TRANSACTIONS.filter(t => t.kind === 'in');
+  else if (activeFilter === 'out') filtered = TRANSACTIONS.filter(t => t.kind === 'out');
+  else if (activeFilter !== 'all') filtered = TRANSACTIONS.filter(t => t.cat === activeFilter);
+
+  if (filtered.length === 0) {
+    document.getElementById('movesContent').style.display = 'none';
+    document.getElementById('emptyMoves').classList.add('visible');
+    return;
+  }
+  document.getElementById('movesContent').style.display = '';
+  document.getElementById('emptyMoves').classList.remove('visible');
+  // Reparto simple: hoy(0-2), ayer(3-4), semana(resto)
+  renderTxList('movesToday',     filtered.slice(0, 3));
+  renderTxList('movesYesterday', filtered.slice(3, 5));
+  renderTxList('movesWeek',      filtered.slice(5));
+}
+
+function filterMoves(btn, key) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = key;
+  renderMovesPage();
+}
+
+function resetFilter() {
+  activeFilter = 'all';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('.chip').classList.add('active');
+  renderMovesPage();
+}
+
+function openTxDetail(id) {
+  const tx = TRANSACTIONS.find(t => t.id === id);
+  if (!tx) return;
+  document.getElementById('sheetTitle').textContent = tx.name;
+  document.getElementById('sheetText').textContent = tx.meta + ' · ' + tx.id;
+  document.getElementById('sheetBody').innerHTML = `
+    <div style="padding:10px 0;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:${tx.kind==='in'?'var(--success)':'var(--neutral-900)'}">
+        ${tx.amount > 0 ? '+' : '-'}$${Math.abs(tx.amount).toLocaleString('es-MX',{minimumFractionDigits:2})}
+      </div>
+      <div style="font-size:11px;color:var(--neutral-500);margin-top:4px">MXN · saldo después: $12,847.50</div>
+    </div>`;
+  document.getElementById('sheetActions').innerHTML = `
+    <button class="btn btn-primary btn-full" onclick="showToast('Comprobante descargado','success');closeSheet()">⬇ Descargar comprobante</button>
+    <button class="btn btn-secondary btn-full" onclick="showToast('Reportado al servicio de fraude','warning');closeSheet()">⚠ Reportar este movimiento</button>
+    <button class="btn btn-danger btn-full" onclick="closeSheet()">Cancelar</button>`;
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+
+// ======================================================================
+//  Quick actions / Sheets
+// ======================================================================
+function quickAction(kind) {
+  const opts = {
+    transfer: { t:'Transferir dinero', s:'A cualquier banco · SPEI sin costo · llega en segundos',  ic:'↗' },
+    pay:      { t:'Pagar servicios',    s:'Luz, agua, internet, tarjetas y más de 200 servicios',   ic:'💳' },
+    topup:    { t:'Recargar celular',   s:'Recarga tiempo aire para cualquier compañía',            ic:'📱' },
+    qr:       { t:'Pago con QR',        s:'Escanea el código del comercio y paga en 2 toques',       ic:'⊞' },
+  };
+  const o = opts[kind];
+  document.getElementById('sheetTitle').textContent = o.t;
+  document.getElementById('sheetText').textContent = o.s;
+  document.getElementById('sheetBody').innerHTML = '';
+  document.getElementById('sheetActions').innerHTML = `
+    <button class="btn btn-primary btn-full" onclick="showToast('${o.t} listo','success');closeSheet()">Continuar</button>
+    <button class="btn btn-secondary btn-full" onclick="closeSheet()">Más tarde</button>`;
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+
+function openSheet(kind) {
+  const map = {
+    'search':     { t:'Buscar', s:'Encuentra movimientos, beneficiarios o servicios. Búsqueda completa disponible al regenerar el prototipo.' },
+    'notifs':     { t:'Notificaciones', s:'Tienes 3 notificaciones nuevas · 1 alerta de seguridad pendiente de revisar.' },
+    'cardDebit':  { t:'Débito Caribe Pay 4782', s:'Activa · vence 08/27 · límite diario $15,000' },
+    'cardCredit': { t:'Crédito Visa 1290', s:'Usado $8,420 de $30,000 · pago mínimo $890 antes del 15' },
+    'cardSavings':{ t:'Ahorros Caribe+ 9907', s:'Cuenta de ahorro con rendimiento 11.2% anual' },
+    'quickPay':   { t:'Pago rápido', s:'Elige una acción para continuar.' },
+    'logout':     { t:'Cerrar sesión', s:'Tu sesión actual quedará cerrada en este dispositivo.' },
+  };
+  const o = map[kind] || { t:'Acción', s:'…' };
+  document.getElementById('sheetTitle').textContent = o.t;
+  document.getElementById('sheetText').textContent = o.s;
+  document.getElementById('sheetBody').innerHTML = '';
+  if (kind === 'quickPay') {
+    document.getElementById('sheetActions').innerHTML = `
+      <button class="btn btn-primary btn-full" onclick="closeSheet();quickAction('transfer')">↗ Transferir</button>
+      <button class="btn btn-primary btn-full" onclick="closeSheet();quickAction('pay')">💳 Pagar servicio</button>
+      <button class="btn btn-primary btn-full" onclick="closeSheet();quickAction('qr')">⊞ Escanear QR</button>
+      <button class="btn btn-secondary btn-full" onclick="closeSheet()">Cancelar</button>`;
+  } else if (kind === 'logout') {
+    document.getElementById('sheetActions').innerHTML = `
+      <button class="btn btn-danger btn-full" style="background:var(--danger);color:#fff" onclick="closeSheet();showToast('Sesión cerrada','success')">Sí, cerrar sesión</button>
+      <button class="btn btn-secondary btn-full" onclick="closeSheet()">Cancelar</button>`;
+  } else {
+    document.getElementById('sheetActions').innerHTML = `
+      <button class="btn btn-secondary btn-full" onclick="closeSheet()">Cerrar</button>`;
+  }
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+
+function closeSheet(ev) { document.getElementById('sheetOverlay').classList.remove('open'); }
+
+// ======================================================================
+//  Navigation
+// ======================================================================
+function goPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else document.querySelector('.nav-item[data-page="' + page + '"]').classList.add('active');
+  currentPage = page;
+  window.scrollTo(0, 0);
+}
+
+// ======================================================================
+//  Roles / balance toggle
+// ======================================================================
+function toggleBalance() {
+  balanceVisible = !balanceVisible;
+  document.getElementById('balanceValue').textContent = balanceVisible ? '12,847.50' : '•••••••';
+  document.getElementById('balanceToggle').textContent = balanceVisible ? '👁' : '👁‍🗨';
+}
+
+function cycleRole() {
+  currentRoleIdx = (currentRoleIdx + 1) % ROLES.length;
+  const r = ROLES[currentRoleIdx];
+  document.getElementById('userName').textContent = r.name;
+  document.getElementById('heroAvatar').textContent = r.initials;
+  document.getElementById('profileAvatar').textContent = r.initials;
+  document.getElementById('profileName').textContent = r.name;
+  showToast('Perfil: ' + r.name + ' · ' + r.tier, 'default');
+}
+
+// ======================================================================
+//  Pull-to-refresh hint (demo)
+// ======================================================================
+let startY = 0;
+document.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (window.scrollY === 0 && e.touches[0].clientY - startY > 60) {
+    document.getElementById('ptrHint').classList.add('visible');
+  }
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  if (document.getElementById('ptrHint').classList.contains('visible')) {
+    document.getElementById('ptrHint').classList.remove('visible');
+    showToast('Movimientos actualizados','success');
+  }
+});
+
+// ======================================================================
+//  Toast
+// ======================================================================
+function showToast(msg, kind) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 2800);
+}
+
+// Demo: doble-click en avatar dispara estado de error
+document.querySelector('.hero-avatar').addEventListener('dblclick', () => {
+  document.getElementById('txList').innerHTML = '';
+  document.getElementById('errorMoves').classList.add('visible');
+  showToast('Error simulado de servicio','error');
+});
+</script>
+</body>
+</html>

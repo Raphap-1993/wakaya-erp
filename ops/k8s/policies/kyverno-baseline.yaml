@@ -1,0 +1,76 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-signed-images
+  annotations:
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: false
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: check-image-signature
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/*/*/*"
+          attestors:
+            - entries:
+                - keyless:
+                    subject: "https://github.com/*"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: baseline-pod-security
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: disallow-privileged
+      match:
+        any:
+          - resources: { kinds: [Pod] }
+      validate:
+        message: "Los pods privilegiados no estan permitidos."
+        pattern:
+          spec:
+            =(initContainers):
+              - =(securityContext):
+                  =(privileged): "false"
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"
+    - name: require-non-root
+      match:
+        any:
+          - resources: { kinds: [Pod] }
+      validate:
+        message: "Los pods deben correr como non-root."
+        pattern:
+          spec:
+            =(securityContext):
+              runAsNonRoot: true
+    - name: require-resource-limits
+      match:
+        any:
+          - resources: { kinds: [Pod] }
+      validate:
+        message: "Cada contenedor debe declarar limits y requests."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  requests:
+                    cpu: "?*"
+                    memory: "?*"
+                  limits:
+                    cpu: "?*"
+                    memory: "?*"

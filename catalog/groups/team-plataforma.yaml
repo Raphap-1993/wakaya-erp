@@ -1,0 +1,13 @@
+# Group: equipo de plataforma.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-plataforma
+  title: Team Plataforma
+  description: Equipo responsable de capacidades transversales (IaC, observabilidad, identidad).
+spec:
+  type: team
+  children: []
+  members:
+    - ejemplo

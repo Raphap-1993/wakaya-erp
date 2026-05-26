@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>FleetOps — Control de Flota y Envios</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#0EA5E9; --brand-light:#E0F2FE; --brand-dark:#0369A1; --brand-mid:#38BDF8;
+  --accent:#F97316; --accent-light:#FFEDD5;
+  --success:#10B981; --success-light:#D1FAE5;
+  --warning:#F59E0B; --warning-light:#FEF3C7;
+  --danger:#EF4444; --danger-light:#FEE2E2;
+  --info:#6366F1; --info-light:#E0E7FF;
+  --neutral-50:#F8FAFC; --neutral-100:#F1F5F9; --neutral-200:#E2E8F0;
+  --neutral-300:#CBD5E1; --neutral-400:#94A3B8; --neutral-500:#64748B;
+  --neutral-700:#334155; --neutral-800:#1E293B; --neutral-900:#0F172A;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 28px rgba(15,23,42,.12);
+  --radius:6px; --radius-lg:10px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:56px; --sidebar-w:230px; --rightpanel-w:340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:13px;color:var(--neutral-900);background:var(--neutral-50);line-height:1.5}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+
+/* ── Topbar ── */
+.topbar{position:sticky;top:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:var(--shadow-sm);z-index:20}
+.brand{font-weight:800;font-size:15px;color:var(--brand-dark);display:flex;align-items:center;gap:8px}
+.brand-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--brand) 0%,var(--info) 100%);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+
+.live-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--success-light);color:#065F46;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.live-dot{width:7px;height:7px;background:var(--success);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.topbar-search{flex:1;max-width:380px;position:relative}
+.topbar-search input{width:100%;padding:7px 12px 7px 32px;border:1px solid var(--neutral-200);border-radius:6px;background:var(--neutral-50);font-size:12px}
+.topbar-search input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px var(--brand-light)}
+.topbar-search::before{content:"🔍";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.6}
+.topbar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.topbar-btn{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:var(--transition);position:relative}
+.topbar-btn:hover{background:var(--neutral-100)}
+.topbar-badge{position:absolute;top:3px;right:3px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;border-radius:999px;padding:1px 5px}
+.profile{display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:var(--transition)}
+.profile:hover{background:var(--neutral-100)}
+.profile-avatar{width:28px;height:28px;background:var(--brand);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.profile-name{font-size:12px;font-weight:600}
+.profile-role{font-size:10px;color:var(--neutral-500)}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--neutral-200);padding:14px 10px;flex-shrink:0}
+.sidebar-section{margin-bottom:16px}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--neutral-500);padding:6px 10px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:5px;cursor:pointer;transition:var(--transition);font-size:12px;color:var(--neutral-700);position:relative}
+.sidebar-item:hover{background:var(--neutral-100)}
+.sidebar-item.active{background:var(--brand-light);color:var(--brand-dark);font-weight:600}
+.sidebar-item.active::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;background:var(--brand);border-radius:0 3px 3px 0}
+.sidebar-item .icon{width:16px;text-align:center;font-size:13px}
+.sidebar-item .badge{margin-left:auto;background:var(--neutral-200);color:var(--neutral-700);font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px}
+.sidebar-item.urgent .badge{background:var(--danger);color:#fff;animation:pulse 2s infinite}
+.sidebar-item.active .badge{background:var(--brand);color:#fff}
+
+/* ── Main: split layout map | list ── */
+.main{flex:1;display:flex;overflow:hidden}
+.map-area{flex:1;position:relative;background:#E8EEF5;min-height:calc(100vh - var(--topbar-h));border-right:1px solid var(--neutral-200)}
+
+/* Mock map: grid de lineas + pines */
+.map-canvas{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(56,189,248,.08) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(56,189,248,.08) 1px,transparent 1px),
+  radial-gradient(circle at 40% 35%,rgba(14,165,233,.12),transparent 30%),
+  radial-gradient(circle at 65% 60%,rgba(99,102,241,.1),transparent 25%);
+  background-size:40px 40px,40px 40px,100% 100%,100% 100%}
+
+/* Carreteras mock dibujadas con SVG */
+.map-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.map-controls{position:absolute;top:14px;left:14px;background:#fff;border-radius:8px;box-shadow:var(--shadow-md);padding:6px;display:flex;flex-direction:column;gap:4px;z-index:2}
+.map-ctrl{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:var(--transition)}
+.map-ctrl:hover{background:var(--neutral-100)}
+
+.map-legend{position:absolute;top:14px;right:14px;background:#fff;border-radius:8px;box-shadow:var(--shadow-md);padding:10px 14px;z-index:2;font-size:11px;min-width:170px}
+.map-legend h5{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--neutral-500);margin-bottom:6px;font-weight:700}
+.legend-item{display:flex;align-items:center;gap:8px;padding:3px 0}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.legend-dot.in-route{background:var(--brand)}
+.legend-dot.delayed{background:var(--danger)}
+.legend-dot.delivered{background:var(--success)}
+.legend-dot.warehouse{background:var(--neutral-700)}
+
+/* Pines de vehiculos */
+.pin{position:absolute;cursor:pointer;transition:var(--transition);z-index:3}
+.pin:hover{transform:scale(1.2);z-index:4}
+.pin .pin-body{width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 8px rgba(0,0,0,.25);color:#fff;font-size:14px;border:2px solid #fff}
+.pin .pin-body span{transform:rotate(45deg)}
+.pin.in-route .pin-body{background:var(--brand)}
+.pin.delayed .pin-body{background:var(--danger);animation:pulse 2s infinite}
+.pin.delivered .pin-body{background:var(--success)}
+.pin.warehouse .pin-body{background:var(--neutral-700);border-radius:6px;transform:none}
+.pin.warehouse .pin-body span{transform:none}
+.pin-label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:#fff;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;color:var(--neutral-900);white-space:nowrap;box-shadow:var(--shadow-sm);opacity:0;transition:var(--transition);pointer-events:none}
+.pin:hover .pin-label{opacity:1;top:-26px}
+
+.map-stats{position:absolute;bottom:14px;left:14px;right:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;z-index:2}
+.map-stat{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-radius:8px;padding:10px 12px;box-shadow:var(--shadow-md)}
+.map-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--neutral-500);font-weight:700}
+.map-stat-value{font-size:18px;font-weight:800;color:var(--neutral-900);margin-top:2px;font-variant-numeric:tabular-nums}
+.map-stat-delta{font-size:10px;margin-top:2px}
+.delta-up{color:var(--success)}
+.delta-down{color:var(--danger)}
+
+/* ── Right list panel ── */
+.right-panel{width:var(--rightpanel-w);background:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.right-header{padding:14px 16px;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;justify-content:space-between;background:var(--neutral-50)}
+.right-tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--neutral-200);background:#fff}
+.r-tab{padding:8px 12px;font-size:11px;font-weight:600;color:var(--neutral-500);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.4px}
+.r-tab:hover{color:var(--neutral-900)}
+.r-tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+.r-tab-count{background:var(--neutral-200);color:var(--neutral-700);font-size:9px;padding:1px 5px;border-radius:999px;font-weight:700}
+.r-tab.active .r-tab-count{background:var(--brand);color:#fff}
+
+.shipment-list{flex:1;overflow-y:auto;padding:8px 0}
+.shipment-card{padding:12px 16px;border-bottom:1px solid var(--neutral-100);cursor:pointer;transition:var(--transition)}
+.shipment-card:hover{background:var(--neutral-50)}
+.shipment-card.selected{background:var(--brand-light);border-left:3px solid var(--brand)}
+.shipment-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.shipment-num{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--brand)}
+.shipment-eta{font-size:10px;color:var(--neutral-500)}
+
+.shipment-route{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:11px}
+.route-from{color:var(--neutral-700);font-weight:600}
+.route-arrow{color:var(--neutral-400)}
+.route-to{color:var(--neutral-700);font-weight:600}
+
+.shipment-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}
+.badge-status{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.badge-status::before{content:"";width:5px;height:5px;border-radius:50%}
+.badge-in-route{background:var(--brand-light);color:var(--brand-dark)}.badge-in-route::before{background:var(--brand)}
+.badge-delayed{background:var(--danger-light);color:#991B1B}.badge-delayed::before{background:var(--danger);animation:pulse 1.5s infinite}
+.badge-delivered{background:var(--success-light);color:#065F46}.badge-delivered::before{background:var(--success)}
+.badge-loading{background:var(--warning-light);color:#92400E}.badge-loading::before{background:var(--warning)}
+.badge-pending{background:var(--neutral-100);color:var(--neutral-700)}.badge-pending::before{background:var(--neutral-500)}
+
+.progress-bar{margin-top:6px;height:4px;background:var(--neutral-100);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--brand) 0%,var(--brand-mid) 100%);transition:width .3s ease}
+.progress-fill.delayed{background:linear-gradient(90deg,var(--danger) 0%,#F87171 100%)}
+.progress-fill.delivered{background:var(--success)}
+
+/* Detail full (overlay) cuando seleccionas un envio */
+.detail-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:80}
+.detail-overlay.open{opacity:1;pointer-events:auto}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:480px;background:#fff;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .3s ease;z-index:81;overflow-y:auto;display:flex;flex-direction:column}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{padding:16px 20px;border-bottom:1px solid var(--neutral-200);background:var(--neutral-50);display:flex;justify-content:space-between;align-items:flex-start}
+.detail-close{font-size:18px;color:var(--neutral-500);cursor:pointer}
+.detail-body{flex:1;padding:16px 20px;overflow-y:auto}
+.detail-section{margin-bottom:18px}
+.detail-section h4{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700;margin-bottom:8px}
+.detail-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--neutral-100);font-size:12px}
+.detail-row .label{color:var(--neutral-500)}
+.detail-row .value{font-weight:600}
+
+/* Timeline de eventos del envio */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--neutral-200)}
+.timeline-event{position:relative;padding-bottom:14px;font-size:12px}
+.timeline-event::before{content:"";position:absolute;left:-22px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--neutral-300)}
+.timeline-event.done::before{background:var(--success);border-color:var(--success)}
+.timeline-event.current::before{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-light);animation:pulse 1.5s infinite}
+.timeline-when{font-size:10px;color:var(--neutral-500);font-family:var(--font-mono)}
+.timeline-what{font-weight:600;color:var(--neutral-900);margin-top:2px}
+.timeline-where{font-size:11px;color:var(--neutral-500)}
+
+.detail-footer{padding:12px 20px;border-top:1px solid var(--neutral-200);display:flex;gap:6px;background:var(--neutral-50)}
+.btn{padding:6px 12px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;transition:var(--transition);border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-secondary{background:#fff;color:var(--neutral-700);border-color:var(--neutral-200)}
+.btn-secondary:hover{background:var(--neutral-50)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#C73838}
+
+/* States */
+.state-card{padding:40px 20px;text-align:center}
+.state-icon{font-size:36px;margin-bottom:8px}
+.state-title{font-size:13px;font-weight:700;color:var(--neutral-900);margin-bottom:4px}
+.state-desc{font-size:11px;color:var(--neutral-500);max-width:280px;margin:0 auto 12px}
+.spinner{width:28px;height:28px;border:3px solid var(--neutral-200);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--neutral-900);color:#fff;padding:10px 16px;border-radius:5px;box-shadow:var(--shadow-lg);display:none;z-index:100;animation:slideIn .25s ease;align-items:center;gap:8px;font-size:12px}
+.toast.visible{display:flex}
+.toast.success{background:var(--success)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:480px;width:90%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal h3{font-size:15px;margin-bottom:10px}
+.modal p{font-size:12px;color:var(--neutral-700);margin-bottom:14px}
+.modal-input{width:100%;padding:7px 10px;border:1px solid var(--neutral-200);border-radius:5px;font-size:12px;margin-bottom:10px}
+.modal-actions{display:flex;justify-content:flex-end;gap:6px}
+
+.hub-link{position:fixed;top:11px;right:14px;font-size:11px;color:var(--neutral-500);background:#fff;padding:3px 9px;border-radius:5px;border:1px solid var(--neutral-200);z-index:99;box-shadow:var(--shadow-sm)}
+.hub-link:hover{color:var(--brand)}
+
+/* ── Responsive ── */
+@media (max-width:1200px){
+  .right-panel{width:300px}
+}
+@media (max-width:960px){
+  .sidebar{width:56px}
+  .sidebar-label,.sidebar-item span:not(.icon){display:none}
+  .sidebar-item{justify-content:center;padding:8px}
+  .right-panel{width:280px}
+  .topbar-search{display:none}
+  .map-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:720px){
+  .main{flex-direction:column}
+  .map-area{min-height:50vh}
+  .right-panel{width:100%;border-top:1px solid var(--neutral-200)}
+  .profile-name,.profile-role{display:none}
+  .map-stats{display:none}
+}
+</style>
+</head>
+<body>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">🚚</span>
+    <span>FleetOps</span>
+  </div>
+  <span class="live-pill">
+    <span class="live-dot"></span>
+    LIVE · 84 vehiculos
+  </span>
+  <div class="topbar-search">
+    <input type="search" placeholder="Buscar envio, placa, conductor...">
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Alertas">🔔<span class="topbar-badge">5</span></button>
+    <button class="topbar-btn" title="Mensajes">💬<span class="topbar-badge">2</span></button>
+    <button class="topbar-btn" title="Reportes">📊</button>
+    <div class="profile">
+      <div class="profile-avatar">CG</div>
+      <div>
+        <div class="profile-name">Carlos Gutierrez</div>
+        <div class="profile-role">Dispatcher · Lima Sur</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Operaciones</div>
+      <div class="sidebar-item active" data-view="live">
+        <span class="icon">📍</span><span>En ruta hoy</span><span class="badge">42</span>
+      </div>
+      <div class="sidebar-item urgent" data-view="delayed">
+        <span class="icon">⚠</span><span>Retrasados</span><span class="badge">5</span>
+      </div>
+      <div class="sidebar-item" data-view="loading">
+        <span class="icon">📦</span><span>Cargando</span><span class="badge">12</span>
+      </div>
+      <div class="sidebar-item" data-view="delivered">
+        <span class="icon">✓</span><span>Entregados</span><span class="badge">187</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Flota</div>
+      <div class="sidebar-item" data-view="vehicles">
+        <span class="icon">🚛</span><span>Vehiculos</span><span class="badge">84</span>
+      </div>
+      <div class="sidebar-item" data-view="drivers">
+        <span class="icon">👤</span><span>Conductores</span><span class="badge">96</span>
+      </div>
+      <div class="sidebar-item" data-view="maintenance">
+        <span class="icon">🔧</span><span>Mantenimiento</span><span class="badge">3</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Centros</div>
+      <div class="sidebar-item" data-view="warehouses">
+        <span class="icon">🏭</span><span>Almacenes</span><span class="badge">8</span>
+      </div>
+      <div class="sidebar-item" data-view="routes">
+        <span class="icon">🗺</span><span>Rutas</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <!-- Mapa interactivo (mock) -->
+    <div class="map-area">
+      <div class="map-canvas"></div>
+
+      <!-- Carreteras SVG mock -->
+      <svg class="map-overlay" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <path d="M 50 300 Q 200 150 400 200 T 750 250" stroke="rgba(56,189,248,.4)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 100 500 Q 300 400 500 450 T 750 500" stroke="rgba(56,189,248,.4)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 400 50 Q 450 200 500 350 T 600 550" stroke="rgba(56,189,248,.3)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M 50 100 L 300 150 L 350 300 L 450 350" stroke="rgba(56,189,248,.3)" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+
+      <div class="map-controls">
+        <button class="map-ctrl" title="Acercar">+</button>
+        <button class="map-ctrl" title="Alejar">−</button>
+        <button class="map-ctrl" title="Mi ubicacion">⌖</button>
+        <button class="map-ctrl" title="Vista satelite">🛰</button>
+      </div>
+
+      <div class="map-legend">
+        <h5>Leyenda</h5>
+        <div class="legend-item"><span class="legend-dot in-route"></span>En ruta (42)</div>
+        <div class="legend-item"><span class="legend-dot delayed"></span>Retrasado (5)</div>
+        <div class="legend-item"><span class="legend-dot delivered"></span>Entregado (187)</div>
+        <div class="legend-item"><span class="legend-dot warehouse"></span>Almacen (8)</div>
+      </div>
+
+      <!-- Pines de vehiculos posicionados -->
+      <div class="pin in-route" style="top:25%;left:30%" onclick="selectShipment('SHP-44892')">
+        <div class="pin-body"><span>🚚</span></div>
+        <div class="pin-label">FLT-042 · SHP-44892</div>
+      </div>
+      <div class="pin delayed" style="top:45%;left:55%" onclick="selectShipment('SHP-44811')">
+        <div class="pin-body"><span>🚛</span></div>
+        <div class="pin-label">FLT-017 · RETRASADO 32min</div>
+      </div>
+      <div class="pin in-route" style="top:60%;left:25%" onclick="selectShipment('SHP-44906')">
+        <div class="pin-body"><span>🚚</span></div>
+        <div class="pin-label">FLT-021 · SHP-44906</div>
+      </div>
+      <div class="pin in-route" style="top:35%;left:70%" onclick="selectShipment('SHP-44915')">
+        <div class="pin-body"><span>🚚</span></div>
+        <div class="pin-label">FLT-008 · SHP-44915</div>
+      </div>
+      <div class="pin delivered" style="top:18%;left:78%">
+        <div class="pin-body"><span>✓</span></div>
+        <div class="pin-label">FLT-033 · Entregado</div>
+      </div>
+      <div class="pin warehouse" style="top:42%;left:12%">
+        <div class="pin-body"><span>🏭</span></div>
+        <div class="pin-label">Almacen Lurin</div>
+      </div>
+      <div class="pin warehouse" style="top:30%;left:50%">
+        <div class="pin-body"><span>🏭</span></div>
+        <div class="pin-label">Almacen Callao</div>
+      </div>
+      <div class="pin warehouse" style="top:70%;left:65%">
+        <div class="pin-body"><span>🏭</span></div>
+        <div class="pin-label">Almacen Ate</div>
+      </div>
+
+      <!-- Stats flotantes sobre mapa -->
+      <div class="map-stats">
+        <div class="map-stat">
+          <div class="map-stat-label">SLA cumplido</div>
+          <div class="map-stat-value">94.2%</div>
+          <div class="map-stat-delta delta-up">↑ 1.8% vs ayer</div>
+        </div>
+        <div class="map-stat">
+          <div class="map-stat-label">Tiempo promedio entrega</div>
+          <div class="map-stat-value">2h 14m</div>
+          <div class="map-stat-delta delta-down">↑ 8min vs meta</div>
+        </div>
+        <div class="map-stat">
+          <div class="map-stat-label">Capacidad utilizada</div>
+          <div class="map-stat-value">78%</div>
+          <div class="map-stat-delta delta-up">15 unidades libres</div>
+        </div>
+        <div class="map-stat">
+          <div class="map-stat-label">Incidentes</div>
+          <div class="map-stat-value" style="color:var(--danger)">3</div>
+          <div class="map-stat-delta delta-down">2 sin asignar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: lista de envios filtrable -->
+    <div class="right-panel">
+      <div class="right-header">
+        <div>
+          <div style="font-size:14px;font-weight:700">Envios activos</div>
+          <div style="font-size:11px;color:var(--neutral-500);margin-top:2px">Lima · Mayo 17, 2026</div>
+        </div>
+        <button class="btn btn-primary" onclick="openNewShipment()">+ Crear</button>
+      </div>
+      <div class="right-tabs">
+        <div class="r-tab active">En ruta <span class="r-tab-count">42</span></div>
+        <div class="r-tab">Retraso <span class="r-tab-count">5</span></div>
+        <div class="r-tab">Pendientes <span class="r-tab-count">18</span></div>
+      </div>
+      <div class="shipment-list">
+
+        <div class="shipment-card selected" onclick="selectShipment('SHP-44892')">
+          <div class="shipment-head">
+            <span class="shipment-num">SHP-44892</span>
+            <span class="shipment-eta">ETA 16:42</span>
+          </div>
+          <div class="shipment-route">
+            <span class="route-from">Callao</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">Surco</span>
+          </div>
+          <div class="shipment-meta">
+            <span class="badge-status badge-in-route">En ruta</span>
+            <span style="font-size:10px;color:var(--neutral-500)">FLT-042 · J. Pérez</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:68%"></div></div>
+        </div>
+
+        <div class="shipment-card" onclick="selectShipment('SHP-44811')">
+          <div class="shipment-head">
+            <span class="shipment-num">SHP-44811</span>
+            <span class="shipment-eta" style="color:var(--danger)">ATRASO 32min</span>
+          </div>
+          <div class="shipment-route">
+            <span class="route-from">Lurin</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">San Isidro</span>
+          </div>
+          <div class="shipment-meta">
+            <span class="badge-status badge-delayed">Retrasado</span>
+            <span style="font-size:10px;color:var(--neutral-500)">FLT-017 · M. Rojas</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill delayed" style="width:45%"></div></div>
+        </div>
+
+        <div class="shipment-card" onclick="selectShipment('SHP-44906')">
+          <div class="shipment-head">
+            <span class="shipment-num">SHP-44906</span>
+            <span class="shipment-eta">ETA 17:18</span>
+          </div>
+          <div class="shipment-route">
+            <span class="route-from">Ate</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">Miraflores</span>
+          </div>
+          <div class="shipment-meta">
+            <span class="badge-status badge-in-route">En ruta</span>
+            <span style="font-size:10px;color:var(--neutral-500)">FLT-021 · L. Vega</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:32%"></div></div>
+        </div>
+
+        <div class="shipment-card" onclick="selectShipment('SHP-44915')">
+          <div class="shipment-head">
+            <span class="shipment-num">SHP-44915</span>
+            <span class="shipment-eta">ETA 18:05</span>
+          </div>
+          <div class="shipment-route">
+            <span class="route-from">Callao</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">La Molina</span>
+          </div>
+          <div class="shipment-meta">
+            <span class="badge-status badge-in-route">En ruta</span>
+            <span style="font-size:10px;color:var(--neutral-500)">FLT-008 · R. Diaz</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:18%"></div></div>
+        </div>
+
+        <div class="shipment-card" onclick="selectShipment('SHP-44922')">
+          <div class="shipment-head">
+            <span class="shipment-num">SHP-44922</span>
+            <span class="shipment-eta">ETA 19:10</span>
+          </div>
+          <div class="shipment-route">
+            <span class="route-from">Lurin</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">SJL</span>
+          </div>
+          <div class="shipment-meta">
+            <span class="badge-status badge-loading">Cargando</span>
+            <span style="font-size:10px;color:var(--neutral-500)">FLT-051 · A. Soto</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:5%"></div></div>
+        </div>
+
+        <div class="shipment-card" onclick="selectShipment('SHP-44888')">
+          <div class="shipment-head">
+            <span class="shipment-num">SHP-44888</span>
+            <span class="shipment-eta">Entregado 15:42</span>
+          </div>
+          <div class="shipment-route">
+            <span class="route-from">Ate</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">San Borja</span>
+          </div>
+          <div class="shipment-meta">
+            <span class="badge-status badge-delivered">Entregado</span>
+            <span style="font-size:10px;color:var(--neutral-500)">FLT-033 · P. Marin</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill delivered" style="width:100%"></div></div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="state-card" id="empty-state" style="display:none">
+          <div class="state-icon">📭</div>
+          <div class="state-title">Sin envios para este filtro</div>
+          <div class="state-desc">No hay envios que coincidan. Crea uno o cambia el filtro.</div>
+          <button class="btn btn-primary" onclick="openNewShipment()">+ Nuevo</button>
+        </div>
+
+        <!-- Error state -->
+        <div class="state-card" id="error-state" style="display:none">
+          <div class="state-icon">⚠</div>
+          <div class="state-title">No se pudo cargar</div>
+          <div class="state-desc">El servicio GPS no responde. Reintentando automaticamente...</div>
+          <button class="btn btn-primary" onclick="retryLoad()">Reintentar ahora</button>
+        </div>
+
+        <!-- Loading state -->
+        <div class="state-card" id="loading-state" style="display:none">
+          <div class="spinner"></div>
+          <div class="state-title">Sincronizando flota...</div>
+          <div class="state-desc">Conectando con GPS de 84 vehiculos.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Detail panel para un envio -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<aside class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;color:var(--neutral-500);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Envio</div>
+      <div style="font-size:18px;font-weight:700;margin-top:4px"><span class="shipment-num" id="detail-num">SHP-44892</span></div>
+      <div style="font-size:11px;color:var(--neutral-500);margin-top:2px">Callao → Surco · 12 paquetes · 1,240 kg</div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <h4>Estado y ETA</h4>
+      <div class="detail-row"><span class="label">Estado actual</span><span class="value"><span class="badge-status badge-in-route">En ruta</span></span></div>
+      <div class="detail-row"><span class="label">ETA original</span><span class="value">16:42</span></div>
+      <div class="detail-row"><span class="label">ETA actualizado</span><span class="value" style="color:var(--success)">16:38 (-4min)</span></div>
+      <div class="detail-row"><span class="label">Distancia restante</span><span class="value">8.4 km</span></div>
+      <div class="detail-row"><span class="label">Velocidad actual</span><span class="value">42 km/h</span></div>
+    </div>
+    <div class="detail-section">
+      <h4>Vehiculo y conductor</h4>
+      <div class="detail-row"><span class="label">Vehiculo</span><span class="value">FLT-042 (BVT-321)</span></div>
+      <div class="detail-row"><span class="label">Conductor</span><span class="value">Jose Pérez · Lic. A-IIIc</span></div>
+      <div class="detail-row"><span class="label">Telefono</span><span class="value">+51 999 ••• 234</span></div>
+      <div class="detail-row"><span class="label">Carga</span><span class="value">68% / 1,820 kg max</span></div>
+    </div>
+    <div class="detail-section">
+      <h4>Linea de tiempo</h4>
+      <div class="timeline">
+        <div class="timeline-event done">
+          <div class="timeline-when">14:20</div>
+          <div class="timeline-what">Carga completada</div>
+          <div class="timeline-where">📍 Almacen Callao</div>
+        </div>
+        <div class="timeline-event done">
+          <div class="timeline-when">14:32</div>
+          <div class="timeline-what">Salida ruta</div>
+          <div class="timeline-where">📍 Almacen Callao</div>
+        </div>
+        <div class="timeline-event done">
+          <div class="timeline-when">15:18</div>
+          <div class="timeline-what">Check-in en peaje</div>
+          <div class="timeline-where">📍 Peaje Villa El Salvador</div>
+        </div>
+        <div class="timeline-event current">
+          <div class="timeline-when">15:54 (ahora)</div>
+          <div class="timeline-what">En transito</div>
+          <div class="timeline-where">📍 Av. Tomas Marsano altura cuadra 32</div>
+        </div>
+        <div class="timeline-event">
+          <div class="timeline-when">16:38 (estimado)</div>
+          <div class="timeline-what">Entrega programada</div>
+          <div class="timeline-where">📍 Av. El Polo 678, Surco</div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>Documentos</h4>
+      <div class="detail-row"><span class="label">Guia de remision</span><span class="value">GR-2026-44892 ✓</span></div>
+      <div class="detail-row"><span class="label">Manifiesto carga</span><span class="value">MC-44892 ✓</span></div>
+      <div class="detail-row"><span class="label">Foto evidencia</span><span class="value">Pendiente entrega</span></div>
+    </div>
+  </div>
+  <div class="detail-footer">
+    <button class="btn btn-secondary">📞 Contactar</button>
+    <button class="btn btn-danger" style="margin-left:auto">🚨 Reportar incidente</button>
+    <button class="btn btn-primary">📥 Descargar guia</button>
+  </div>
+</aside>
+
+<!-- Modal nuevo envio -->
+<div class="modal-overlay" id="modal-new">
+  <div class="modal">
+    <h3>+ Nuevo envio</h3>
+    <p>Asigna conductor y vehiculo. El sistema calculara la ruta optima automaticamente.</p>
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Origen</label>
+    <input class="modal-input" placeholder="Almacen Callao">
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Destino</label>
+    <input class="modal-input" placeholder="Cliente / direccion">
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Peso estimado (kg)</label>
+    <input class="modal-input" type="number" placeholder="0">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmNewShipment()">Asignar y crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-text">Listo</span>
+</div>
+
+<script>
+function selectShipment(num) {
+  document.querySelectorAll('.shipment-card').forEach(c => c.classList.remove('selected'));
+  const card = [...document.querySelectorAll('.shipment-card')].find(c => c.querySelector('.shipment-num')?.textContent === num);
+  if (card) card.classList.add('selected');
+  document.getElementById('detail-num').textContent = num;
+  document.getElementById('detail-overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+function openNewShipment() { document.getElementById('modal-new').classList.add('open'); }
+function closeModal() { document.getElementById('modal-new').classList.remove('open'); }
+function confirmNewShipment() { closeModal(); showToast('✓ Envio creado · ruta calculada', 'success'); }
+function showToast(text, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = text;
+  t.className = 'toast visible' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+function retryLoad() { showToast('Reintentando...', 'success'); }
+
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+document.querySelectorAll('.r-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.r-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeDetail(); closeModal(); }
+});
+</script>
+</body>
+</html>

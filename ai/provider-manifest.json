@@ -1,0 +1,90 @@
+{
+  "projectName": "Wakaya ERP",
+  "projectSlug": "wakaya-erp",
+  "javaBasePackage": "com.wakaya.erp",
+  "containerImage": "ghcr.io/raphaelparedes/wakaya-erp",
+  "apiResourcePlural": "reservations",
+  "apiResourcePath": "/api/reservations",
+  "status": "ready-for-ai-provider",
+  "methodology": "enterprise-ai-first-phases-0-8",
+  "canonicalIndex": "docs/README.md",
+  "taskIndex": "ai/tasks/README.md",
+  "rules": [
+    "read AGENTS.md before executing any task",
+    "write only to canonical paths declared by the task packet",
+    "for visual features, do not close SDD or build front/back without gate-spdd-approved",
+    "before build, ensure spec-tareas.md has small tasks, allowed paths, TDD steps and verification commands",
+    "before frontend build, ensure /ux artifacts, prototype or wireframes, component system and Penpot Angular mapping exist or are explicitly not applicable",
+    "use an isolated branch or worktree for code changes when possible",
+    "leave TDD, test and review evidence for critical changes",
+    "do not invent business rules",
+    "declare assumptions and open questions",
+    "apply the gate declared by the task packet",
+    "do not replace human approval"
+  ],
+  "phases": [
+    {
+      "phase": "0",
+      "name": "Iniciacion",
+      "task": "ai/tasks/fase-0-iniciacion.task.md",
+      "command": "/document + /plan",
+      "gate": "gate-0-1"
+    },
+    {
+      "phase": "1",
+      "name": "Analisis y requerimientos",
+      "task": "ai/tasks/fase-1-requerimientos.task.md",
+      "command": "/document + /plan",
+      "gate": "gate-0-1"
+    },
+    {
+      "phase": "2",
+      "name": "UX/UI",
+      "task": "ai/tasks/fase-2-ux.task.md",
+      "command": "/ux",
+      "gate": "gate-ux-ready"
+    },
+    {
+      "phase": "3",
+      "name": "Arquitectura",
+      "task": "ai/tasks/fase-3-arquitectura.task.md",
+      "command": "/review",
+      "gate": "gate-2-3"
+    },
+    {
+      "phase": "4",
+      "name": "Spec-Driven Development",
+      "task": "ai/tasks/fase-4-sdd.task.md",
+      "command": "/spec",
+      "gate": "gate-4-6"
+    },
+    {
+      "phase": "5",
+      "name": "Construccion",
+      "task": "ai/tasks/fase-5-construccion.task.md",
+      "command": "/build",
+      "gate": "gate-4-6"
+    },
+    {
+      "phase": "6",
+      "name": "QA",
+      "task": "ai/tasks/fase-6-qa.task.md",
+      "command": "/test",
+      "gate": "gate-4-6"
+    },
+    {
+      "phase": "7",
+      "name": "Deploy",
+      "task": "ai/tasks/fase-7-deploy.task.md",
+      "command": "/ship",
+      "gate": "gate-7-8"
+    },
+    {
+      "phase": "8",
+      "name": "Operacion",
+      "task": "ai/tasks/fase-8-operacion.task.md",
+      "command": "/review + /ship",
+      "gate": "gate-7-8"
+    }
+  ]
+}

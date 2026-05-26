@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>InsureNow — Polizas · Suscripcion · Claims</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#1D4ED8; --brand-light:#DBEAFE; --brand-dark:#1E3A8A; --brand-mid:#3B82F6;
+  --accent:#0D9488; --accent-light:#CCFBF1;
+  --success:#16A34A; --success-light:#DCFCE7;
+  --warning:#EA580C; --warning-light:#FFEDD5;
+  --danger:#DC2626; --danger-light:#FEE2E2;
+  --info:#0891B2; --info-light:#CFFAFE;
+  --neutral-50:#F8FAFC; --neutral-100:#F1F5F9; --neutral-200:#E2E8F0;
+  --neutral-300:#CBD5E1; --neutral-500:#64748B; --neutral-700:#334155; --neutral-900:#0F172A;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 28px rgba(15,23,42,.12);
+  --radius:6px; --radius-lg:10px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:58px; --sidebar-w:230px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:13px;color:var(--neutral-900);background:var(--neutral-50);line-height:1.5}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+
+/* Topbar */
+.topbar{position:sticky;top:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;padding:0 20px;gap:14px;z-index:20;box-shadow:var(--shadow-sm)}
+.brand{font-weight:800;font-size:15px;color:var(--brand-dark);display:flex;align-items:center;gap:10px}
+.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+.topbar-search{flex:1;max-width:380px;position:relative}
+.topbar-search input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--neutral-200);border-radius:6px;background:var(--neutral-50);font-size:12px}
+.topbar-search input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px var(--brand-light)}
+.topbar-search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.5}
+.topbar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.topbar-btn{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:var(--transition);position:relative}
+.topbar-btn:hover{background:var(--neutral-100)}
+.topbar-badge{position:absolute;top:3px;right:3px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;border-radius:999px;padding:1px 5px}
+.profile{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:6px;cursor:pointer}
+.profile:hover{background:var(--neutral-100)}
+.profile-avatar{width:30px;height:30px;background:var(--brand);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.profile-name{font-size:12px;font-weight:600}
+.profile-role{font-size:10px;color:var(--neutral-500)}
+
+/* Layout */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--neutral-200);padding:14px 10px;flex-shrink:0}
+.sidebar-section{margin-bottom:14px}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--neutral-500);padding:6px 10px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:5px;cursor:pointer;transition:var(--transition);font-size:12px;color:var(--neutral-700);position:relative}
+.sidebar-item:hover{background:var(--neutral-100)}
+.sidebar-item.active{background:var(--brand-light);color:var(--brand-dark);font-weight:600}
+.sidebar-item.active::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;background:var(--brand);border-radius:0 3px 3px 0}
+.sidebar-item .icon{width:16px;text-align:center;font-size:13px}
+.sidebar-item .badge{margin-left:auto;background:var(--neutral-200);color:var(--neutral-700);font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px}
+.sidebar-item.active .badge{background:var(--brand);color:#fff}
+.sidebar-item.urgent .badge{background:var(--danger);color:#fff}
+
+/* Main */
+.main{flex:1;padding:20px;overflow-x:auto}
+.page-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.page-title h1{font-size:21px;font-weight:700}
+.breadcrumb{font-size:11px;color:var(--neutral-500);margin-bottom:4px}
+.page-actions{display:flex;gap:8px}
+
+.btn{padding:7px 13px;border-radius:6px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:var(--transition);border:1px solid transparent}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-secondary{background:#fff;color:var(--neutral-700);border-color:var(--neutral-200)}
+.btn-secondary:hover{background:var(--neutral-50)}
+.btn-accent{background:var(--accent);color:#fff}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden}
+.kpi-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--brand)}
+.kpi-card.success::before{background:var(--success)}
+.kpi-card.warning::before{background:var(--warning)}
+.kpi-card.danger::before{background:var(--danger)}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700}
+.kpi-value{font-size:22px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi-meta{font-size:11px;color:var(--neutral-500);margin-top:2px}
+.kpi-delta{font-size:11px;margin-top:4px;font-weight:600}
+.delta-up{color:var(--success)}
+.delta-down{color:var(--danger)}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--neutral-200);margin-bottom:16px;gap:4px}
+.tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--neutral-500);cursor:pointer;border-bottom:2px solid transparent;transition:var(--transition);display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--neutral-900)}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+.tab-count{background:var(--neutral-100);color:var(--neutral-700);font-size:10px;padding:1px 7px;border-radius:999px;font-weight:700}
+.tab.active .tab-count{background:var(--brand);color:#fff}
+
+/* Tabla polizas */
+.table-wrap{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);overflow:hidden}
+.table-toolbar{padding:12px 14px;border-bottom:1px solid var(--neutral-200);background:var(--neutral-50);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toolbar-search{flex:1;max-width:280px;padding:6px 12px;border:1px solid var(--neutral-200);border-radius:6px;background:#fff;font-size:12px}
+.toolbar-search:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--neutral-500);font-weight:700;background:var(--neutral-50);border-bottom:1px solid var(--neutral-200)}
+th[data-sort]{cursor:pointer;user-select:none}
+th[data-sort]:hover{color:var(--brand)}
+th.numeric{text-align:right}
+td{padding:10px 14px;border-bottom:1px solid var(--neutral-100);font-size:12px;vertical-align:middle}
+td.numeric{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-family:var(--font-mono)}
+tr{transition:background var(--transition);cursor:pointer}
+tr:hover{background:var(--neutral-50)}
+tr.row--linked-context{background:var(--brand-light);outline:2px solid var(--brand);outline-offset:-2px}
+
+.policy-num{font-family:var(--font-mono);font-weight:700;color:var(--brand);font-size:11px}
+.client-name{font-weight:600;display:block}
+.client-meta{font-size:10px;color:var(--neutral-500)}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.badge::before{content:"";width:5px;height:5px;border-radius:50%}
+.badge-active{background:var(--success-light);color:#15803D}.badge-active::before{background:var(--success)}
+.badge-renewal{background:var(--warning-light);color:#9A3412}.badge-renewal::before{background:var(--warning)}
+.badge-pending{background:var(--info-light);color:#155E75}.badge-pending::before{background:var(--info)}
+.badge-cancelled{background:var(--neutral-100);color:var(--neutral-700)}.badge-cancelled::before{background:var(--neutral-500)}
+.badge-claim-open{background:var(--danger-light);color:#991B1B}.badge-claim-open::before{background:var(--danger)}
+
+.product-pill{display:inline-block;font-size:10px;padding:2px 8px;background:var(--accent-light);color:#0F766E;border-radius:4px;font-weight:600}
+.product-pill.auto{background:#FEE2E2;color:#991B1B}
+.product-pill.home{background:#DBEAFE;color:#1E40AF}
+.product-pill.health{background:#DCFCE7;color:#166534}
+.product-pill.life{background:#F3E8FF;color:#6B21A8}
+
+/* Detail panel: poliza completa con timeline */
+.detail-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:80}
+.detail-overlay.open{opacity:1;pointer-events:auto}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:560px;background:#fff;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .3s ease;z-index:81;overflow-y:auto;display:flex;flex-direction:column}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{padding:18px 22px;border-bottom:1px solid var(--neutral-200);background:linear-gradient(135deg,var(--brand-light) 0%,#E0E7FF 100%);display:flex;justify-content:space-between;align-items:flex-start}
+.detail-close{font-size:18px;color:var(--neutral-700);cursor:pointer}
+.detail-body{flex:1;padding:18px 22px;overflow-y:auto}
+.detail-section{margin-bottom:20px}
+.detail-section h4{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700;margin-bottom:10px}
+.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--neutral-100);font-size:12px}
+.detail-row .label{color:var(--neutral-500)}
+.detail-row .value{font-weight:600}
+
+.coverage-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.coverage-item{padding:10px;border:1px solid var(--neutral-200);border-radius:6px}
+.cov-name{font-size:11px;font-weight:700;color:var(--neutral-900)}
+.cov-limit{font-size:11px;color:var(--neutral-500);margin-top:2px;font-family:var(--font-mono)}
+.cov-status{margin-top:4px}
+
+/* Claims timeline */
+.timeline{position:relative;padding-left:24px;margin-top:8px}
+.timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--neutral-200)}
+.timeline-event{position:relative;padding-bottom:14px;font-size:12px}
+.timeline-event::before{content:"";position:absolute;left:-22px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--neutral-300)}
+.timeline-event.done::before{background:var(--success);border-color:var(--success)}
+.timeline-event.current::before{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-light)}
+.timeline-event.danger::before{background:var(--danger);border-color:var(--danger)}
+.timeline-when{font-size:10px;color:var(--neutral-500);font-family:var(--font-mono)}
+.timeline-what{font-weight:600;color:var(--neutral-900);margin-top:2px}
+.timeline-who{font-size:11px;color:var(--neutral-500)}
+
+.detail-footer{padding:14px 22px;border-top:1px solid var(--neutral-200);display:flex;gap:6px;background:var(--neutral-50);flex-wrap:wrap}
+
+/* Modal nueva suscripcion (wizard simple) */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:560px;width:90%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal h3{font-size:17px;margin-bottom:8px}
+.modal p{font-size:12px;color:var(--neutral-700);margin-bottom:14px}
+.step-pills{display:flex;gap:6px;margin-bottom:16px}
+.step-pill{flex:1;padding:8px 10px;background:var(--neutral-100);border-radius:6px;font-size:11px;text-align:center;color:var(--neutral-500);font-weight:600;position:relative}
+.step-pill.active{background:var(--brand);color:#fff}
+.step-pill.done{background:var(--success);color:#fff}
+.modal-input{width:100%;padding:8px 12px;border:1px solid var(--neutral-200);border-radius:6px;font-size:12px;margin-bottom:12px}
+.modal-actions{display:flex;justify-content:space-between;gap:6px;margin-top:6px}
+
+/* States */
+.state-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:50px 24px;text-align:center;margin-top:16px}
+.state-icon{font-size:42px;margin-bottom:10px}
+.state-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.state-desc{font-size:12px;color:var(--neutral-500);max-width:340px;margin:0 auto 14px}
+.spinner{width:28px;height:28px;border:3px solid var(--neutral-200);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--neutral-900);color:#fff;padding:10px 16px;border-radius:6px;box-shadow:var(--shadow-lg);display:none;z-index:100;animation:slideIn .25s ease;align-items:center;gap:8px;font-size:12px}
+.toast.visible{display:flex}
+.toast.success{background:var(--success)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.hub-link{position:fixed;top:14px;right:14px;font-size:11px;color:var(--neutral-500);background:#fff;padding:4px 10px;border-radius:6px;border:1px solid var(--neutral-200);z-index:99;box-shadow:var(--shadow-sm);display:none}
+.hub-link:hover{color:var(--brand)}
+
+/* Responsive */
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){.sidebar{width:56px}.sidebar-label,.sidebar-item span:not(.icon),.sidebar-item .badge{display:none}.sidebar-item{justify-content:center;padding:8px}.detail-panel{width:90%}.topbar-search{display:none}}
+@media (max-width:640px){.kpis{grid-template-columns:1fr}.main{padding:12px}.profile-name,.profile-role{display:none}table{font-size:11px}}
+</style>
+</head>
+<body>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">🛡</span>
+    <span>InsureNow</span>
+  </div>
+  <div class="topbar-search">
+    <input type="search" placeholder="Buscar poliza, cliente, DNI/RUC, # claim...">
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Tareas">📋<span class="topbar-badge">5</span></button>
+    <button class="topbar-btn" title="Notificaciones">🔔<span class="topbar-badge">8</span></button>
+    <button class="topbar-btn" title="Mensajes">💬<span class="topbar-badge">12</span></button>
+    <div class="profile">
+      <div class="profile-avatar">SV</div>
+      <div>
+        <div class="profile-name">Sandra Vargas</div>
+        <div class="profile-role">Suscriptora · Auto</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Operaciones</div>
+      <div class="sidebar-item active">
+        <span class="icon">📄</span><span>Polizas</span><span class="badge">2.4k</span>
+      </div>
+      <div class="sidebar-item urgent">
+        <span class="icon">🚨</span><span>Claims abiertos</span><span class="badge">47</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">📝</span><span>Suscripciones</span><span class="badge">18</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🔄</span><span>Renovaciones</span><span class="badge">142</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Productos</div>
+      <div class="sidebar-item">
+        <span class="icon">🚗</span><span>Auto</span><span class="badge">847</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🏠</span><span>Hogar</span><span class="badge">512</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">❤</span><span>Salud</span><span class="badge">623</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">👤</span><span>Vida</span><span class="badge">389</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Gestion</div>
+      <div class="sidebar-item">
+        <span class="icon">💰</span><span>Comisiones</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">📊</span><span>Reportes SBS</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">⚙</span><span>Productos</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-title">
+        <div class="breadcrumb">Operaciones · <a>Polizas</a></div>
+        <h1>Portafolio de polizas activas</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary">📊 Reporte SBS</button>
+        <button class="btn btn-secondary">📤 Exportar</button>
+        <button class="btn btn-primary" onclick="openWizard()">+ Nueva suscripcion</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi-card success">
+        <div class="kpi-label">Polizas vigentes</div>
+        <div class="kpi-value">2,371</div>
+        <div class="kpi-meta">PE / 4 productos</div>
+        <div class="kpi-delta delta-up">↑ 187 este mes</div>
+      </div>
+      <div class="kpi-card warning">
+        <div class="kpi-label">Renovaciones &lt; 30d</div>
+        <div class="kpi-value">142</div>
+        <div class="kpi-meta">S/ 487,200 en prima en juego</div>
+        <div class="kpi-delta delta-down">23 sin contacto aun</div>
+      </div>
+      <div class="kpi-card danger">
+        <div class="kpi-label">Claims abiertos</div>
+        <div class="kpi-value">47</div>
+        <div class="kpi-meta">Total reserva S/ 1.2M</div>
+        <div class="kpi-delta delta-down">8 vencen SLA hoy</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Loss ratio (MTD)</div>
+        <div class="kpi-value">42.3<span style="font-size:14px">%</span></div>
+        <div class="kpi-meta">vs 38% target</div>
+        <div class="kpi-delta delta-up">↑ 4.3pp vs Abr</div>
+      </div>
+    </div>
+
+    <!-- Tabs estado poliza -->
+    <div class="tabs">
+      <div class="tab active">Todas <span class="tab-count">2,371</span></div>
+      <div class="tab">Activas <span class="tab-count">2,182</span></div>
+      <div class="tab">En renovacion <span class="tab-count">142</span></div>
+      <div class="tab">Con claim abierto <span class="tab-count">47</span></div>
+      <div class="tab">Suscripcion pendiente <span class="tab-count">18</span></div>
+    </div>
+
+    <!-- Tabla polizas -->
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input class="toolbar-search" placeholder="Filtrar por # poliza, cliente, DNI...">
+        <select class="toolbar-search" style="max-width:140px">
+          <option>Todos los productos</option>
+          <option>Auto</option><option>Hogar</option><option>Salud</option><option>Vida</option>
+        </select>
+        <select class="toolbar-search" style="max-width:140px">
+          <option>Cualquier estado</option>
+          <option>Activa</option><option>En renovacion</option><option>Con claim</option>
+        </select>
+        <button class="btn btn-secondary">⚙ Mas filtros</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="num"># Poliza</th>
+            <th>Cliente</th>
+            <th>Producto</th>
+            <th>Cobertura</th>
+            <th class="numeric">Prima anual</th>
+            <th>Vigencia</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-resource-id="POL-AUT-2026-0421" onclick="openPolicy('POL-AUT-2026-0421')">
+            <td><span class="policy-num">POL-AUT-2026-0421</span></td>
+            <td>
+              <span class="client-name">Mendez Castro, Roberto</span>
+              <span class="client-meta">DNI 44•••2891 · cliente desde 2019</span>
+            </td>
+            <td><span class="product-pill auto">🚗 Auto</span></td>
+            <td>Todo riesgo + RC</td>
+            <td class="numeric">S/ 2,840</td>
+            <td>hasta 12/2026</td>
+            <td><span class="badge badge-active">Vigente</span></td>
+            <td><button class="btn btn-secondary" style="padding:3px 8px;font-size:11px">Ver</button></td>
+          </tr>
+          <tr data-resource-id="POL-HOG-2025-0118" onclick="openPolicy('POL-HOG-2025-0118')">
+            <td><span class="policy-num">POL-HOG-2025-0118</span></td>
+            <td>
+              <span class="client-name">Quiroga Salinas, Patricia</span>
+              <span class="client-meta">DNI 4•••8742 · cliente desde 2021</span>
+            </td>
+            <td><span class="product-pill home">🏠 Hogar</span></td>
+            <td>Multiriesgo PYME</td>
+            <td class="numeric">S/ 1,920</td>
+            <td>vence en 22d</td>
+            <td><span class="badge badge-renewal">Por renovar</span></td>
+            <td><button class="btn btn-primary" style="padding:3px 8px;font-size:11px">Renovar</button></td>
+          </tr>
+          <tr data-resource-id="POL-SAL-2026-0298" onclick="openPolicy('POL-SAL-2026-0298')">
+            <td><span class="policy-num">POL-SAL-2026-0298</span></td>
+            <td>
+              <span class="client-name">Familia Vasquez Lopez</span>
+              <span class="client-meta">4 asegurados · titular Luis Vasquez</span>
+            </td>
+            <td><span class="product-pill health">❤ Salud</span></td>
+            <td>EPS Premium familiar</td>
+            <td class="numeric">S/ 14,200</td>
+            <td>hasta 03/2027</td>
+            <td><span class="badge badge-claim-open">Claim abierto</span></td>
+            <td><button class="btn btn-secondary" style="padding:3px 8px;font-size:11px">Ver claim</button></td>
+          </tr>
+          <tr data-resource-id="POL-VID-2024-0782" onclick="openPolicy('POL-VID-2024-0782')">
+            <td><span class="policy-num">POL-VID-2024-0782</span></td>
+            <td>
+              <span class="client-name">Ramirez Tello, Andres</span>
+              <span class="client-meta">DNI 4•••3201 · cliente desde 2018</span>
+            </td>
+            <td><span class="product-pill life">👤 Vida</span></td>
+            <td>Vida entera 500k</td>
+            <td class="numeric">S/ 4,680</td>
+            <td>hasta 09/2026</td>
+            <td><span class="badge badge-active">Vigente</span></td>
+            <td><button class="btn btn-secondary" style="padding:3px 8px;font-size:11px">Ver</button></td>
+          </tr>
+          <tr data-resource-id="POL-AUT-2026-0512" onclick="openPolicy('POL-AUT-2026-0512')">
+            <td><span class="policy-num">POL-AUT-2026-0512</span></td>
+            <td>
+              <span class="client-name">Empresas ACME SAC</span>
+              <span class="client-meta">RUC 20•••12345 · flota 8 vehiculos</span>
+            </td>
+            <td><span class="product-pill auto">🚗 Auto Flota</span></td>
+            <td>Cobertura completa flota</td>
+            <td class="numeric">S/ 28,400</td>
+            <td>suscripcion</td>
+            <td><span class="badge badge-pending">En suscripcion</span></td>
+            <td><button class="btn btn-primary" style="padding:3px 8px;font-size:11px">Continuar</button></td>
+          </tr>
+          <tr data-resource-id="POL-SAL-2025-0445" onclick="openPolicy('POL-SAL-2025-0445')">
+            <td><span class="policy-num">POL-SAL-2025-0445</span></td>
+            <td>
+              <span class="client-name">Diaz Mendoza, Carmen</span>
+              <span class="client-meta">DNI 4•••6612 · cliente desde 2020</span>
+            </td>
+            <td><span class="product-pill health">❤ Salud</span></td>
+            <td>EPS individual</td>
+            <td class="numeric">S/ 3,840</td>
+            <td>hasta 01/2027</td>
+            <td><span class="badge badge-active">Vigente</span></td>
+            <td><button class="btn btn-secondary" style="padding:3px 8px;font-size:11px">Ver</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding:10px 14px;border-top:1px solid var(--neutral-200);display:flex;justify-content:space-between;font-size:11px;color:var(--neutral-500);background:var(--neutral-50)">
+        <span>Pagina 1 de 396 · 2,371 polizas</span>
+        <div style="display:flex;gap:3px">
+          <button class="btn btn-secondary" disabled style="padding:3px 8px">‹</button>
+          <button class="btn btn-primary" style="padding:3px 8px">1</button>
+          <button class="btn btn-secondary" style="padding:3px 8px">2</button>
+          <button class="btn btn-secondary" style="padding:3px 8px">3</button>
+          <button class="btn btn-secondary" style="padding:3px 8px">›</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Detail panel: poliza con claim activo -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<aside class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:11px;color:var(--neutral-700);text-transform:uppercase;letter-spacing:.5px;font-weight:700">Poliza</div>
+      <div style="font-size:17px;font-weight:700;margin-top:4px"><span class="policy-num" id="detail-num">POL-SAL-2026-0298</span></div>
+      <div style="font-size:12px;color:var(--neutral-700);margin-top:2px">Familia Vasquez Lopez · EPS Premium familiar · vigente hasta 03/2027</div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body">
+
+    <div class="detail-section">
+      <h4>Datos generales</h4>
+      <div class="detail-row"><span class="label">Cliente titular</span><span class="value">Vasquez Lopez, Luis</span></div>
+      <div class="detail-row"><span class="label">Asegurados</span><span class="value">4 (titular + esposa + 2 hijos)</span></div>
+      <div class="detail-row"><span class="label">Producto</span><span class="value">EPS Premium familiar</span></div>
+      <div class="detail-row"><span class="label">Prima anual</span><span class="value">S/ 14,200.00</span></div>
+      <div class="detail-row"><span class="label">Forma pago</span><span class="value">Mensual S/ 1,183.33 · CC ****4421</span></div>
+      <div class="detail-row"><span class="label">Vigencia</span><span class="value">15/03/2026 al 14/03/2027</span></div>
+      <div class="detail-row"><span class="label">Suscriptor</span><span class="value">Sandra Vargas (yo)</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Coberturas activas</h4>
+      <div class="coverage-grid">
+        <div class="coverage-item">
+          <div class="cov-name">🏥 Hospitalizacion</div>
+          <div class="cov-limit">Limite: S/ 500,000 / ano</div>
+          <div class="cov-status"><span class="badge badge-active">Activa</span></div>
+        </div>
+        <div class="coverage-item">
+          <div class="cov-name">💊 Medicamentos</div>
+          <div class="cov-limit">Limite: S/ 30,000 / ano</div>
+          <div class="cov-status"><span class="badge badge-active">Activa</span></div>
+        </div>
+        <div class="coverage-item">
+          <div class="cov-name">🩺 Consultas medicas</div>
+          <div class="cov-limit">Ilimitadas red preferente</div>
+          <div class="cov-status"><span class="badge badge-active">Activa</span></div>
+        </div>
+        <div class="coverage-item">
+          <div class="cov-name">👶 Maternidad</div>
+          <div class="cov-limit">Limite: S/ 25,000 / parto</div>
+          <div class="cov-status"><span class="badge badge-active">Activa</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>🚨 Claim activo · CLM-2026-0847</h4>
+      <div class="detail-row"><span class="label">Tipo siniestro</span><span class="value">Hospitalizacion (apendicitis)</span></div>
+      <div class="detail-row"><span class="label">Asegurado afectado</span><span class="value">Vasquez Diaz, Sofia (hija · 12 anos)</span></div>
+      <div class="detail-row"><span class="label">Centro medico</span><span class="value">Clinica San Pablo · red preferente ✓</span></div>
+      <div class="detail-row"><span class="label">Fecha siniestro</span><span class="value">11/05/2026</span></div>
+      <div class="detail-row"><span class="label">Monto reclamado</span><span class="value">S/ 18,400.00</span></div>
+      <div class="detail-row"><span class="label">Monto aprobado</span><span class="value" style="color:var(--success)">S/ 16,820.00</span></div>
+      <div class="detail-row"><span class="label">Estado</span><span class="value"><span class="badge badge-pending">En revision medica</span></span></div>
+      <div class="detail-row"><span class="label">SLA</span><span class="value" style="color:var(--warning)">3 dias restantes</span></div>
+
+      <div class="timeline">
+        <div class="timeline-event done">
+          <div class="timeline-when">11/05 22:14</div>
+          <div class="timeline-what">Cliente reporta siniestro</div>
+          <div class="timeline-who">Via app · adjunto: parte hospital</div>
+        </div>
+        <div class="timeline-event done">
+          <div class="timeline-when">12/05 09:32</div>
+          <div class="timeline-what">FNOL validado y FOC asignado</div>
+          <div class="timeline-who">Sara Mendoza (suscriptora)</div>
+        </div>
+        <div class="timeline-event done">
+          <div class="timeline-when">14/05 14:08</div>
+          <div class="timeline-what">Documentos recibidos (alta + facturas)</div>
+          <div class="timeline-who">Clinica San Pablo</div>
+        </div>
+        <div class="timeline-event current">
+          <div class="timeline-when">17/05 (ahora)</div>
+          <div class="timeline-what">Auditoria medica en proceso</div>
+          <div class="timeline-who">Dr. Aliaga (auditor medico)</div>
+        </div>
+        <div class="timeline-event">
+          <div class="timeline-when">~20/05</div>
+          <div class="timeline-what">Pago a centro medico</div>
+          <div class="timeline-who">Transferencia directa</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Historial</h4>
+      <div class="detail-row"><span class="label">Suscripcion original</span><span class="value">15/03/2024 (renovacion 2026)</span></div>
+      <div class="detail-row"><span class="label">Claims totales 2024-2026</span><span class="value">2 (1 resuelto + 1 actual)</span></div>
+      <div class="detail-row"><span class="label">Loss ratio cliente</span><span class="value">38% (saludable)</span></div>
+      <div class="detail-row"><span class="label">NPS ultima encuesta</span><span class="value" style="color:var(--success)">9 / 10</span></div>
+    </div>
+
+  </div>
+  <div class="detail-footer">
+    <button class="btn btn-secondary">📥 Certificado</button>
+    <button class="btn btn-secondary">💬 Contactar</button>
+    <button class="btn btn-accent">Aprobar pago</button>
+    <button class="btn btn-primary">📝 Endoso</button>
+  </div>
+</aside>
+
+<!-- Modal wizard suscripcion -->
+<div class="modal-overlay" id="modal-wizard">
+  <div class="modal">
+    <h3>+ Nueva suscripcion · Paso 1 de 4</h3>
+    <p>Captura los datos basicos del cliente y producto. Continua para cotizacion automatica.</p>
+    <div class="step-pills">
+      <div class="step-pill active">1. Cliente</div>
+      <div class="step-pill">2. Producto</div>
+      <div class="step-pill">3. Cotizacion</div>
+      <div class="step-pill">4. Emision</div>
+    </div>
+    <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">DNI / RUC cliente</label>
+    <input class="modal-input" placeholder="12345678 o 20123456789">
+    <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Producto</label>
+    <select class="modal-input">
+      <option>🚗 Auto · Todo riesgo</option>
+      <option>🏠 Hogar · Multiriesgo</option>
+      <option>❤ Salud · EPS individual</option>
+      <option>👤 Vida · Vida entera</option>
+    </select>
+    <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Canal</label>
+    <select class="modal-input">
+      <option>Web (autoservicio)</option>
+      <option>Broker</option>
+      <option>Telefonico</option>
+      <option>Presencial</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary">Siguiente: producto →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-text">OK</span></div>
+
+<script>
+function openPolicy(id){document.getElementById('detail-num').textContent=id;document.getElementById('detail-overlay').classList.add('open');document.getElementById('detail-panel').classList.add('open');}
+function closeDetail(){document.getElementById('detail-overlay').classList.remove('open');document.getElementById('detail-panel').classList.remove('open');}
+function openWizard(){document.getElementById('modal-wizard').classList.add('open');}
+function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));}
+function showToast(text,type){var t=document.getElementById('toast');document.getElementById('toast-text').textContent=text;t.className='toast visible'+(type?' '+type:'');setTimeout(function(){t.classList.remove('visible')},3000);}
+
+document.querySelectorAll('.sidebar-item').forEach(i=>i.addEventListener('click',()=>{document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));i.classList.add('active');}));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeModal();}});
+
+// v12.52 shared helpers inline.
+(function(){if(window.__protoHelpers)return;function getCtx(){var p=new URLSearchParams(location.search);return Object.freeze({from:p.get('from'),role:p.get('role'),id:p.get('id'),demoMode:p.get('demo-mode')==='true'||p.get('from')==='hub',specOrigin:p.get('spec')});}function apply(c){var h=document.querySelector('[data-hub-link]');if(h&&c.demoMode)h.style.display='';if(c.id){var r=document.querySelector('[data-resource-id="'+c.id+'"]');if(r){r.classList.add('row--linked-context');r.scrollIntoView({block:'center'});}}}window.__protoHelpers={getCtx,apply};window.getPrototypeContext=getCtx;window.applyContextualUI=apply;apply(getCtx());})();
+</script>
+</body>
+</html>

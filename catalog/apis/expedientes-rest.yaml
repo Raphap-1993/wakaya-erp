@@ -1,0 +1,21 @@
+# API REST del dominio wakaya-erp. La definicion canonica vive en contracts/api/openapi.yaml.
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: wakaya-erp-rest
+  title: Wakaya ERP REST API
+  description: API REST publica del sistema wakaya-erp (OpenAPI 3.1).
+  tags:
+    - rest
+    - openapi
+  links:
+    - url: ../../contracts/api/openapi.yaml
+      title: Contrato OpenAPI 3.1
+spec:
+  type: openapi
+  lifecycle: production
+  owner: group:team-wakaya
+  system: wakaya-erp
+  definition:
+    $text: ../../contracts/api/openapi.yaml

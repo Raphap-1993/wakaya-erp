@@ -1,0 +1,13 @@
+# Domain: agrupa Systems de plataforma (capacidades transversales).
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: plataforma
+  title: Plataforma
+  description: Dominio tecnico que agrupa capacidades compartidas (observabilidad, CI/CD, identidad, IaC).
+  tags:
+    - dominio
+    - plataforma
+spec:
+  owner: group:team-plataforma

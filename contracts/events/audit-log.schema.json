@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ejemplo.dev/contracts/events/audit-log.schema.json",
+  "title": "AuditLogEntry",
+  "description": "Entrada inmutable del audit log aplicativo. Registra toda accion sensible (lectura de datos personales, cambios de estado, exportaciones) para auditoria interna, compliance y eDiscovery.",
+  "type": "object",
+  "required": [
+    "entryId",
+    "eventType",
+    "occurredOn",
+    "service",
+    "env",
+    "actor",
+    "target",
+    "action",
+    "outcome"
+  ],
+  "properties": {
+    "entryId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Id unico e inmutable del registro"
+    },
+    "eventType": {
+      "type": "string",
+      "pattern": "^audit\\.[a-z0-9_.-]+\\.v\\d+$",
+      "description": "Namespace versionado, ej. audit.expediente.leido.v1"
+    },
+    "occurredOn": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "service": {
+      "type": "string",
+      "description": "Nombre logico del servicio emisor"
+    },
+    "env": {
+      "type": "string",
+      "enum": ["dev", "staging", "prod"]
+    },
+    "correlationId": {
+      "type": "string",
+      "description": "Identificador de correlacion distribuida"
+    },
+    "traceId": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["user", "service", "system", "automation"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "userAgent": {
+          "type": "string"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Tipo de recurso impactado (expediente, usuario, rol, etc.)"
+        },
+        "id": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Atributos no sensibles del recurso relevantes para la auditoria",
+          "additionalProperties": true
+        }
+      }
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "read",
+        "create",
+        "update",
+        "delete",
+        "export",
+        "login",
+        "logout",
+        "grant",
+        "revoke"
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["success", "failure", "denied"]
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo cuando outcome != success"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field"],
+        "properties": {
+          "field": { "type": "string" },
+          "before": {},
+          "after": {}
+        }
+      },
+      "description": "Diff de atributos para outcome=success y action=update"
+    },
+    "legalBasis": {
+      "type": "string",
+      "description": "Base legal del procesamiento (GDPR art. 6) cuando aplica"
+    },
+    "retention": {
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": ["short", "standard", "legal_hold"]
+        },
+        "expiresOn": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

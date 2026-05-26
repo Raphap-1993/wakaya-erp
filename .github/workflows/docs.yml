@@ -1,0 +1,39 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.md'
+      - 'ci/scripts/check-docs.mjs'
+      - 'ci/scripts/check-markdown-paths.mjs'
+      - 'ci/scripts/check-ai-artifacts.mjs'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'ci/scripts/check-docs.mjs'
+      - 'ci/scripts/check-markdown-paths.mjs'
+      - 'ci/scripts/check-ai-artifacts.mjs'
+      - '.github/workflows/docs.yml'
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Run documentation validator
+        run: node ci/scripts/check-docs.mjs .
+
+      - name: Run markdown path validator
+        run: node ci/scripts/check-markdown-paths.mjs .
+
+      - name: Run AI artifact validator
+        run: node ci/scripts/check-ai-artifacts.mjs .

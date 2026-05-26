@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>FactoryIQ — IoT Industrial · Sensores + Alarmas + Assets</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#0891B2; --brand-light:#CFFAFE; --brand-dark:#0E7490; --brand-mid:#06B6D4;
+  --accent:#FBBF24; --accent-light:#FEF3C7;
+  --success:#22C55E; --success-light:#DCFCE7;
+  --warning:#F59E0B; --warning-light:#FEF3C7;
+  --danger:#EF4444; --danger-light:#FEE2E2;
+  --critical:#7F1D1D; --critical-light:#FECACA;
+  --info:#3B82F6; --info-light:#DBEAFE;
+  --neutral-50:#0F172A; --neutral-100:#1E293B; --neutral-200:#334155;
+  --neutral-300:#475569; --neutral-500:#94A3B8; --neutral-700:#CBD5E1; --neutral-900:#F1F5F9;
+  --bg:#020617; --surface:#0F172A; --surface-2:#1E293B;
+  --shadow-md:0 4px 12px rgba(0,0,0,.3);
+  --shadow-lg:0 12px 28px rgba(0,0,0,.5);
+  --radius:6px; --radius-lg:10px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:54px; --sidebar-w:200px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:13px;color:var(--neutral-900);background:var(--bg);line-height:1.5;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:var(--brand-mid);text-decoration:none}
+
+/* Topbar */
+.topbar{position:sticky;top:0;height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;padding:0 18px;gap:14px;z-index:20}
+.brand{font-weight:800;font-size:14px;color:var(--neutral-900);display:flex;align-items:center;gap:8px}
+.brand-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff}
+.connection-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(34,197,94,.15);color:var(--success);border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.live-dot{width:7px;height:7px;background:var(--success);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+
+.plant-selector{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--neutral-200);border-radius:5px;font-size:11px;color:var(--neutral-700);cursor:pointer;background:var(--surface-2)}
+.plant-selector:hover{background:var(--neutral-200)}
+
+.topbar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.topbar-btn{width:32px;height:32px;border-radius:5px;display:flex;align-items:center;justify-content:center;transition:var(--transition);position:relative;color:var(--neutral-700)}
+.topbar-btn:hover{background:var(--surface-2)}
+.topbar-badge{position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;border-radius:999px;padding:1px 5px;animation:pulse 1.5s infinite}
+.profile{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:5px;cursor:pointer}
+.profile:hover{background:var(--surface-2)}
+.profile-avatar{width:26px;height:26px;background:var(--brand);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.profile-info{font-size:11px}
+.profile-name{font-weight:600;color:var(--neutral-900)}
+.profile-role{color:var(--neutral-500);font-size:10px}
+
+/* Layout */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--neutral-200);padding:14px 8px;flex-shrink:0}
+.sidebar-section{margin-bottom:14px}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--neutral-500);padding:6px 10px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:5px;cursor:pointer;transition:var(--transition);font-size:12px;color:var(--neutral-700);position:relative}
+.sidebar-item:hover{background:var(--surface-2);color:var(--neutral-900)}
+.sidebar-item.active{background:rgba(8,145,178,.2);color:var(--brand-mid);font-weight:600}
+.sidebar-item.active::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;background:var(--brand-mid);border-radius:0 3px 3px 0}
+.sidebar-item .icon{width:16px;text-align:center;font-size:13px}
+.sidebar-item .count{margin-left:auto;background:var(--surface-2);color:var(--neutral-700);font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px}
+.sidebar-item.critical .count{background:var(--danger);color:#fff;animation:pulse 1.5s infinite}
+.sidebar-item.warning .count{background:var(--warning);color:#fff}
+
+/* Main */
+.main{flex:1;padding:18px;overflow-x:auto}
+.page-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.page-title h1{font-size:20px;font-weight:700;color:var(--neutral-900)}
+.breadcrumb{font-size:11px;color:var(--neutral-500);margin-bottom:3px}
+.page-actions{display:flex;gap:6px}
+
+.btn{padding:7px 12px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:var(--transition);border:1px solid transparent}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-secondary{background:var(--surface-2);color:var(--neutral-700);border-color:var(--neutral-200)}
+.btn-secondary:hover{background:var(--neutral-200);color:var(--neutral-900)}
+.btn-danger{background:var(--danger);color:#fff}
+
+/* KPIs grid */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi-card{background:var(--surface);border:1px solid var(--neutral-200);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden}
+.kpi-card.alert{border-color:var(--danger);box-shadow:0 0 0 1px rgba(239,68,68,.3)}
+.kpi-card.warning{border-color:var(--warning);box-shadow:0 0 0 1px rgba(245,158,11,.3)}
+.kpi-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:var(--brand)}
+.kpi-card.alert::before{background:var(--danger)}
+.kpi-card.warning::before{background:var(--warning)}
+.kpi-card.success::before{background:var(--success)}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700}
+.kpi-value{font-size:24px;font-weight:800;color:var(--neutral-900);margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi-unit{font-size:12px;color:var(--neutral-500);font-weight:600;margin-left:4px}
+.kpi-meta{font-size:11px;color:var(--neutral-500);margin-top:2px}
+.kpi-sparkline{margin-top:8px;display:flex;align-items:flex-end;gap:2px;height:30px}
+.spark{flex:1;background:var(--brand-mid);border-radius:1px;opacity:.7;transition:var(--transition)}
+.spark:hover{opacity:1}
+.kpi-card.alert .spark{background:var(--danger)}
+.kpi-card.warning .spark{background:var(--warning)}
+
+/* Layout 2 col: lista assets | detalle */
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* Asset cards */
+.section-card{background:var(--surface);border:1px solid var(--neutral-200);border-radius:var(--radius);overflow:hidden}
+.section-header{padding:12px 16px;border-bottom:1px solid var(--neutral-200);display:flex;justify-content:space-between;align-items:center;background:var(--surface-2)}
+.section-title{font-size:13px;font-weight:700;color:var(--neutral-900);display:flex;align-items:center;gap:8px}
+.section-filter{display:flex;gap:4px}
+.f-btn{padding:3px 8px;border-radius:4px;font-size:11px;color:var(--neutral-500);background:transparent}
+.f-btn:hover{background:var(--neutral-200);color:var(--neutral-900)}
+.f-btn.active{background:var(--brand);color:#fff}
+
+.asset-list{max-height:560px;overflow-y:auto}
+.asset-row{padding:11px 16px;display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;border-bottom:1px solid var(--neutral-200);cursor:pointer;transition:var(--transition)}
+.asset-row:hover{background:var(--surface-2)}
+.asset-row.selected{background:rgba(8,145,178,.15);border-left:3px solid var(--brand-mid)}
+.asset-row.row--linked-context{background:rgba(8,145,178,.25);outline:2px solid var(--brand-mid);outline-offset:-2px}
+.asset-status{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--surface-2)}
+.asset-status.ok{background:rgba(34,197,94,.2);color:var(--success)}
+.asset-status.warn{background:rgba(245,158,11,.2);color:var(--warning)}
+.asset-status.crit{background:rgba(239,68,68,.2);color:var(--danger);animation:pulse 1.5s infinite}
+.asset-status.off{background:var(--surface-2);color:var(--neutral-500)}
+.asset-name{font-size:13px;font-weight:600;color:var(--neutral-900)}
+.asset-meta{font-size:11px;color:var(--neutral-500);margin-top:2px;display:flex;gap:10px}
+.asset-meta strong{color:var(--neutral-700)}
+.asset-value{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--neutral-900);text-align:right}
+.asset-value.warn{color:var(--warning)}
+.asset-value.crit{color:var(--danger)}
+.asset-unit{font-size:10px;color:var(--neutral-500);font-weight:600;margin-left:2px}
+
+/* Alarmas */
+.alarm-row{padding:10px 16px;display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;border-bottom:1px solid var(--neutral-200);transition:var(--transition);cursor:pointer}
+.alarm-row:hover{background:var(--surface-2)}
+.alarm-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.alarm-icon.crit{background:var(--danger);color:#fff;animation:pulse 1.2s infinite}
+.alarm-icon.warn{background:var(--warning);color:#fff}
+.alarm-icon.info{background:var(--info);color:#fff}
+.alarm-body{font-size:12px}
+.alarm-title{font-weight:600;color:var(--neutral-900)}
+.alarm-meta{font-size:10px;color:var(--neutral-500);margin-top:2px;font-family:var(--font-mono)}
+.alarm-time{font-size:10px;color:var(--neutral-500);text-align:right;font-family:var(--font-mono);white-space:nowrap}
+.alarm-actions{display:flex;gap:4px}
+.alarm-btn{padding:3px 8px;border-radius:4px;font-size:10px;color:var(--brand-mid);background:transparent;font-weight:600}
+.alarm-btn:hover{background:rgba(8,145,178,.2)}
+
+/* Chart placeholder (SVG inline) */
+.chart-area{padding:16px;background:var(--surface);min-height:200px}
+.chart-svg{width:100%;height:180px}
+.chart-line{fill:none;stroke:var(--brand-mid);stroke-width:2}
+.chart-fill{fill:url(#g1);opacity:.4}
+.chart-grid{stroke:var(--neutral-200);stroke-dasharray:2,3}
+.chart-label{font-size:9px;fill:var(--neutral-500);font-family:var(--font-mono)}
+.chart-threshold{stroke:var(--danger);stroke-dasharray:4,3;stroke-width:1}
+
+/* States */
+.state-card{padding:50px 20px;text-align:center;background:var(--surface);border:1px solid var(--neutral-200);border-radius:var(--radius)}
+.state-icon{font-size:38px;margin-bottom:10px}
+.state-title{font-size:13px;font-weight:700;color:var(--neutral-900);margin-bottom:4px}
+.state-desc{font-size:11px;color:var(--neutral-500);max-width:300px;margin:0 auto 12px}
+.spinner{width:28px;height:28px;border:3px solid var(--neutral-200);border-top-color:var(--brand-mid);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Modal alarma */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--neutral-200);border-radius:var(--radius-lg);max-width:520px;width:90%;padding:22px;box-shadow:var(--shadow-lg);color:var(--neutral-900)}
+.modal h3{font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.modal-alarm-icon{width:32px;height:32px;border-radius:50%;background:var(--danger);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;animation:pulse 1.5s infinite}
+.modal p{font-size:13px;color:var(--neutral-700);margin-bottom:14px}
+.modal-meta{background:var(--surface-2);padding:12px;border-radius:6px;margin-bottom:14px;font-size:12px}
+.modal-meta-row{display:flex;justify-content:space-between;padding:3px 0;color:var(--neutral-700)}
+.modal-meta-row strong{color:var(--neutral-900)}
+.modal-textarea{width:100%;padding:8px 12px;border:1px solid var(--neutral-200);border-radius:6px;background:var(--surface-2);color:var(--neutral-900);font-size:12px;margin-bottom:12px;min-height:60px;resize:vertical}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);color:var(--neutral-900);padding:10px 16px;border-radius:6px;box-shadow:var(--shadow-lg);border:1px solid var(--neutral-200);display:none;z-index:100;animation:slideIn .25s ease;align-items:center;gap:8px;font-size:12px}
+.toast.visible{display:flex}
+.toast.success{border-color:var(--success);background:rgba(34,197,94,.15)}
+.toast.error{border-color:var(--danger);background:rgba(239,68,68,.15)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.hub-link{position:fixed;top:11px;right:14px;font-size:11px;color:var(--neutral-500);background:var(--surface-2);padding:3px 9px;border-radius:5px;border:1px solid var(--neutral-200);z-index:99;display:none}
+.hub-link:hover{color:var(--brand-mid)}
+
+/* Responsive */
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.sidebar{width:56px}.sidebar-label,.sidebar-item span:not(.icon),.sidebar-item .count{display:none}.sidebar-item{justify-content:center;padding:8px}}
+@media (max-width:640px){.kpis{grid-template-columns:1fr}.main{padding:12px}.plant-selector,.profile-info{display:none}}
+</style>
+</head>
+<body>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">⚙</span>
+    <span>FactoryIQ</span>
+  </div>
+  <span class="connection-pill">
+    <span class="live-dot"></span>
+    LIVE · 247 sensores
+  </span>
+  <div class="plant-selector">
+    <span>🏭</span>
+    <span>Planta Lurin · Linea A + B</span>
+    <span style="opacity:.5;margin-left:4px">▾</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Alarmas activas">🔔<span class="topbar-badge">7</span></button>
+    <button class="topbar-btn" title="Tickets mantenimiento">🔧<span class="topbar-badge">3</span></button>
+    <button class="topbar-btn" title="Reportes">📊</button>
+    <div class="profile">
+      <div class="profile-avatar">RM</div>
+      <div class="profile-info">
+        <div class="profile-name">Ing. Roberto Mendoza</div>
+        <div class="profile-role">Jefe operaciones · turno T2</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Monitoreo</div>
+      <div class="sidebar-item active">
+        <span class="icon">📊</span><span>Overview</span><span class="count">247</span>
+      </div>
+      <div class="sidebar-item critical">
+        <span class="icon">🚨</span><span>Alarmas</span><span class="count">7</span>
+      </div>
+      <div class="sidebar-item warning">
+        <span class="icon">⚠</span><span>Advertencias</span><span class="count">14</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">📈</span><span>Trends</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Assets</div>
+      <div class="sidebar-item">
+        <span class="icon">⚙</span><span>Maquinas</span><span class="count">42</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🌡</span><span>Sensores</span><span class="count">247</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🔌</span><span>PLCs</span><span class="count">18</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🏭</span><span>Lineas</span><span class="count">4</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Operacion</div>
+      <div class="sidebar-item">
+        <span class="icon">🔧</span><span>Mantenimiento</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">📋</span><span>Ordenes trabajo</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">📜</span><span>Audit log</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-title">
+        <div class="breadcrumb">Planta Lurin · <a>Overview</a></div>
+        <h1>Estado en tiempo real · Linea A + B</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary">⏸ Pausar live</button>
+        <button class="btn btn-secondary">📤 Reporte turno</button>
+        <button class="btn btn-primary">🔧 Nueva OT</button>
+      </div>
+    </div>
+
+    <!-- KPIs principales -->
+    <div class="kpis">
+      <div class="kpi-card success">
+        <div class="kpi-label">OEE Linea A</div>
+        <div class="kpi-value">87.2<span class="kpi-unit">%</span></div>
+        <div class="kpi-meta">↑ 2.4% vs ayer · meta 85%</div>
+        <div class="kpi-sparkline">
+          <div class="spark" style="height:60%"></div><div class="spark" style="height:75%"></div>
+          <div class="spark" style="height:55%"></div><div class="spark" style="height:80%"></div>
+          <div class="spark" style="height:88%"></div><div class="spark" style="height:72%"></div>
+          <div class="spark" style="height:85%"></div><div class="spark" style="height:90%"></div>
+        </div>
+      </div>
+      <div class="kpi-card warning">
+        <div class="kpi-label">OEE Linea B</div>
+        <div class="kpi-value" style="color:var(--warning)">72.5<span class="kpi-unit">%</span></div>
+        <div class="kpi-meta">↓ 8.1% · meta 85% · paro 38min</div>
+        <div class="kpi-sparkline">
+          <div class="spark" style="height:85%"></div><div class="spark" style="height:82%"></div>
+          <div class="spark" style="height:80%"></div><div class="spark" style="height:30%"></div>
+          <div class="spark" style="height:0%"></div><div class="spark" style="height:60%"></div>
+          <div class="spark" style="height:72%"></div><div class="spark" style="height:75%"></div>
+        </div>
+      </div>
+      <div class="kpi-card alert">
+        <div class="kpi-label">Alarmas criticas</div>
+        <div class="kpi-value" style="color:var(--danger)">3</div>
+        <div class="kpi-meta">+1 ultima hora · 2 sin asignar</div>
+        <div class="kpi-sparkline">
+          <div class="spark" style="height:0%"></div><div class="spark" style="height:0%"></div>
+          <div class="spark" style="height:20%"></div><div class="spark" style="height:0%"></div>
+          <div class="spark" style="height:0%"></div><div class="spark" style="height:40%"></div>
+          <div class="spark" style="height:50%"></div><div class="spark" style="height:70%"></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Produccion turno</div>
+        <div class="kpi-value">3,840<span class="kpi-unit">u</span></div>
+        <div class="kpi-meta">de 4,200 meta · 91% cumplimiento</div>
+        <div class="kpi-sparkline">
+          <div class="spark" style="height:40%"></div><div class="spark" style="height:55%"></div>
+          <div class="spark" style="height:70%"></div><div class="spark" style="height:65%"></div>
+          <div class="spark" style="height:75%"></div><div class="spark" style="height:80%"></div>
+          <div class="spark" style="height:85%"></div><div class="spark" style="height:91%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard 2 columnas -->
+    <div class="dashboard-grid">
+
+      <!-- Assets / sensores -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">🌡 Assets criticos en monitoreo</div>
+          <div class="section-filter">
+            <button class="f-btn active">Todos (8)</button>
+            <button class="f-btn">Criticos (3)</button>
+            <button class="f-btn">Warn (2)</button>
+          </div>
+        </div>
+        <div class="asset-list">
+          <div class="asset-row" data-resource-id="SENS-A-T1-001" onclick="openAlarm('SENS-A-T1-001','crit','Temperatura tanque 1 excede umbral')">
+            <div class="asset-status crit">🌡</div>
+            <div>
+              <div class="asset-name">Temp. Tanque Reactor T-1</div>
+              <div class="asset-meta">
+                <span><strong>Linea A</strong> · Estacion 03</span>
+                <span>ID: SENS-A-T1-001</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value crit">94.7<span class="asset-unit">°C</span></div>
+              <div style="font-size:10px;color:var(--danger);text-align:right">↑ 12°C · max 85</div>
+            </div>
+          </div>
+          <div class="asset-row" data-resource-id="SENS-B-P2-014" onclick="openAlarm('SENS-B-P2-014','crit','Presion compresor sobre limite')">
+            <div class="asset-status crit">📊</div>
+            <div>
+              <div class="asset-name">Presion Compresor C-2</div>
+              <div class="asset-meta">
+                <span><strong>Linea B</strong> · Estacion 02</span>
+                <span>ID: SENS-B-P2-014</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value crit">8.2<span class="asset-unit">bar</span></div>
+              <div style="font-size:10px;color:var(--danger);text-align:right">↑ 1.8 · max 7.5</div>
+            </div>
+          </div>
+          <div class="asset-row" data-resource-id="VIB-A-M5-021" onclick="openAlarm('VIB-A-M5-021','crit','Vibracion motor fuera de rango')">
+            <div class="asset-status crit">📳</div>
+            <div>
+              <div class="asset-name">Vibracion Motor M-5</div>
+              <div class="asset-meta">
+                <span><strong>Linea A</strong> · Estacion 07</span>
+                <span>ID: VIB-A-M5-021</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value crit">4.8<span class="asset-unit">mm/s</span></div>
+              <div style="font-size:10px;color:var(--danger);text-align:right">RMS · max 3.5</div>
+            </div>
+          </div>
+          <div class="asset-row" data-resource-id="SENS-A-T3-005">
+            <div class="asset-status warn">🌡</div>
+            <div>
+              <div class="asset-name">Temp. Tanque T-3</div>
+              <div class="asset-meta">
+                <span><strong>Linea A</strong> · Estacion 04</span>
+                <span>ID: SENS-A-T3-005</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value warn">82.1<span class="asset-unit">°C</span></div>
+              <div style="font-size:10px;color:var(--warning);text-align:right">↑ 4°C · max 85</div>
+            </div>
+          </div>
+          <div class="asset-row" data-resource-id="FLOW-B-V1-008">
+            <div class="asset-status warn">💧</div>
+            <div>
+              <div class="asset-name">Flujo valvula V-1</div>
+              <div class="asset-meta">
+                <span><strong>Linea B</strong> · Estacion 01</span>
+                <span>ID: FLOW-B-V1-008</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value warn">42<span class="asset-unit">L/min</span></div>
+              <div style="font-size:10px;color:var(--warning);text-align:right">↓ 8 · nom 50</div>
+            </div>
+          </div>
+          <div class="asset-row">
+            <div class="asset-status ok">🌡</div>
+            <div>
+              <div class="asset-name">Temp. Tanque T-2</div>
+              <div class="asset-meta">
+                <span><strong>Linea A</strong> · Estacion 03</span>
+                <span>ID: SENS-A-T2-003</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value">76.8<span class="asset-unit">°C</span></div>
+              <div style="font-size:10px;color:var(--success);text-align:right">normal</div>
+            </div>
+          </div>
+          <div class="asset-row">
+            <div class="asset-status ok">⚡</div>
+            <div>
+              <div class="asset-name">Consumo PLC-3</div>
+              <div class="asset-meta">
+                <span><strong>Linea A</strong> · Estacion 05</span>
+                <span>ID: PWR-A-P3-018</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value">187<span class="asset-unit">kW</span></div>
+              <div style="font-size:10px;color:var(--success);text-align:right">nom 180-200</div>
+            </div>
+          </div>
+          <div class="asset-row">
+            <div class="asset-status off">🔌</div>
+            <div>
+              <div class="asset-name">Robot soldador R-2</div>
+              <div class="asset-meta">
+                <span><strong>Linea C</strong> · Estacion 12</span>
+                <span>OFFLINE desde 14:22</span>
+              </div>
+            </div>
+            <div>
+              <div class="asset-value" style="color:var(--neutral-500)">—</div>
+              <div style="font-size:10px;color:var(--neutral-500);text-align:right">sin conexion</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alarmas + chart -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">🚨 Alarmas activas</div>
+            <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px">Ver todas (7)</button>
+          </div>
+          <div class="asset-list" style="max-height:260px">
+            <div class="alarm-row" onclick="openAlarm('SENS-A-T1-001','crit','Temperatura tanque 1 excede umbral')">
+              <div class="alarm-icon crit">🌡</div>
+              <div class="alarm-body">
+                <div class="alarm-title">CRIT · Temp T-1 excede umbral</div>
+                <div class="alarm-meta">SENS-A-T1-001 · Linea A · 94.7°C / 85°C max</div>
+              </div>
+              <div class="alarm-time">14:38<br>3min</div>
+              <div class="alarm-actions">
+                <button class="alarm-btn">ACK</button>
+              </div>
+            </div>
+            <div class="alarm-row">
+              <div class="alarm-icon crit">📊</div>
+              <div class="alarm-body">
+                <div class="alarm-title">CRIT · Presion C-2 sobre limite</div>
+                <div class="alarm-meta">SENS-B-P2-014 · Linea B · 8.2 bar / 7.5 max</div>
+              </div>
+              <div class="alarm-time">14:35<br>6min</div>
+              <div class="alarm-actions">
+                <button class="alarm-btn">ACK</button>
+              </div>
+            </div>
+            <div class="alarm-row">
+              <div class="alarm-icon crit">📳</div>
+              <div class="alarm-body">
+                <div class="alarm-title">CRIT · Vibracion Motor M-5</div>
+                <div class="alarm-meta">VIB-A-M5-021 · Linea A · 4.8 mm/s RMS</div>
+              </div>
+              <div class="alarm-time">14:28<br>13min</div>
+              <div class="alarm-actions">
+                <button class="alarm-btn">OT</button>
+              </div>
+            </div>
+            <div class="alarm-row">
+              <div class="alarm-icon warn">⚠</div>
+              <div class="alarm-body">
+                <div class="alarm-title">WARN · Tanque T-3 acercandose al limite</div>
+                <div class="alarm-meta">SENS-A-T3-005 · Linea A · 82.1°C / 85 max</div>
+              </div>
+              <div class="alarm-time">14:15<br>26min</div>
+              <div class="alarm-actions">
+                <button class="alarm-btn">ACK</button>
+              </div>
+            </div>
+            <div class="alarm-row">
+              <div class="alarm-icon info">ℹ</div>
+              <div class="alarm-body">
+                <div class="alarm-title">INFO · Robot R-2 offline para mantenimiento</div>
+                <div class="alarm-meta">Linea C · OT-2026-0421 en curso</div>
+              </div>
+              <div class="alarm-time">14:22<br>19min</div>
+              <div class="alarm-actions">
+                <button class="alarm-btn">VIEW</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">📈 Trend: Temp. Tanque T-1 ultimas 24h</div>
+            <div class="section-filter">
+              <button class="f-btn">1h</button>
+              <button class="f-btn">6h</button>
+              <button class="f-btn active">24h</button>
+              <button class="f-btn">7d</button>
+            </div>
+          </div>
+          <div class="chart-area">
+            <svg class="chart-svg" viewBox="0 0 600 180" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#06B6D4" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid -->
+              <line x1="0" y1="20" x2="600" y2="20" class="chart-grid"/>
+              <line x1="0" y1="60" x2="600" y2="60" class="chart-grid"/>
+              <line x1="0" y1="100" x2="600" y2="100" class="chart-grid"/>
+              <line x1="0" y1="140" x2="600" y2="140" class="chart-grid"/>
+              <!-- Threshold line: 85°C -->
+              <line x1="0" y1="50" x2="600" y2="50" class="chart-threshold"/>
+              <text x="595" y="46" text-anchor="end" class="chart-label" fill="#EF4444">85°C max</text>
+              <!-- Data line -->
+              <path class="chart-fill" d="M 0,135 L 50,128 L 100,118 L 150,115 L 200,110 L 250,108 L 300,105 L 350,100 L 400,90 L 450,75 L 500,62 L 550,40 L 600,28 L 600,180 L 0,180 Z"/>
+              <path class="chart-line" d="M 0,135 L 50,128 L 100,118 L 150,115 L 200,110 L 250,108 L 300,105 L 350,100 L 400,90 L 450,75 L 500,62 L 550,40 L 600,28"/>
+              <!-- Current value marker -->
+              <circle cx="600" cy="28" r="5" fill="#EF4444"/>
+              <text x="595" y="22" text-anchor="end" class="chart-label" fill="#EF4444" font-weight="700">94.7°C ahora</text>
+              <!-- Time labels -->
+              <text x="0" y="170" class="chart-label">-24h</text>
+              <text x="150" y="170" class="chart-label">-18h</text>
+              <text x="300" y="170" text-anchor="middle" class="chart-label">-12h</text>
+              <text x="450" y="170" text-anchor="middle" class="chart-label">-6h</text>
+              <text x="595" y="170" text-anchor="end" class="chart-label">ahora</text>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal alarma critica -->
+<div class="modal-overlay" id="modal-alarm">
+  <div class="modal">
+    <h3>
+      <div class="modal-alarm-icon">🌡</div>
+      <span id="alarm-title">Temperatura Tanque T-1 critica</span>
+    </h3>
+    <p>El sensor <strong id="alarm-id">SENS-A-T1-001</strong> excedio el umbral hace <strong>3 min</strong>. Se requiere accion inmediata para evitar shutdown automatico de la linea.</p>
+    <div class="modal-meta">
+      <div class="modal-meta-row"><span>Valor actual</span><strong style="color:var(--danger)">94.7°C</strong></div>
+      <div class="modal-meta-row"><span>Umbral maximo</span><strong>85.0°C</strong></div>
+      <div class="modal-meta-row"><span>Tendencia (1h)</span><strong style="color:var(--danger)">↑ 12.4°C</strong></div>
+      <div class="modal-meta-row"><span>Asset relacionado</span><strong>Reactor R-1 (Linea A)</strong></div>
+      <div class="modal-meta-row"><span>Operador responsable</span><strong>Ing. Roberto Mendoza (yo)</strong></div>
+      <div class="modal-meta-row"><span>Acciones previas similares</span><strong>3 en ultimos 30 dias</strong></div>
+    </div>
+    <label style="font-size:11px;font-weight:700;color:var(--neutral-700);display:block;margin-bottom:4px">Nota de acknowledgement</label>
+    <textarea class="modal-textarea" placeholder="Ej. Reducir aporte termico 20%, verificar refrigeracion..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-secondary">Crear OT mantenimiento</button>
+      <button class="btn btn-danger" onclick="ackAlarm()">🚨 ACK + accion</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-text">OK</span></div>
+
+<script>
+function openAlarm(id,sev,title){
+  document.getElementById('alarm-id').textContent=id;
+  document.getElementById('alarm-title').textContent=title||'Alarma activa';
+  document.getElementById('modal-alarm').classList.add('open');
+}
+function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));}
+function ackAlarm(){closeModal();showToast('✓ Alarma ACK · OT-2026-0422 creada','success');}
+function showToast(text,type){var t=document.getElementById('toast');document.getElementById('toast-text').textContent=text;t.className='toast visible'+(type?' '+type:'');setTimeout(function(){t.classList.remove('visible')},3000);}
+
+document.querySelectorAll('.sidebar-item').forEach(i=>i.addEventListener('click',()=>{document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));i.classList.add('active');}));
+document.querySelectorAll('.f-btn').forEach(b=>b.addEventListener('click',()=>{b.parentElement.querySelectorAll('.f-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// v12.52 shared helpers inline.
+(function(){if(window.__protoHelpers)return;function getCtx(){var p=new URLSearchParams(location.search);return Object.freeze({from:p.get('from'),role:p.get('role'),id:p.get('id'),demoMode:p.get('demo-mode')==='true'||p.get('from')==='hub',specOrigin:p.get('spec')});}function apply(c){var h=document.querySelector('[data-hub-link]');if(h&&c.demoMode)h.style.display='';if(c.id){var r=document.querySelector('[data-resource-id="'+c.id+'"]');if(r){r.classList.add('row--linked-context');r.scrollIntoView({block:'center'});}}}window.__protoHelpers={getCtx,apply};window.getPrototypeContext=getCtx;window.applyContextualUI=apply;apply(getCtx());})();
+</script>
+</body>
+</html>

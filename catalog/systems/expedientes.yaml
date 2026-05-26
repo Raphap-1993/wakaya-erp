@@ -1,0 +1,14 @@
+# System: agrupa Components del producto "wakaya-erp" (caso canonico).
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: wakaya-erp
+  title: Wakaya ERP
+  description: Sistema que engloba la web del producto, el API y los recursos de datos asociados.
+  tags:
+    - sistema
+    - producto
+spec:
+  owner: group:team-wakaya
+  domain: producto

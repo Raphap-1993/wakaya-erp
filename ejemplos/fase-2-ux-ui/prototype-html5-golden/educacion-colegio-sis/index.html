@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>EduCol — SIS Colegio (Admision · Matricula · Notas · Apoderados)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --brand:#4338CA; --brand-light:#EEF2FF; --brand-dark:#312E81; --brand-mid:#6366F1;
+  --accent:#F59E0B; --accent-light:#FEF3C7;
+  --success:#059669; --success-light:#D1FAE5;
+  --warning:#D97706; --warning-light:#FED7AA;
+  --danger:#DC2626; --danger-light:#FEE2E2;
+  --info:#0284C7; --info-light:#E0F2FE;
+  --neutral-50:#F8FAFC; --neutral-100:#F1F5F9; --neutral-200:#E2E8F0;
+  --neutral-300:#CBD5E1; --neutral-400:#94A3B8; --neutral-500:#64748B;
+  --neutral-700:#334155; --neutral-800:#1E293B; --neutral-900:#0F172A;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 28px rgba(15,23,42,.12);
+  --radius:6px; --radius-lg:10px; --transition:.18s ease;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif; --font-mono:'SF Mono',Consolas,monospace;
+  --topbar-h:56px; --tabbar-h:42px; --sidebar-w:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:13px;color:var(--neutral-900);background:var(--neutral-50);line-height:1.5}
+button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+
+/* Banner contexto del periodo academico activo */
+.year-banner{background:linear-gradient(90deg,var(--brand) 0%,var(--brand-mid) 100%);color:#fff;padding:6px 20px;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.year-pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;background:rgba(255,255,255,.15);border-radius:999px;font-weight:700}
+.year-actions{display:flex;gap:14px;font-size:11px}
+.year-actions a{color:#FEF3C7;text-decoration:underline;cursor:pointer}
+
+/* Topbar */
+.topbar{position:sticky;top:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:var(--shadow-sm);z-index:20}
+.brand{font-weight:800;font-size:15px;color:var(--brand-dark);display:flex;align-items:center;gap:8px}
+.brand-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+.brand-level{font-size:10px;color:var(--neutral-500);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+
+.role-switch{display:inline-flex;background:var(--neutral-100);border-radius:6px;padding:2px;font-size:11px}
+.role-switch button{padding:4px 10px;border-radius:4px;color:var(--neutral-500);font-weight:600;transition:var(--transition)}
+.role-switch button.active{background:#fff;color:var(--brand);box-shadow:var(--shadow-sm)}
+
+.topbar-search{flex:1;max-width:340px;position:relative}
+.topbar-search input{width:100%;padding:7px 12px 7px 32px;border:1px solid var(--neutral-200);border-radius:6px;background:var(--neutral-50);font-size:12px}
+.topbar-search input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px var(--brand-light)}
+.topbar-search::before{content:"🔍";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.6}
+.topbar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.topbar-btn{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:var(--transition);position:relative}
+.topbar-btn:hover{background:var(--neutral-100)}
+.topbar-badge{position:absolute;top:3px;right:3px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;border-radius:999px;padding:1px 5px}
+.profile{display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:var(--transition)}
+.profile:hover{background:var(--neutral-100)}
+.profile-avatar{width:28px;height:28px;background:var(--brand);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.profile-name{font-size:12px;font-weight:600}
+.profile-role{font-size:10px;color:var(--neutral-500)}
+
+/* Tab bar (modulos del SIS) */
+.tabbar{height:var(--tabbar-h);background:#fff;border-bottom:1px solid var(--neutral-200);display:flex;padding:0 20px;align-items:stretch;overflow-x:auto;position:sticky;top:var(--topbar-h);z-index:19}
+.tab{padding:0 16px;display:flex;align-items:center;color:var(--neutral-500);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);position:relative;white-space:nowrap;gap:6px}
+.tab:hover{color:var(--neutral-900)}
+.tab.active{color:var(--brand)}
+.tab.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--brand)}
+.tab-icon{font-size:14px}
+.tab-badge{background:var(--neutral-200);color:var(--neutral-700);font-size:9px;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px}
+.tab.active .tab-badge{background:var(--brand);color:#fff}
+
+/* Layout */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h) - var(--tabbar-h) - 32px)}
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--neutral-200);padding:14px 10px;flex-shrink:0}
+.sidebar-section{margin-bottom:16px}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--neutral-500);padding:6px 10px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:5px;cursor:pointer;transition:var(--transition);font-size:12px;color:var(--neutral-700);position:relative}
+.sidebar-item:hover{background:var(--neutral-100)}
+.sidebar-item.active{background:var(--brand-light);color:var(--brand-dark);font-weight:600}
+.sidebar-item.active::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;background:var(--brand);border-radius:0 3px 3px 0}
+.sidebar-item .icon{width:16px;text-align:center;font-size:13px}
+.sidebar-item .badge{margin-left:auto;background:var(--neutral-200);color:var(--neutral-700);font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px}
+.sidebar-item.active .badge{background:var(--brand);color:#fff}
+.sidebar-item.urgent .badge{background:var(--danger);color:#fff}
+
+/* Main */
+.main{flex:1;padding:18px;overflow-x:auto}
+.page-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.page-title h1{font-size:20px;font-weight:700}
+.breadcrumb{font-size:11px;color:var(--neutral-500);margin-bottom:3px}
+.breadcrumb a:hover{color:var(--brand)}
+.page-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{padding:6px 12px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;transition:var(--transition);border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-secondary{background:#fff;color:var(--neutral-700);border-color:var(--neutral-200)}
+.btn-secondary:hover{background:var(--neutral-50)}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-ghost{color:var(--neutral-500)}
+.btn-ghost:hover{background:var(--neutral-100);color:var(--neutral-900)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:14px;transition:var(--transition)}
+.kpi-card:hover{box-shadow:var(--shadow-md)}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700}
+.kpi-value{font-size:22px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi-meta{font-size:11px;color:var(--neutral-500);margin-top:2px}
+.kpi-delta{font-size:11px;margin-top:4px;font-weight:600}
+.delta-up{color:var(--success)}
+.delta-down{color:var(--danger)}
+
+/* Vistas de modulo (cambian segun tab) */
+.module-view{display:none}
+.module-view.active{display:block}
+
+/* Filter bar */
+.filter-bar{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:var(--brand-light);color:var(--brand-dark);border-radius:999px;font-size:11px;font-weight:600}
+.filter-chip button{font-size:13px;color:var(--brand-dark);opacity:.6}
+.filter-chip button:hover{opacity:1}
+
+/* Tablas */
+.table-wrap{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);overflow:hidden}
+.table-toolbar{padding:10px 14px;border-bottom:1px solid var(--neutral-200);display:flex;align-items:center;gap:10px;background:var(--neutral-50);flex-wrap:wrap}
+.toolbar-search{flex:1;max-width:260px;padding:5px 10px;border:1px solid var(--neutral-200);border-radius:5px;background:#fff;font-size:12px}
+.toolbar-search:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);background:var(--neutral-50);font-weight:700;border-bottom:1px solid var(--neutral-200)}
+th[data-sort]{cursor:pointer;user-select:none}
+th[data-sort]:hover{color:var(--brand)}
+th.numeric{text-align:right}
+td{padding:9px 14px;border-bottom:1px solid var(--neutral-100);font-size:12px;vertical-align:middle}
+td.numeric{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+tr{transition:background var(--transition);cursor:pointer}
+tr:hover{background:var(--neutral-50)}
+tr.row--linked-context{background:var(--brand-light);outline:2px solid var(--brand);outline-offset:-2px}
+tr:hover .row-actions{opacity:1}
+.row-actions{opacity:0;transition:opacity var(--transition);display:flex;gap:3px}
+.row-action{padding:3px 7px;border-radius:4px;font-size:11px;color:var(--brand);background:transparent}
+.row-action:hover{background:var(--brand-light)}
+
+.student-id{font-family:var(--font-mono);font-size:11px;color:var(--neutral-500)}
+.student-name{font-weight:600;display:block}
+.student-meta{font-size:11px;color:var(--neutral-500)}
+
+/* Badges status admision/matricula */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.badge::before{content:"";width:5px;height:5px;border-radius:50%}
+.badge-pending{background:var(--neutral-100);color:var(--neutral-700)}.badge-pending::before{background:var(--neutral-500)}
+.badge-reviewing{background:var(--info-light);color:#075985}.badge-reviewing::before{background:var(--info)}
+.badge-accepted{background:var(--success-light);color:#065F46}.badge-accepted::before{background:var(--success)}
+.badge-waitlist{background:var(--warning-light);color:#92400E}.badge-waitlist::before{background:var(--warning)}
+.badge-rejected{background:var(--danger-light);color:#991B1B}.badge-rejected::before{background:var(--danger)}
+.badge-enrolled{background:var(--brand-light);color:var(--brand-dark)}.badge-enrolled::before{background:var(--brand)}
+
+/* Notas */
+.grade{font-family:var(--font-mono);font-weight:700;padding:2px 6px;border-radius:4px;display:inline-block;min-width:32px;text-align:center;font-size:12px}
+.grade-AD{background:var(--success);color:#fff}
+.grade-A{background:var(--success-light);color:#065F46}
+.grade-B{background:var(--info-light);color:#075985}
+.grade-C{background:var(--warning-light);color:#92400E}
+.grade-empty{background:var(--neutral-100);color:var(--neutral-400);font-weight:400}
+
+.competence-pill{display:inline-block;font-size:10px;padding:1px 6px;background:var(--neutral-100);border-radius:3px;margin:1px 2px 1px 0;color:var(--neutral-700)}
+.competence-pill.high{background:var(--success-light);color:#065F46}
+.competence-pill.low{background:var(--danger-light);color:#991B1B}
+
+/* Detail panel */
+.detail-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:80}
+.detail-overlay.open{opacity:1;pointer-events:auto}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:520px;background:#fff;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .3s ease;z-index:81;overflow-y:auto;display:flex;flex-direction:column}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{padding:16px 20px;border-bottom:1px solid var(--neutral-200);background:var(--neutral-50);display:flex;justify-content:space-between;align-items:flex-start}
+.detail-close{font-size:18px;color:var(--neutral-500);cursor:pointer}
+.detail-body{flex:1;padding:16px 20px;overflow-y:auto}
+.detail-section{margin-bottom:18px}
+.detail-section h4{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--neutral-500);font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.detail-section h4 a{font-size:10px;color:var(--brand)}
+.detail-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--neutral-100);font-size:12px}
+.detail-row .label{color:var(--neutral-500)}
+.detail-row .value{font-weight:600}
+
+/* Gradebook tabla (notas por bimestre) */
+.gradebook{width:100%;border-collapse:collapse;font-size:11px}
+.gradebook th{padding:6px 8px;background:var(--neutral-50);font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:var(--neutral-500);font-weight:700;border-bottom:2px solid var(--neutral-200)}
+.gradebook td{padding:6px 8px;border-bottom:1px solid var(--neutral-100);text-align:center}
+.gradebook .area{text-align:left;font-weight:600}
+
+/* Apoderados (family card) */
+.family-card{padding:12px;border:1px solid var(--neutral-200);border-radius:var(--radius);margin-bottom:8px;display:flex;gap:12px}
+.family-avatar{width:42px;height:42px;border-radius:50%;background:var(--brand-light);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.family-info{flex:1;font-size:12px}
+.family-name{font-weight:600;margin-bottom:2px}
+.family-rel{font-size:10px;color:var(--neutral-500);text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.family-contact{font-size:11px;color:var(--neutral-700);margin-top:2px;font-family:var(--font-mono)}
+.family-actions{display:flex;gap:4px;align-items:flex-start}
+
+.detail-footer{padding:12px 20px;border-top:1px solid var(--neutral-200);display:flex;gap:6px;background:var(--neutral-50);flex-wrap:wrap}
+
+/* States */
+.state-card{background:#fff;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:50px 24px;text-align:center}
+.state-icon{font-size:42px;margin-bottom:10px}
+.state-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.state-desc{font-size:12px;color:var(--neutral-500);max-width:340px;margin:0 auto 14px}
+.spinner{width:28px;height:28px;border:3px solid var(--neutral-200);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast / Modal */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--neutral-900);color:#fff;padding:10px 16px;border-radius:5px;box-shadow:var(--shadow-lg);display:none;z-index:100;animation:slideIn .25s ease;align-items:center;gap:8px;font-size:12px}
+.toast.visible{display:flex}
+.toast.success{background:var(--success)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:520px;width:90%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal h3{font-size:15px;margin-bottom:10px}
+.modal p{font-size:12px;color:var(--neutral-700);margin-bottom:14px}
+.modal-input{width:100%;padding:6px 10px;border:1px solid var(--neutral-200);border-radius:5px;font-size:12px;margin-bottom:10px}
+.modal-actions{display:flex;justify-content:flex-end;gap:6px}
+
+.hub-link{position:fixed;top:38px;right:14px;font-size:11px;color:var(--neutral-500);background:#fff;padding:3px 9px;border-radius:5px;border:1px solid var(--neutral-200);z-index:99;box-shadow:var(--shadow-sm);display:none}
+.hub-link:hover{color:var(--brand)}
+
+/* Responsive */
+@media (max-width:1100px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .sidebar{width:56px}
+  .sidebar-label,.sidebar-item span:not(.icon){display:none}
+  .sidebar-item{justify-content:center;padding:8px}
+  .detail-panel{width:90%}
+  .topbar-search{display:none}
+}
+@media (max-width:640px){
+  .kpis{grid-template-columns:1fr}
+  .main{padding:12px}
+  .year-banner{flex-direction:column;align-items:flex-start;gap:6px}
+  .profile-name,.profile-role{display:none}
+  .tabbar{padding:0 10px}
+  .tab{padding:0 10px;font-size:11px}
+  table{font-size:11px}
+}
+
+/* CSS hook: cuando llega via ?role=apoderado, oculta acciones que solo admin debe ver */
+body[data-active-role="apoderado"] .btn-primary[data-admin-only],
+body[data-active-role="apoderado"] .row-action[data-admin-only]{display:none}
+body[data-active-role="docente"] .btn[data-admin-only]{opacity:.4;pointer-events:none}
+</style>
+</head>
+<body>
+
+<a href="../../../prototype/index.html" class="hub-link" data-hub-link>← Hub</a>
+
+<!-- Banner del periodo academico activo -->
+<div class="year-banner">
+  <div style="display:flex;align-items:center;gap:14px">
+    <span class="year-pill">📅 AÑO ESCOLAR 2026 · BIMESTRE II</span>
+    <span>Colegio San Pedro · Nivel: Primaria + Secundaria · 847 estudiantes</span>
+  </div>
+  <div class="year-actions">
+    <a>Cerrar bimestre</a>
+    <a>Calendario academico</a>
+    <a>Cambiar año</a>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">E</span>
+    <div>
+      <div>EduCol</div>
+      <div class="brand-level">SIS Colegial</div>
+    </div>
+  </div>
+  <div class="role-switch" role="tablist">
+    <button class="active" data-role-switch data-role="admin">Admin</button>
+    <button data-role-switch data-role="docente">Docente</button>
+    <button data-role-switch data-role="apoderado">Apoderado</button>
+  </div>
+  <div class="topbar-search">
+    <input type="search" placeholder="Buscar estudiante, apoderado, docente, codigo...">
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Notificaciones">🔔<span class="topbar-badge">8</span></button>
+    <button class="topbar-btn" title="Mensajes">✉<span class="topbar-badge">3</span></button>
+    <button class="topbar-btn" title="Reportes">📊</button>
+    <div class="profile">
+      <div class="profile-avatar">MS</div>
+      <div>
+        <div class="profile-name">Maria Salinas</div>
+        <div class="profile-role">Subdirectora</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs de modulos SIS -->
+<nav class="tabbar">
+  <div class="tab" data-module="admision">
+    <span class="tab-icon">📝</span><span>Admision</span><span class="tab-badge">142</span>
+  </div>
+  <div class="tab active" data-module="matricula">
+    <span class="tab-icon">🎓</span><span>Matricula</span><span class="tab-badge">847</span>
+  </div>
+  <div class="tab" data-module="notas">
+    <span class="tab-icon">📊</span><span>Notas</span>
+  </div>
+  <div class="tab" data-module="curriculo">
+    <span class="tab-icon">📚</span><span>Plan estudios</span>
+  </div>
+  <div class="tab" data-module="docentes">
+    <span class="tab-icon">👨‍🏫</span><span>Docentes</span><span class="tab-badge">52</span>
+  </div>
+  <div class="tab" data-module="apoderados">
+    <span class="tab-icon">👨‍👩‍👧</span><span>Familias</span>
+  </div>
+  <div class="tab" data-module="planilla">
+    <span class="tab-icon">💰</span><span>Planilla</span>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Por nivel</div>
+      <div class="sidebar-item active" data-grade="primaria">
+        <span class="icon">📘</span><span>Primaria</span><span class="badge">487</span>
+      </div>
+      <div class="sidebar-item" data-grade="secundaria">
+        <span class="icon">📕</span><span>Secundaria</span><span class="badge">360</span>
+      </div>
+      <div class="sidebar-item" data-grade="inicial">
+        <span class="icon">📗</span><span>Inicial</span><span class="badge">0</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Grados (Primaria)</div>
+      <div class="sidebar-item" data-grade="1">
+        <span class="icon">1°</span><span>Primero</span><span class="badge">82</span>
+      </div>
+      <div class="sidebar-item" data-grade="2">
+        <span class="icon">2°</span><span>Segundo</span><span class="badge">78</span>
+      </div>
+      <div class="sidebar-item" data-grade="3">
+        <span class="icon">3°</span><span>Tercero</span><span class="badge">84</span>
+      </div>
+      <div class="sidebar-item urgent" data-grade="4">
+        <span class="icon">4°</span><span>Cuarto</span><span class="badge">5</span>
+      </div>
+      <div class="sidebar-item" data-grade="5">
+        <span class="icon">5°</span><span>Quinto</span><span class="badge">79</span>
+      </div>
+      <div class="sidebar-item" data-grade="6">
+        <span class="icon">6°</span><span>Sexto</span><span class="badge">83</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-title">
+        <div class="breadcrumb"><a>Matricula</a> · Primaria · <a>4° grado</a></div>
+        <h1>Estudiantes matriculados · 4° Primaria</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary">📤 Exportar</button>
+        <button class="btn btn-ghost" data-admin-only>⚙ Configurar</button>
+        <button class="btn btn-accent" data-admin-only>🎓 Cerrar matricula</button>
+        <button class="btn btn-primary" onclick="openNewEnrollment()" data-admin-only>+ Matricular</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi-card">
+        <div class="kpi-label">Matriculados 2026</div>
+        <div class="kpi-value">847</div>
+        <div class="kpi-meta">95% del aforo (890)</div>
+        <div class="kpi-delta delta-up">↑ 23 vs 2025</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pendientes matricula</div>
+        <div class="kpi-value" style="color:var(--warning)">12</div>
+        <div class="kpi-meta">documentos faltantes</div>
+        <div class="kpi-delta delta-down">↓ 5 hoy</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Admision activa</div>
+        <div class="kpi-value">142</div>
+        <div class="kpi-meta">postulantes en proceso</div>
+        <div class="kpi-delta delta-up">23 entrevistas esta semana</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pension al dia</div>
+        <div class="kpi-value">87%</div>
+        <div class="kpi-meta">736 de 847</div>
+        <div class="kpi-delta delta-down">↑ 18 con atraso > 30d</div>
+      </div>
+    </div>
+
+    <!-- Filtros activos -->
+    <div class="filter-bar">
+      <span style="font-size:11px;color:var(--neutral-500);font-weight:600">Filtros:</span>
+      <span class="filter-chip">Año 2026<button>×</button></span>
+      <span class="filter-chip">Grado 4°<button>×</button></span>
+      <span class="filter-chip">Estado: Matriculado<button>×</button></span>
+      <button style="font-size:11px;color:var(--neutral-500);margin-left:auto">Limpiar</button>
+    </div>
+
+    <!-- Tabla de estudiantes matriculados -->
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input type="search" class="toolbar-search" placeholder="Buscar por nombre, codigo, DNI...">
+        <select class="toolbar-search" style="max-width:120px">
+          <option>4° A</option>
+          <option>4° B</option>
+          <option>4° C</option>
+        </select>
+        <button class="btn btn-ghost">⚙ Columnas</button>
+        <span style="font-size:11px;color:var(--neutral-500);margin-left:auto">Mostrando 8 de 84</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="codigo">Codigo</th>
+            <th data-sort="apellidos">Estudiante</th>
+            <th>Apoderado titular</th>
+            <th>Seccion</th>
+            <th>Estado matricula</th>
+            <th>Pension</th>
+            <th>Ult. nota</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="enrollment-table">
+          <tr data-resource-id="EST-2026-0042" onclick="openDetail('EST-2026-0042')">
+            <td><span class="student-id">EST-2026-0042</span></td>
+            <td>
+              <span class="student-name">Aguirre Lopez, Ana Sofia</span>
+              <span class="student-meta">F · 9 anos · DNI 7•••2341</span>
+            </td>
+            <td>Carmen Lopez · madre</td>
+            <td>4° A</td>
+            <td><span class="badge badge-enrolled">Matriculada</span></td>
+            <td><span style="color:var(--success);font-weight:600">Al dia</span></td>
+            <td><span class="grade grade-A">A</span></td>
+            <td><div class="row-actions">
+              <button class="row-action" onclick="event.stopPropagation();openNotes('EST-2026-0042')">📊 Notas</button>
+              <button class="row-action" onclick="event.stopPropagation();openFamily('EST-2026-0042')">👨‍👩 Familia</button>
+            </div></td>
+          </tr>
+          <tr data-resource-id="EST-2026-0043" onclick="openDetail('EST-2026-0043')">
+            <td><span class="student-id">EST-2026-0043</span></td>
+            <td>
+              <span class="student-name">Benavides Marin, Carlos</span>
+              <span class="student-meta">M · 10 anos · DNI 7•••8412</span>
+            </td>
+            <td>Pedro Benavides · padre</td>
+            <td>4° A</td>
+            <td><span class="badge badge-enrolled">Matriculado</span></td>
+            <td><span style="color:var(--warning);font-weight:600">Atraso 15d</span></td>
+            <td><span class="grade grade-B">B</span></td>
+            <td><div class="row-actions">
+              <button class="row-action" onclick="event.stopPropagation();openNotes('EST-2026-0043')">📊 Notas</button>
+              <button class="row-action" onclick="event.stopPropagation();openFamily('EST-2026-0043')">👨‍👩 Familia</button>
+            </div></td>
+          </tr>
+          <tr data-resource-id="EST-2026-0044" onclick="openDetail('EST-2026-0044')">
+            <td><span class="student-id">EST-2026-0044</span></td>
+            <td>
+              <span class="student-name">Castro Quispe, Maria Belen</span>
+              <span class="student-meta">F · 9 anos · DNI 7•••5532</span>
+            </td>
+            <td>Laura Quispe · madre</td>
+            <td>4° B</td>
+            <td><span class="badge badge-pending">Pdte. Doc</span></td>
+            <td>—</td>
+            <td><span class="grade grade-empty">N/A</span></td>
+            <td><div class="row-actions">
+              <button class="row-action">📎 Completar docs</button>
+            </div></td>
+          </tr>
+          <tr data-resource-id="EST-2026-0045" onclick="openDetail('EST-2026-0045')">
+            <td><span class="student-id">EST-2026-0045</span></td>
+            <td>
+              <span class="student-name">Diaz Mendoza, Juan Pablo</span>
+              <span class="student-meta">M · 10 anos · DNI 7•••6601</span>
+            </td>
+            <td>Roxana Mendoza · madre</td>
+            <td>4° A</td>
+            <td><span class="badge badge-enrolled">Matriculado</span></td>
+            <td><span style="color:var(--success);font-weight:600">Al dia</span></td>
+            <td><span class="grade grade-AD">AD</span></td>
+            <td><div class="row-actions">
+              <button class="row-action" onclick="event.stopPropagation();openNotes('EST-2026-0045')">📊 Notas</button>
+            </div></td>
+          </tr>
+          <tr data-resource-id="EST-2026-0046" onclick="openDetail('EST-2026-0046')">
+            <td><span class="student-id">EST-2026-0046</span></td>
+            <td>
+              <span class="student-name">Espinoza Rojas, Diego</span>
+              <span class="student-meta">M · 9 anos · DNI 7•••8843</span>
+            </td>
+            <td>Sara Rojas · madre · 1er apdo</td>
+            <td>4° C</td>
+            <td><span class="badge badge-enrolled">Matriculado</span></td>
+            <td><span style="color:var(--danger);font-weight:600">Atraso 47d</span></td>
+            <td><span class="grade grade-C">C</span></td>
+            <td><div class="row-actions">
+              <button class="row-action">💬 Notificar</button>
+            </div></td>
+          </tr>
+          <tr data-resource-id="EST-2026-0047" onclick="openDetail('EST-2026-0047')">
+            <td><span class="student-id">EST-2026-0047</span></td>
+            <td>
+              <span class="student-name">Flores Tapia, Camila</span>
+              <span class="student-meta">F · 10 anos · DNI 7•••9921</span>
+            </td>
+            <td>Manuel Flores · padre</td>
+            <td>4° B</td>
+            <td><span class="badge badge-enrolled">Matriculada</span></td>
+            <td><span style="color:var(--success);font-weight:600">Al dia</span></td>
+            <td><span class="grade grade-A">A</span></td>
+            <td><div class="row-actions">
+              <button class="row-action" onclick="event.stopPropagation();openNotes('EST-2026-0047')">📊 Notas</button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding:10px 14px;border-top:1px solid var(--neutral-200);display:flex;justify-content:space-between;font-size:11px;color:var(--neutral-500);background:var(--neutral-50)">
+        <span>Pagina 1 de 11 · 84 estudiantes en 4° Primaria</span>
+        <div style="display:flex;gap:3px">
+          <button class="btn btn-ghost" disabled>‹</button>
+          <button class="btn btn-primary">1</button>
+          <button class="btn btn-ghost">2</button>
+          <button class="btn btn-ghost">3</button>
+          <button class="btn btn-ghost">…</button>
+          <button class="btn btn-ghost">›</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Detail panel del estudiante -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<aside class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:10px;color:var(--neutral-500);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Estudiante</div>
+      <div style="font-size:17px;font-weight:700;margin-top:4px" id="detail-name">Aguirre Lopez, Ana Sofia</div>
+      <div style="font-size:11px;color:var(--neutral-500);margin-top:2px">
+        <span class="student-id" id="detail-id">EST-2026-0042</span> · F · 9 años · 4° A
+      </div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body">
+
+    <div class="detail-section">
+      <h4>Datos academicos
+        <a onclick="openModuleFromDetail('curriculo')">Ver plan completo →</a>
+      </h4>
+      <div class="detail-row"><span class="label">Codigo SIS</span><span class="value">EST-2026-0042</span></div>
+      <div class="detail-row"><span class="label">Año / Grado / Seccion</span><span class="value">2026 · 4° Primaria · A</span></div>
+      <div class="detail-row"><span class="label">Tutor (a)</span><span class="value">Prof. Andrea Romero</span></div>
+      <div class="detail-row"><span class="label">Estado matricula</span><span class="value"><span class="badge badge-enrolled">Matriculada</span></span></div>
+      <div class="detail-row"><span class="label">Pension</span><span class="value" style="color:var(--success)">Al dia</span></div>
+      <div class="detail-row"><span class="label">Fecha matricula</span><span class="value">2026-01-12</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Notas bimestre II
+        <a onclick="openModuleFromDetail('notas')">Abrir libreta completa →</a>
+      </h4>
+      <table class="gradebook">
+        <thead>
+          <tr><th class="area" style="text-align:left">Area</th><th>Bim 1</th><th>Bim 2</th><th>Bim 3</th><th>Bim 4</th><th>Promedio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="area">Matematica</td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>A</strong></td></tr>
+          <tr><td class="area">Comunicacion</td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-AD">AD</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>A</strong></td></tr>
+          <tr><td class="area">Ciencia y Tecnologia</td><td><span class="grade grade-B">B</span></td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>A</strong></td></tr>
+          <tr><td class="area">Personal Social</td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>A</strong></td></tr>
+          <tr><td class="area">Arte y Cultura</td><td><span class="grade grade-AD">AD</span></td><td><span class="grade grade-AD">AD</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>AD</strong></td></tr>
+          <tr><td class="area">Educacion Fisica</td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-A">A</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>A</strong></td></tr>
+          <tr><td class="area">Ingles</td><td><span class="grade grade-B">B</span></td><td><span class="grade grade-B">B</span></td><td><span class="grade grade-empty">—</span></td><td><span class="grade grade-empty">—</span></td><td><strong>B</strong></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:11px;color:var(--neutral-500)">
+        <strong>Competencias destacadas:</strong>
+        <span class="competence-pill high">Resuelve problemas de cantidad</span>
+        <span class="competence-pill high">Lee diversos textos</span>
+        <span class="competence-pill">Convive y participa democraticamente</span>
+        <span class="competence-pill low">Comunica oralmente en ingles</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Familia · apoderados
+        <a onclick="openModuleFromDetail('apoderados')">Ver registro completo →</a>
+      </h4>
+      <div class="family-card">
+        <div class="family-avatar">CL</div>
+        <div class="family-info">
+          <div class="family-name">Carmen Lopez Vasquez <span style="color:var(--brand);font-size:10px">★ titular</span></div>
+          <div class="family-rel">Madre · DNI 4•••2233</div>
+          <div class="family-contact">📞 +51 999••2341 · ✉ carmen.l@email.com</div>
+        </div>
+        <div class="family-actions">
+          <button class="row-action" title="WhatsApp">💬</button>
+          <button class="row-action" title="Llamar">📞</button>
+        </div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">RA</div>
+        <div class="family-info">
+          <div class="family-name">Ricardo Aguirre Tello</div>
+          <div class="family-rel">Padre · DNI 4•••1182</div>
+          <div class="family-contact">📞 +51 998••3412 · ✉ r.aguirre@empresa.com</div>
+        </div>
+        <div class="family-actions">
+          <button class="row-action">💬</button>
+        </div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">PL</div>
+        <div class="family-info">
+          <div class="family-name">Pilar Lopez (abuela)</div>
+          <div class="family-rel">Emergencias · autorizada recojo</div>
+          <div class="family-contact">📞 +51 957••7711</div>
+        </div>
+        <div class="family-actions">
+          <button class="row-action">📞</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Plan de estudios · 4° Primaria 2026
+        <a onclick="openModuleFromDetail('curriculo')">Malla curricular →</a>
+      </h4>
+      <div class="detail-row"><span class="label">Horas semanales</span><span class="value">36h</span></div>
+      <div class="detail-row"><span class="label">Areas curriculares</span><span class="value">7</span></div>
+      <div class="detail-row"><span class="label">Cursos electivos</span><span class="value">Robotica · Coro</span></div>
+      <div class="detail-row"><span class="label">Refuerzo academico</span><span class="value">Ingles (Mar/Jue)</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Asistencia bimestre II</h4>
+      <div class="detail-row"><span class="label">Asistencias</span><span class="value" style="color:var(--success)">42 de 45 (93%)</span></div>
+      <div class="detail-row"><span class="label">Tardanzas</span><span class="value">2 (justificadas)</span></div>
+      <div class="detail-row"><span class="label">Faltas</span><span class="value">3 (1 justificada)</span></div>
+    </div>
+
+  </div>
+  <div class="detail-footer">
+    <button class="btn btn-ghost">📥 Reporte PDF</button>
+    <button class="btn btn-secondary" data-admin-only>📝 Editar matricula</button>
+    <button class="btn btn-primary" data-admin-only>💬 Citar apoderado</button>
+  </div>
+</aside>
+
+<!-- Modal matricular -->
+<div class="modal-overlay" id="modal-enroll">
+  <div class="modal">
+    <h3>+ Nueva matricula 2026</h3>
+    <p>Verifica datos del postulante y autorizacion del apoderado.</p>
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Codigo postulante (de admision)</label>
+    <input class="modal-input" placeholder="POST-2026-XXXX">
+    <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px">Grado y seccion asignada</label>
+    <input class="modal-input" placeholder="4° A">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmEnroll()">Matricular</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-text">OK</span>
+</div>
+
+<script>
+// Mock data
+const STUDENTS = {
+  'EST-2026-0042': { name: 'Aguirre Lopez, Ana Sofia', grade: '4° A', age: 9 },
+  'EST-2026-0043': { name: 'Benavides Marin, Carlos', grade: '4° A', age: 10 },
+  'EST-2026-0044': { name: 'Castro Quispe, Maria Belen', grade: '4° B', age: 9 },
+  'EST-2026-0045': { name: 'Diaz Mendoza, Juan Pablo', grade: '4° A', age: 10 },
+  'EST-2026-0046': { name: 'Espinoza Rojas, Diego', grade: '4° C', age: 9 },
+  'EST-2026-0047': { name: 'Flores Tapia, Camila', grade: '4° B', age: 10 },
+};
+
+function openDetail(id) {
+  const s = STUDENTS[id];
+  if (!s) return;
+  document.getElementById('detail-name').textContent = s.name;
+  document.getElementById('detail-id').textContent = id;
+  document.getElementById('detail-overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+function openNotes(id) {
+  showToast('Abriendo libreta de notas para ' + id, 'success');
+  // Cross-spec call: en proyecto real esto abriria spec NNN-notas con ?id=EST...
+  if (window.openPrototypeBySpec) {
+    // openPrototypeBySpec('010', { id: id, role: getPrototypeContext().role });
+  }
+}
+function openFamily(id) { showToast('Abriendo modulo apoderados para ' + id, 'success'); }
+function openModuleFromDetail(mod) {
+  // Switch tab via UI; en proyecto real, podria abrir spec dedicada de cada modulo.
+  const tab = document.querySelector(`[data-module="${mod}"]`);
+  if (tab) tab.click();
+  closeDetail();
+}
+function openNewEnrollment() { document.getElementById('modal-enroll').classList.add('open'); }
+function closeModal() { document.getElementById('modal-enroll').classList.remove('open'); }
+function confirmEnroll() { closeModal(); showToast('✓ Matricula creada · pendiente firma apoderado', 'success'); }
+function showToast(text, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = text;
+  t.className = 'toast visible' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+
+// Tabs y sidebar
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    showToast('Modulo: ' + t.textContent.trim(), 'success');
+  });
+});
+document.querySelectorAll('.sidebar-item').forEach(it => {
+  it.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(x => x.classList.remove('active'));
+    it.classList.add('active');
+  });
+});
+document.querySelectorAll('.role-switch button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.role-switch button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.body.setAttribute('data-active-role', b.dataset.role);
+    showToast('Simulando vista de: ' + b.dataset.role, 'success');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeDetail(); closeModal(); }
+});
+
+// v12.52 shared-prototype-helpers (inline). Cierra cross-spec navigation.
+(function(){
+  if(window.__protoHelpers) return;
+  function getPrototypeContext(){
+    var p=new URLSearchParams(window.location.search);
+    return Object.freeze({from:p.get('from'),role:p.get('role'),id:p.get('id'),demoMode:p.get('demo-mode')==='true'||p.get('from')==='hub',specOrigin:p.get('spec')});
+  }
+  function applyContextualUI(c){
+    var hub=document.querySelector('[data-hub-link]'); if(hub&&c.demoMode) hub.style.display='';
+    if(c.role){var sw=document.querySelector('[data-role-switch][data-role="'+c.role+'"]'); if(sw) sw.click(); document.body.setAttribute('data-active-role',c.role);}
+    if(c.id){var row=document.querySelector('[data-resource-id="'+c.id+'"]'); if(row){row.classList.add('row--linked-context'); row.scrollIntoView({block:'center'});}}
+  }
+  window.__protoHelpers={getPrototypeContext,applyContextualUI};
+  window.getPrototypeContext=getPrototypeContext;
+  window.applyContextualUI=applyContextualUI;
+  applyContextualUI(getPrototypeContext());
+})();
+</script>
+</body>
+</html>

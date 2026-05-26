@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Canal de soporte
+    url: https://wakayaecolodge.com
+    about: Para dudas de uso del producto.
+  - name: Vulnerabilidades de seguridad
+    url: https://github.com/raphaelparedes/wakaya-erp/security/advisories/new
+    about: Reporta vulnerabilidades de seguridad por canal privado (ver SECURITY.md).

@@ -1,0 +1,90 @@
+asyncapi: 3.0.0
+info:
+  title: Expedientes Events
+  version: 1.0.0
+  description: |
+    Eventos de dominio publicados por el bounded context de Expedientes.
+    Ver docs/fase-4-sdd/ y docs/fase-3-arquitectura/adr/ADR-003-eventos-dominio.md.
+  contact:
+    name: Plataforma Expedientes
+    email: plataforma@ejemplo.dev
+
+defaultContentType: application/json
+
+servers:
+  production:
+    host: kafka.prod.expedientes.dev:9092
+    protocol: kafka
+    description: Cluster Kafka de produccion.
+    security:
+      - $ref: '#/components/securitySchemes/saslScram'
+
+channels:
+  expedienteEstadoCambiado:
+    address: expedientes.estado-cambiado
+    messages:
+      ExpedienteEstadoCambiado:
+        $ref: '#/components/messages/ExpedienteEstadoCambiado'
+
+  auditLog:
+    address: auditoria.log
+    messages:
+      AuditLogEntry:
+        $ref: '#/components/messages/AuditLogEntry'
+
+operations:
+  publishEstadoCambiado:
+    action: send
+    channel:
+      $ref: '#/channels/expedienteEstadoCambiado'
+    summary: Publica cambios de estado del expediente.
+    messages:
+      - $ref: '#/channels/expedienteEstadoCambiado/messages/ExpedienteEstadoCambiado'
+
+  publishAuditLog:
+    action: send
+    channel:
+      $ref: '#/channels/auditLog'
+    summary: Publica entradas del audit log aplicativo.
+    messages:
+      - $ref: '#/channels/auditLog/messages/AuditLogEntry'
+
+components:
+  securitySchemes:
+    saslScram:
+      type: scramSha256
+      description: SCRAM-SHA-256 sobre TLS.
+
+  messages:
+    ExpedienteEstadoCambiado:
+      name: ExpedienteEstadoCambiado
+      title: Expediente - cambio de estado
+      summary: Se emite cuando un expediente cambia de estado.
+      contentType: application/json
+      payload:
+        $ref: './expediente-estado-cambiado.schema.json'
+      traits:
+        - $ref: '#/components/messageTraits/CommonHeaders'
+
+    AuditLogEntry:
+      name: AuditLogEntry
+      title: Audit log aplicativo
+      summary: Registro inmutable de una accion sensible.
+      contentType: application/json
+      payload:
+        $ref: './audit-log.schema.json'
+      traits:
+        - $ref: '#/components/messageTraits/CommonHeaders'
+
+  messageTraits:
+    CommonHeaders:
+      headers:
+        type: object
+        properties:
+          traceparent:
+            type: string
+            description: W3C Trace Context.
+          correlationId:
+            type: string
+            format: uuid
+        required: [traceparent]

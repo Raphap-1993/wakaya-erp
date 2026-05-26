@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ejemplo.dev/contracts/events/expediente-estado-cambiado.schema.json",
+  "title": "ExpedienteEstadoCambiado",
+  "description": "Evento emitido cuando un expediente cambia de estado.",
+  "type": "object",
+  "required": ["eventId", "eventType", "occurredOn", "expedienteId", "estadoAnterior", "estadoNuevo", "motivo"],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "const": "expediente.estado-cambiado.v1"
+    },
+    "occurredOn": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expedienteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "estadoAnterior": {
+      "type": "string",
+      "enum": ["abierto", "en_revision", "en_firma", "cerrado"]
+    },
+    "estadoNuevo": {
+      "type": "string",
+      "enum": ["abierto", "en_revision", "en_firma", "cerrado"]
+    },
+    "motivo": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500
+    },
+    "actorId": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "additionalProperties": false
+}

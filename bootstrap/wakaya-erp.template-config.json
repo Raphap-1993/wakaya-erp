@@ -1,0 +1,70 @@
+{
+  "$schema": "../scripts/schema/template.config.schema.json",
+  "project": {
+    "name": "Wakaya ERP",
+    "slug": "wakaya-erp",
+    "apiServiceName": "wakaya-erp-api",
+    "webComponentName": "wakaya-erp-web",
+    "apiResourceName": "reservation",
+    "apiResourcePlural": "reservations",
+    "apiResourcePath": "/api/reservations",
+    "javaBasePackage": "com.wakaya.erp",
+    "databaseName": "wakaya_erp",
+    "featureFlagPrefix": "wakaya-erp",
+    "backstageOwner": "team-wakaya",
+    "backstageSystem": "wakaya-erp",
+    "databaseResourceName": "wakaya-erp-db",
+    "costCenter": "WAKAYA-ERP"
+  },
+  "github": {
+    "organization": "raphaelparedes",
+    "repository": "wakaya-erp"
+  },
+  "support": {
+    "url": "https://wakayaecolodge.com"
+  },
+  "runtime": {
+    "containerImage": "ghcr.io/raphaelparedes/wakaya-erp"
+  },
+  "terraform": {
+    "stateBucket": "wakaya-erp-tf-state",
+    "lockTable": "wakaya-erp-tf-lock",
+    "devDomain": "dev.wakayaecolodge.com",
+    "stagingDomain": "staging.wakayaecolodge.com",
+    "prodDomain": "wakayaecolodge.com"
+  },
+  "catalog": {
+    "portalUrl": "https://wakayaecolodge.com",
+    "apiUrl": "https://wakayaecolodge.com/api"
+  },
+  "auth": {
+    "oidcIssuer": "https://iam.wakayaecolodge.com/realms/wakaya-erp",
+    "oidcJwksUrl": "https://iam.wakayaecolodge.com/realms/wakaya-erp/protocol/openid-connect/certs",
+    "oidcAudience": "https://wakayaecolodge.com/api",
+    "oidcRolesClaim": "roles"
+  },
+  "observability": {
+    "prometheusUrl": "https://prometheus.wakayaecolodge.com",
+    "grafanaUrl": "https://grafana.wakayaecolodge.com",
+    "tempoUrl": "https://tempo.wakayaecolodge.com",
+    "lokiUrl": "https://loki.wakayaecolodge.com",
+    "otelCollectorEndpoint": "otel-collector.wakayaecolodge.com:4317"
+  },
+  "dr": {
+    "tier": "tier-2",
+    "rto": "4h",
+    "rpo": "1h",
+    "primaryRegion": "vps-primary",
+    "secondaryRegion": "offsite-backup"
+  },
+  "secrets": {
+    "provider": "vault",
+    "kvPath": "secret/wakaya-erp",
+    "externalSecretsRefreshInterval": "1h"
+  },
+  "prototype": {
+    "golden_sim_threshold": 0.75,
+    "brand_hue": 154,
+    "brand_saturation": 46
+  }
+}

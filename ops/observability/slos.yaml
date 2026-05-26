@@ -1,0 +1,172 @@
+# SLOs declarativos en formato OpenSLO v1.
+# Referencia: https://github.com/OpenSLO/OpenSLO
+#
+# Este archivo es el baseline canonico. Al adoptar la plantilla, cada proyecto
+# debe copiarlo, adaptar thresholds y registrar los SLOs como codigo en su
+# pipeline (Pyrra, Sloth u OpenSLO nativo).
+---
+apiVersion: openslo/v1
+kind: Service
+metadata:
+  name: wakaya-erp-api
+  displayName: API canonica
+spec:
+  description: Servicio API REST principal del sistema wakaya-erp.
+---
+apiVersion: openslo/v1
+kind: SLI
+metadata:
+  name: wakaya-erp-api-availability
+  displayName: Disponibilidad HTTP 2xx/3xx
+spec:
+  ratioMetric:
+    counter: true
+    good:
+      metricSource:
+        type: Prometheus
+        spec:
+          query: sum(rate(http_server_requests_seconds_count{service="wakaya-erp-api",code!~"5.."}[5m]))
+    total:
+      metricSource:
+        type: Prometheus
+        spec:
+          query: sum(rate(http_server_requests_seconds_count{service="wakaya-erp-api"}[5m]))
+---
+apiVersion: openslo/v1
+kind: SLI
+metadata:
+  name: wakaya-erp-api-latency
+  displayName: Latencia p95 bajo 400ms
+spec:
+  ratioMetric:
+    counter: true
+    good:
+      metricSource:
+        type: Prometheus
+        spec:
+          query: sum(rate(http_server_requests_seconds_bucket{service="wakaya-erp-api",le="0.4"}[5m]))
+    total:
+      metricSource:
+        type: Prometheus
+        spec:
+          query: sum(rate(http_server_requests_seconds_count{service="wakaya-erp-api"}[5m]))
+---
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: wakaya-erp-api-availability-slo
+  displayName: Disponibilidad 99.9% (mensual)
+spec:
+  service: wakaya-erp-api
+  description: |
+    Objetivo: 99.9% de respuestas HTTP no-5xx medido en ventana de 28 dias.
+    Error budget mensual: 43.2 minutos.
+  indicator:
+    metadata:
+      name: wakaya-erp-api-availability
+    spec:
+      ratioMetric:
+        counter: true
+        good:
+          metricSource:
+            type: Prometheus
+            spec:
+              query: sum(rate(http_server_requests_seconds_count{service="wakaya-erp-api",code!~"5.."}[5m]))
+        total:
+          metricSource:
+            type: Prometheus
+            spec:
+              query: sum(rate(http_server_requests_seconds_count{service="wakaya-erp-api"}[5m]))
+  timeWindow:
+    - duration: 28d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - displayName: Disponibilidad
+      target: 0.999
+  alertPolicies:
+    - wakaya-erp-api-burn-rate-fast
+    - wakaya-erp-api-burn-rate-slow
+---
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: wakaya-erp-api-latency-slo
+  displayName: Latencia p95 bajo 400ms
+spec:
+  service: wakaya-erp-api
+  description: |
+    Objetivo: 95% de solicitudes bajo 400ms p95 medido en ventana de 28 dias.
+  indicator:
+    metadata:
+      name: wakaya-erp-api-latency
+    spec:
+      ratioMetric:
+        counter: true
+        good:
+          metricSource:
+            type: Prometheus
+            spec:
+              query: sum(rate(http_server_requests_seconds_bucket{service="wakaya-erp-api",le="0.4"}[5m]))
+        total:
+          metricSource:
+            type: Prometheus
+            spec:
+              query: sum(rate(http_server_requests_seconds_count{service="wakaya-erp-api"}[5m]))
+  timeWindow:
+    - duration: 28d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - displayName: Latencia
+      target: 0.95
+---
+apiVersion: openslo/v1
+kind: AlertPolicy
+metadata:
+  name: wakaya-erp-api-burn-rate-fast
+  displayName: Burn rate rapido (14.4x)
+spec:
+  description: |
+    Alerta cuando el consumo de error budget alcanza 14.4x la tasa normal,
+    lo que equivale a consumir 2% del presupuesto mensual en 1 hora.
+  alertWhenBreaching: true
+  alertWhenResolved: true
+  conditions:
+    - kind: AlertCondition
+      metadata:
+        name: burn-rate-fast
+      spec:
+        severity: page
+        condition:
+          kind: burnrate
+          op: gte
+          threshold: 14.4
+          lookbackWindow: 1h
+  notificationTargets:
+    - target: wakaya-erp-api-page
+---
+apiVersion: openslo/v1
+kind: AlertPolicy
+metadata:
+  name: wakaya-erp-api-burn-rate-slow
+  displayName: Burn rate lento (6x)
+spec:
+  description: |
+    Alerta cuando el consumo sostenido de error budget alcanza 6x la tasa normal
+    durante 6 horas, indicador de deterioro continuo.
+  alertWhenBreaching: true
+  alertWhenResolved: true
+  conditions:
+    - kind: AlertCondition
+      metadata:
+        name: burn-rate-slow
+      spec:
+        severity: ticket
+        condition:
+          kind: burnrate
+          op: gte
+          threshold: 6
+          lookbackWindow: 6h
+  notificationTargets:
+    - target: wakaya-erp-api-ticket

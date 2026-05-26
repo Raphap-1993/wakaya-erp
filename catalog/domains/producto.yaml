@@ -1,0 +1,13 @@
+# Domain: agrupa Systems orientados a usuarios finales del negocio.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: producto
+  title: Producto
+  description: Dominio de negocio que agrupa capacidades de producto expuestas a usuarios finales.
+  tags:
+    - dominio
+    - negocio
+spec:
+  owner: group:team-wakaya

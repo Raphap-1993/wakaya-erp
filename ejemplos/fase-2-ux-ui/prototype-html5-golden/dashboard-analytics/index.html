@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FunnelOps — Analítica de marketing y conversión</title>
+<style>
+  :root {
+    --brand: #2563EB;
+    --brand-dark: #1D4ED8;
+    --brand-soft: #DBEAFE;
+    --accent: #DB2777;
+    --accent-soft: #FCE7F3;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --neutral-50: #F8FAFC;
+    --neutral-100: #F1F5F9;
+    --neutral-200: #E2E8F0;
+    --neutral-300: #CBD5E1;
+    --neutral-400: #94A3B8;
+    --neutral-500: #64748B;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1E293B;
+    --neutral-900: #0F172A;
+    --topbar-h: 60px;
+    --sidebar-w: 220px;
+    --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', Consolas, monospace;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.10);
+    --shadow-lg: 0 10px 30px rgba(15,23,42,0.14);
+    --transition: 0.2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--neutral-100); color: var(--neutral-800); min-height: 100vh; line-height: 1.5; }
+  button, input, select { font: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  .hub-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--neutral-400); padding: 4px 8px; border-radius: var(--radius); transition: var(--transition); }
+  .hub-link:hover { background: var(--neutral-100); color: var(--brand); }
+
+  /* === TOPBAR === */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    background: #fff; border-bottom: 1px solid var(--neutral-200);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    z-index: 100; box-shadow: var(--shadow-sm);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; color: var(--brand); }
+  .brand .logo {
+    width: 32px; height: 32px; background: linear-gradient(135deg, var(--brand), var(--accent));
+    border-radius: 8px; color: #fff; font-size: 16px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .date-picker {
+    display: flex; align-items: center; gap: 0; margin-left: auto;
+    border: 1px solid var(--neutral-300); border-radius: var(--radius); overflow: hidden;
+  }
+  .date-btn {
+    padding: 7px 14px; background: #fff; border: none;
+    font-size: 12px; font-weight: 500; color: var(--neutral-600);
+    cursor: pointer; border-right: 1px solid var(--neutral-200);
+    transition: var(--transition);
+  }
+  .date-btn:last-child { border-right: none; }
+  .date-btn:hover { background: var(--neutral-50); }
+  .date-btn.active { background: var(--brand); color: #fff; }
+  .compare-toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--neutral-600);
+  }
+  .switch {
+    position: relative; width: 36px; height: 20px;
+    background: var(--neutral-300); border-radius: 10px;
+    cursor: pointer; transition: var(--transition);
+  }
+  .switch.on { background: var(--brand); }
+  .switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; background: #fff; border-radius: 50%;
+    transition: var(--transition); box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch.on::after { left: 18px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: var(--neutral-100); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition);
+  }
+  .icon-btn:hover { background: var(--neutral-200); }
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 10px 4px 4px; border-radius: 20px; background: var(--neutral-100);
+    cursor: pointer; transition: var(--transition);
+  }
+  .user-chip:hover { background: var(--neutral-200); }
+  .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--accent)); color: #fff; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
+  /* === LAYOUT === */
+  .layout {
+    margin-top: var(--topbar-h);
+    display: grid; grid-template-columns: var(--sidebar-w) 1fr;
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  /* === SIDEBAR === */
+  .sidebar {
+    background: #fff; border-right: 1px solid var(--neutral-200);
+    position: sticky; top: var(--topbar-h);
+    height: calc(100vh - var(--topbar-h));
+    padding: 16px 0; overflow-y: auto;
+  }
+  .nav-section { margin-bottom: 8px; }
+  .nav-label {
+    padding: 4px 18px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.7px; color: var(--neutral-400);
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 18px; font-size: 13px; color: var(--neutral-600);
+    cursor: pointer; transition: var(--transition);
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--neutral-50); color: var(--neutral-900); }
+  .nav-item.active { background: var(--brand-soft); color: var(--brand); font-weight: 600; border-left-color: var(--brand); }
+  .nav-item .nav-ico { font-size: 14px; width: 18px; text-align: center; }
+  .nav-item .nav-badge { margin-left: auto; padding: 1px 7px; font-size: 10px; background: var(--neutral-100); color: var(--neutral-600); border-radius: 8px; font-weight: 700; }
+  .nav-item.active .nav-badge { background: var(--brand); color: #fff; }
+
+  /* === MAIN === */
+  .main { padding: 24px 28px 60px; }
+  .page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 20px; gap: 18px; flex-wrap: wrap;
+  }
+  .page-head h1 { font-size: 24px; font-weight: 800; color: var(--neutral-900); letter-spacing: -0.02em; }
+  .page-head p { font-size: 13px; color: var(--neutral-500); margin-top: 4px; }
+  .page-head .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* === BUTTONS === */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: var(--transition);
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-secondary { background: #fff; color: var(--neutral-700); border: 1px solid var(--neutral-300); }
+  .btn-secondary:hover { background: var(--neutral-50); }
+  .btn-ghost { background: transparent; color: var(--neutral-600); }
+
+  /* === HEADLINE KPIs === */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px; }
+  .kpi-card {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); padding: 16px 18px;
+    box-shadow: var(--shadow-sm); transition: var(--transition);
+    cursor: pointer; position: relative;
+  }
+  .kpi-card:hover { box-shadow: var(--shadow-md); border-color: var(--brand-soft); }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--neutral-500); font-weight: 600; }
+  .kpi-value { font-size: 26px; font-weight: 800; color: var(--neutral-900); margin-top: 6px; letter-spacing: -0.02em; }
+  .kpi-meta { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; }
+  .kpi-delta { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+  .kpi-delta.up { background: #DCFCE7; color: #166534; }
+  .kpi-delta.down { background: #FEE2E2; color: #991B1B; }
+  .kpi-delta.flat { background: var(--neutral-100); color: var(--neutral-600); }
+  .kpi-period { color: var(--neutral-400); }
+
+  /* === FUNNEL === */
+  .grid-2-cols { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 22px; }
+  .chart-card {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .chart-head {
+    padding: 16px 20px; border-bottom: 1px solid var(--neutral-200);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .chart-head h3 { font-size: 14px; font-weight: 700; color: var(--neutral-900); }
+  .chart-head .sub { font-size: 11px; color: var(--neutral-500); margin-top: 2px; }
+  .chart-head .actions { display: flex; gap: 6px; }
+  .chart-head .legend { display: flex; gap: 12px; font-size: 11px; color: var(--neutral-500); }
+  .chart-head .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .chart-head .swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* Funnel rows */
+  .funnel-body { padding: 18px 20px; }
+  .funnel-step {
+    margin-bottom: 12px; position: relative;
+    cursor: pointer; transition: var(--transition);
+  }
+  .funnel-step:hover { transform: translateX(2px); }
+  .funnel-step:last-child { margin-bottom: 0; }
+  .funnel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px; font-size: 13px;
+  }
+  .funnel-head .name { display: flex; align-items: center; gap: 8px; }
+  .funnel-head .name .ico { font-size: 14px; }
+  .funnel-head .stats { display: flex; gap: 14px; align-items: baseline; }
+  .funnel-head .count { font-weight: 700; color: var(--neutral-900); }
+  .funnel-head .rate { color: var(--neutral-500); font-size: 11px; }
+  .funnel-bar {
+    height: 32px; background: var(--neutral-100); border-radius: var(--radius);
+    overflow: hidden; position: relative;
+  }
+  .funnel-fill {
+    height: 100%; border-radius: var(--radius); transition: width var(--transition);
+    display: flex; align-items: center; padding: 0 10px;
+    color: #fff; font-size: 11px; font-weight: 600;
+  }
+  .funnel-fill.s1 { background: linear-gradient(90deg, var(--brand), #60A5FA); }
+  .funnel-fill.s2 { background: linear-gradient(90deg, var(--brand-dark), var(--brand)); }
+  .funnel-fill.s3 { background: linear-gradient(90deg, #7C3AED, #A855F7); }
+  .funnel-fill.s4 { background: linear-gradient(90deg, var(--accent), #F472B6); }
+  .funnel-fill.s5 { background: linear-gradient(90deg, #BE185D, var(--accent)); }
+  .funnel-drop {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--danger); font-weight: 600;
+  }
+
+  /* Channels */
+  .channels-body { padding: 18px 20px; }
+  .channel-row {
+    display: grid; grid-template-columns: 22px 1fr auto;
+    gap: 10px; align-items: center; padding: 8px 0;
+    border-bottom: 1px solid var(--neutral-100);
+  }
+  .channel-row:last-child { border-bottom: none; }
+  .channel-ico {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #fff;
+  }
+  .channel-name { font-size: 13px; color: var(--neutral-700); display: flex; align-items: center; gap: 8px; }
+  .channel-bar {
+    height: 5px; background: var(--neutral-100); border-radius: 3px;
+    overflow: hidden; margin-top: 4px;
+  }
+  .channel-fill { height: 100%; background: var(--brand); border-radius: 3px; }
+  .channel-stats { text-align: right; }
+  .channel-value { font-size: 13px; font-weight: 700; color: var(--neutral-900); font-family: var(--font-mono); }
+  .channel-pct { font-size: 10px; color: var(--neutral-500); }
+
+  /* Trend area */
+  .chart-area { padding: 18px 20px; }
+  .chart-area svg { width: 100%; height: 240px; }
+
+  /* === DATA TABLE === */
+  .table-card {
+    background: #fff; border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .table-head {
+    padding: 16px 20px; border-bottom: 1px solid var(--neutral-200);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-head h3 { font-size: 14px; font-weight: 700; color: var(--neutral-900); }
+  .table-head .filter-bar { display: flex; gap: 8px; }
+  .filter-select {
+    padding: 6px 10px; border: 1px solid var(--neutral-300); border-radius: var(--radius);
+    font-size: 12px; background: #fff; outline: none; cursor: pointer;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--neutral-50); }
+  th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-500); border-bottom: 1px solid var(--neutral-200); white-space: nowrap; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--neutral-700); }
+  td { padding: 11px 16px; font-size: 13px; color: var(--neutral-700); border-bottom: 1px solid var(--neutral-100); }
+  tbody tr { cursor: pointer; transition: var(--transition); }
+  tbody tr:hover td { background: var(--neutral-50); }
+  tbody tr:last-child td { border-bottom: none; }
+  .num { font-family: var(--font-mono); font-size: 12px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-up { background: #DCFCE7; color: #166534; }
+  .badge-down { background: #FEE2E2; color: #991B1B; }
+  .progress { display: flex; align-items: center; gap: 8px; }
+  .progress-bar { flex: 1; height: 6px; background: var(--neutral-200); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--brand); border-radius: 4px; }
+  .progress-text { font-size: 11px; color: var(--neutral-500); min-width: 36px; text-align: right; }
+
+  /* === STATES === */
+  .empty-state, .loading-state, .error-state { text-align: center; padding: 56px 24px; display: none; }
+  .empty-state.visible, .loading-state.visible, .error-state.visible { display: block; }
+  .state-ico { font-size: 42px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state h3, .error-state h3 { font-size: 16px; font-weight: 700; color: var(--neutral-700); margin-bottom: 6px; }
+  .empty-state p, .error-state p, .loading-state p { font-size: 13px; color: var(--neutral-500); margin-bottom: 18px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--neutral-200); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === TOAST === */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+  .toast { background: var(--neutral-900); color: #fff; padding: 12px 16px; border-radius: var(--radius); font-size: 13px; min-width: 280px; box-shadow: var(--shadow-lg); animation: slidein 0.25s ease; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.warning { background: var(--warning); }
+  @keyframes slidein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* === MODAL === */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 150; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition); }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: #fff; border-radius: var(--radius-lg); padding: 26px; width: 460px; max-width: 92vw; box-shadow: var(--shadow-lg); }
+  .modal h3 { font-size: 17px; font-weight: 700; color: var(--neutral-900); margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: var(--neutral-600); margin-bottom: 16px; }
+  .modal-stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--neutral-100); font-size: 13px; }
+  .modal-stat-row strong { color: var(--neutral-900); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 1200px) { .kpi-row { grid-template-columns: repeat(3,1fr); } .grid-2-cols { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .sidebar { display: none; } .layout { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: 1fr 1fr; } .topbar { padding: 0 14px; gap: 10px; } .date-picker { display: none; } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand">
+    <div class="logo">F</div>
+    FunnelOps
+  </a>
+  <a class="hub-link" href="../../../../prototype/index.html" title="Volver al hub del producto">← Hub</a>
+  <div class="date-picker" id="datePicker">
+    <button class="date-btn" onclick="setRange(this,'today')">Hoy</button>
+    <button class="date-btn" onclick="setRange(this,'7d')">7d</button>
+    <button class="date-btn active" onclick="setRange(this,'30d')">30d</button>
+    <button class="date-btn" onclick="setRange(this,'qtd')">Trimestre</button>
+    <button class="date-btn" onclick="setRange(this,'ytd')">Año</button>
+    <button class="date-btn" onclick="customRange()">Personalizado…</button>
+  </div>
+  <div class="compare-toggle">
+    Comparar
+    <div class="switch on" id="compareSwitch" onclick="toggleCompare()"></div>
+  </div>
+  <button class="icon-btn" onclick="showToast('Reporte exportado a PDF','success')" title="Exportar">⬇</button>
+  <button class="icon-btn" onclick="showToast('Compartiendo dashboard','default')" title="Compartir">🔗</button>
+  <div class="user-chip" onclick="cycleRole()" title="Click para alternar rol">
+    <div class="user-avatar" id="userAvatar">MR</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside data-spdd-sidebar class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Marketing</div>
+      <a class="nav-item active" onclick="setView(this,'overview')"><span class="nav-ico">📊</span> Resumen <span class="nav-badge">live</span></a>
+      <a class="nav-item" onclick="setView(this,'campaigns')"><span class="nav-ico">📣</span> Campañas <span class="nav-badge">12</span></a>
+      <a class="nav-item" onclick="setView(this,'channels')"><span class="nav-ico">📡</span> Canales</a>
+      <a class="nav-item" onclick="setView(this,'audience')"><span class="nav-ico">👥</span> Audiencia</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Conversión</div>
+      <a class="nav-item" onclick="setView(this,'funnel')"><span class="nav-ico">🔻</span> Funnel</a>
+      <a class="nav-item" onclick="setView(this,'attribution')"><span class="nav-ico">🎯</span> Atribución</a>
+      <a class="nav-item" onclick="setView(this,'cohorts')"><span class="nav-ico">📈</span> Cohortes</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Ingresos</div>
+      <a class="nav-item" onclick="setView(this,'revenue')"><span class="nav-ico">💰</span> Ingresos</a>
+      <a class="nav-item" onclick="setView(this,'ltv')"><span class="nav-ico">📈</span> LTV / CAC</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Sistema</div>
+      <a class="nav-item" onclick="checkAdmin(this,'config')"><span class="nav-ico">⚙️</span> Configuración</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-head">
+      <div>
+        <h1 id="pageTitle">Resumen de marketing</h1>
+        <p id="pageSubtitle">Últimos 30 días · comparativa contra período anterior</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="showToast('Vista guardada como favorita','success')">★ Guardar vista</button>
+        <button class="btn btn-secondary" onclick="showToast('Compartiendo link público de solo lectura','default')">🔗 Compartir</button>
+        <button class="btn btn-primary" onclick="showToast('Generando export…')">⬇ Exportar PDF</button>
+      </div>
+    </div>
+
+    <div class="loading-state" id="loadingState">
+      <div class="spinner"></div>
+      <p>Cargando dashboard…</p>
+    </div>
+
+    <div class="error-state" id="errorState">
+      <div class="state-ico">⚠️</div>
+      <h3>No se pudo cargar el dashboard</h3>
+      <p>Hubo un problema temporal con el servicio de analítica. Intenta en unos segundos.</p>
+      <button class="btn btn-primary" onclick="retryLoad()">Reintentar carga</button>
+    </div>
+
+    <div id="dashContent">
+
+      <!-- KPI ROW -->
+      <div class="kpi-row">
+        <div class="kpi-card" onclick="drillDown('sessions')">
+          <div class="kpi-label">Sesiones</div>
+          <div class="kpi-value">128,420</div>
+          <div class="kpi-meta"><span class="kpi-delta up">↑ 14.2%</span> <span class="kpi-period">vs 30d</span></div>
+        </div>
+        <div class="kpi-card" onclick="drillDown('users')">
+          <div class="kpi-label">Usuarios únicos</div>
+          <div class="kpi-value">84,617</div>
+          <div class="kpi-meta"><span class="kpi-delta up">↑ 8.6%</span> <span class="kpi-period">vs 30d</span></div>
+        </div>
+        <div class="kpi-card" onclick="drillDown('conv')">
+          <div class="kpi-label">Conversión</div>
+          <div class="kpi-value">3.41%</div>
+          <div class="kpi-meta"><span class="kpi-delta up">↑ 0.4pp</span> <span class="kpi-period">vs 30d</span></div>
+        </div>
+        <div class="kpi-card" onclick="drillDown('aov')">
+          <div class="kpi-label">Ticket promedio</div>
+          <div class="kpi-value">$184</div>
+          <div class="kpi-meta"><span class="kpi-delta down">↓ 2.1%</span> <span class="kpi-period">vs 30d</span></div>
+        </div>
+        <div class="kpi-card" onclick="drillDown('revenue')">
+          <div class="kpi-label">Ingresos</div>
+          <div class="kpi-value">$528K</div>
+          <div class="kpi-meta"><span class="kpi-delta up">↑ 21.4%</span> <span class="kpi-period">vs 30d</span></div>
+        </div>
+      </div>
+
+      <!-- FUNNEL + CHANNELS -->
+      <div class="grid-2-cols">
+
+        <!-- FUNNEL DE CONVERSIÓN -->
+        <div class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h3>Funnel de conversión — últimos 30 días</h3>
+              <div class="sub">128,420 sesiones → 2,873 compras · tasa global 2.24%</div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-ghost" onclick="showToast('Filtros aplicados al funnel','default')">Filtros ▾</button>
+            </div>
+          </div>
+          <div class="funnel-body" id="funnelBody">
+
+            <div class="funnel-step" onclick="drillStep('visitas')">
+              <div class="funnel-head">
+                <div class="name"><span class="ico">👁</span> Visita a la home</div>
+                <div class="stats"><span class="count">128,420</span><span class="rate">100%</span></div>
+              </div>
+              <div class="funnel-bar"><div class="funnel-fill s1" style="width:100%">128,420</div></div>
+            </div>
+
+            <div class="funnel-step" onclick="drillStep('catalogo')">
+              <div class="funnel-head">
+                <div class="name"><span class="ico">🛍</span> Vista a producto</div>
+                <div class="stats"><span class="count">54,802</span><span class="rate">42.7% (continúa)</span></div>
+              </div>
+              <div class="funnel-bar">
+                <div class="funnel-fill s2" style="width:42.7%">54,802</div>
+                <span class="funnel-drop">−57.3% drop</span>
+              </div>
+            </div>
+
+            <div class="funnel-step" onclick="drillStep('carrito')">
+              <div class="funnel-head">
+                <div class="name"><span class="ico">🛒</span> Añadido al carrito</div>
+                <div class="stats"><span class="count">18,994</span><span class="rate">14.8% (de visitas)</span></div>
+              </div>
+              <div class="funnel-bar">
+                <div class="funnel-fill s3" style="width:14.8%">18,994</div>
+                <span class="funnel-drop">−65.4% drop</span>
+              </div>
+            </div>
+
+            <div class="funnel-step" onclick="drillStep('checkout')">
+              <div class="funnel-head">
+                <div class="name"><span class="ico">💳</span> Inicia checkout</div>
+                <div class="stats"><span class="count">6,217</span><span class="rate">4.84%</span></div>
+              </div>
+              <div class="funnel-bar">
+                <div class="funnel-fill s4" style="width:4.84%">6,217</div>
+                <span class="funnel-drop">−67.3% drop</span>
+              </div>
+            </div>
+
+            <div class="funnel-step" onclick="drillStep('compra')">
+              <div class="funnel-head">
+                <div class="name"><span class="ico">✅</span> Compra completada</div>
+                <div class="stats"><span class="count">2,873</span><span class="rate">2.24% global</span></div>
+              </div>
+              <div class="funnel-bar">
+                <div class="funnel-fill s5" style="width:2.24%">2,873</div>
+                <span class="funnel-drop">−53.8% drop</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CANALES DE ADQUISICIÓN -->
+        <div class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h3>Canales de adquisición</h3>
+              <div class="sub">% de sesiones por origen</div>
+            </div>
+          </div>
+          <div class="channels-body">
+            <div class="channel-row" onclick="drillChannel('organic')">
+              <div class="channel-ico" style="background:#16A34A">G</div>
+              <div>
+                <div class="channel-name">Organic search · Google</div>
+                <div class="channel-bar"><div class="channel-fill" style="width:38%;background:#16A34A"></div></div>
+              </div>
+              <div class="channel-stats"><div class="channel-value">48,799</div><div class="channel-pct">38.0%</div></div>
+            </div>
+            <div class="channel-row" onclick="drillChannel('paid')">
+              <div class="channel-ico" style="background:#2563EB">A</div>
+              <div>
+                <div class="channel-name">Paid · Ads (Google + Meta)</div>
+                <div class="channel-bar"><div class="channel-fill" style="width:24%;background:#2563EB"></div></div>
+              </div>
+              <div class="channel-stats"><div class="channel-value">30,820</div><div class="channel-pct">24.0%</div></div>
+            </div>
+            <div class="channel-row" onclick="drillChannel('email')">
+              <div class="channel-ico" style="background:#7C3AED">@</div>
+              <div>
+                <div class="channel-name">Email marketing</div>
+                <div class="channel-bar"><div class="channel-fill" style="width:14%;background:#7C3AED"></div></div>
+              </div>
+              <div class="channel-stats"><div class="channel-value">17,978</div><div class="channel-pct">14.0%</div></div>
+            </div>
+            <div class="channel-row" onclick="drillChannel('social')">
+              <div class="channel-ico" style="background:#DB2777">S</div>
+              <div>
+                <div class="channel-name">Social orgánico · Instagram + TikTok</div>
+                <div class="channel-bar"><div class="channel-fill" style="width:12%;background:#DB2777"></div></div>
+              </div>
+              <div class="channel-stats"><div class="channel-value">15,410</div><div class="channel-pct">12.0%</div></div>
+            </div>
+            <div class="channel-row" onclick="drillChannel('referral')">
+              <div class="channel-ico" style="background:#D97706">R</div>
+              <div>
+                <div class="channel-name">Referral / partners</div>
+                <div class="channel-bar"><div class="channel-fill" style="width:7%;background:#D97706"></div></div>
+              </div>
+              <div class="channel-stats"><div class="channel-value">8,989</div><div class="channel-pct">7.0%</div></div>
+            </div>
+            <div class="channel-row" onclick="drillChannel('direct')">
+              <div class="channel-ico" style="background:#64748B">D</div>
+              <div>
+                <div class="channel-name">Direct (sin referrer)</div>
+                <div class="channel-bar"><div class="channel-fill" style="width:5%;background:#64748B"></div></div>
+              </div>
+              <div class="channel-stats"><div class="channel-value">6,424</div><div class="channel-pct">5.0%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TREND CHART -->
+      <div class="chart-card" style="margin-bottom:22px">
+        <div class="chart-head">
+          <div>
+            <h3>Tendencia de conversión — 30 días</h3>
+            <div class="sub">tasa diaria con comparativa de período anterior</div>
+          </div>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--brand)"></span> Período actual</span>
+            <span><span class="swatch" style="background:var(--neutral-300)"></span> Período anterior</span>
+          </div>
+        </div>
+        <div class="chart-area">
+          <svg viewBox="0 0 800 240" preserveAspectRatio="none">
+            <line x1="40" y1="200" x2="780" y2="200" stroke="var(--neutral-200)"/>
+            <g stroke="var(--neutral-100)" stroke-dasharray="2,3">
+              <line x1="40" y1="50" x2="780" y2="50"/>
+              <line x1="40" y1="100" x2="780" y2="100"/>
+              <line x1="40" y1="150" x2="780" y2="150"/>
+            </g>
+            <polyline id="prevLine" fill="none" stroke="var(--neutral-300)" stroke-width="2" stroke-dasharray="4,4"
+              points="40,160 80,150 120,158 160,142 200,150 240,138 280,142 320,128 360,132 400,118 440,122 480,108 520,114 560,98 600,108 640,92 680,98 720,82 760,90 780,84"/>
+            <polyline id="currLine" fill="none" stroke="var(--brand)" stroke-width="2.5"
+              points="40,150 80,138 120,142 160,124 200,132 240,114 280,118 320,98 360,108 400,86 440,92 480,68 520,80 560,55 600,68 640,42 680,52 720,28 760,38 780,30"/>
+            <g fill="var(--neutral-400)" font-size="10" font-family="var(--font-mono)">
+              <text x="40" y="220">1 nov</text>
+              <text x="200" y="220">8 nov</text>
+              <text x="380" y="220">15 nov</text>
+              <text x="560" y="220">22 nov</text>
+              <text x="730" y="220">30 nov</text>
+            </g>
+            <circle cx="780" cy="30" r="5" fill="#fff" stroke="var(--brand)" stroke-width="2.5"/>
+            <text x="710" y="22" fill="var(--brand)" font-size="11" font-weight="700">3.41%</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- TOP CAMPAIGNS TABLE -->
+      <div class="table-card">
+        <div class="table-head">
+          <h3>Top 8 campañas por ingresos</h3>
+          <div class="filter-bar">
+            <select class="filter-select" id="filterChannel" onchange="applyTableFilters()">
+              <option value="">Todos los canales</option>
+              <option value="paid">Paid</option>
+              <option value="email">Email</option>
+              <option value="social">Social</option>
+              <option value="organic">Organic</option>
+            </select>
+            <select class="filter-select" id="filterStatus" onchange="applyTableFilters()">
+              <option value="">Todos los estados</option>
+              <option value="active">Activa</option>
+              <option value="paused">Pausada</option>
+              <option value="ended">Finalizada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="empty-state" id="tableEmpty">
+          <div class="state-ico">🔍</div>
+          <h3>Sin campañas para estos filtros</h3>
+          <p>Cambia los criterios o limpia los filtros activos.</p>
+          <button class="btn btn-secondary" onclick="clearFilters()">Limpiar filtros</button>
+        </div>
+
+        <table id="campaignsTable">
+          <thead>
+            <tr>
+              <th class="sortable">Campaña</th>
+              <th>Canal</th>
+              <th class="sortable">Sesiones</th>
+              <th class="sortable">Conversión</th>
+              <th>Aporte al ingreso</th>
+              <th class="sortable">Ingresos</th>
+              <th>Δ vs anterior</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="campaignsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- DRILL MODAL -->
+<div class="modal-overlay" id="drillModal">
+  <div class="modal">
+    <h3 id="drillTitle">Detalle</h3>
+    <p id="drillSubtitle">Resumen del paso seleccionado.</p>
+    <div id="drillStats"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeDrill()">Cerrar</button>
+      <button class="btn btn-primary" onclick="exportDrill()">Exportar detalle</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ======================================================================
+//  Datos mock del dominio marketing/analytics
+// ======================================================================
+const CAMPAIGNS = [
+  { id:'CMP-2024-091', name:'Black November · oferta cafetería',          channel:'paid',    sessions:18420, conv:5.21, share:24.4, revenue:128900, delta:+38.4, status:'active'  },
+  { id:'CMP-2024-088', name:'Newsletter semanal · sección descuentos',     channel:'email',   sessions:8920,  conv:6.78, share:14.2, revenue:75180,  delta:+22.1, status:'active'  },
+  { id:'CMP-2024-085', name:'Cyber lunes · audio premium',                 channel:'paid',    sessions:14102, conv:3.92, share:11.8, revenue:62450,  delta:+12.5, status:'active'  },
+  { id:'CMP-2024-082', name:'Influencer · TikTok #morningroutine',         channel:'social',  sessions:11240, conv:2.85, share:8.7,  revenue:45900,  delta:+48.7, status:'active'  },
+  { id:'CMP-2024-079', name:'SEO post · guía de regalos navideños',        channel:'organic', sessions:9810,  conv:3.14, share:7.4,  revenue:39220,  delta:+8.2,  status:'active'  },
+  { id:'CMP-2024-076', name:'Retargeting · carritos abandonados',          channel:'paid',    sessions:6420,  conv:8.45, share:6.9,  revenue:36480,  delta:+15.3, status:'active'  },
+  { id:'CMP-2024-073', name:'Lanzamiento línea Brevia · email VIP',        channel:'email',   sessions:4890,  conv:7.92, share:5.1,  revenue:26900,  delta:+5.4,  status:'paused' },
+  { id:'CMP-2024-068', name:'Instagram Stories · sorteo cafetera',         channel:'social',  sessions:7250,  conv:1.98, share:3.8,  revenue:20140,  delta:-9.1,  status:'ended'  },
+];
+
+const ROLES = [
+  { name:'María R.',         abbr:'MR', role:'Analista marketing',  canExport:true,  canConfig:true  },
+  { name:'Diego P.',          abbr:'DP', role:'Director comercial',  canExport:true,  canConfig:false },
+  { name:'Visor externo',     abbr:'VE', role:'Solo lectura',        canExport:false, canConfig:false },
+];
+
+let currentRoleIdx = 0;
+let currentRange = '30d';
+let compareEnabled = true;
+let filteredCampaigns = [...CAMPAIGNS];
+
+const CHANNEL_LABEL = { paid:'Paid', email:'Email', social:'Social', organic:'Organic', referral:'Referral', direct:'Direct' };
+const CHANNEL_COLOR = { paid:'#2563EB', email:'#7C3AED', social:'#DB2777', organic:'#16A34A', referral:'#D97706', direct:'#64748B' };
+const STATUS_LABEL  = { active:'Activa', paused:'Pausada', ended:'Finalizada' };
+
+// ======================================================================
+//  Init
+// ======================================================================
+window.addEventListener('DOMContentLoaded', () => simulateLoad());
+
+function simulateLoad() {
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('dashContent').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('dashContent').style.display = '';
+    renderTable();
+  }, 800);
+}
+
+function retryLoad() {
+  document.getElementById('errorState').classList.remove('visible');
+  simulateLoad();
+}
+
+// ======================================================================
+//  Filters / Range / Compare
+// ======================================================================
+function setRange(btn, range) {
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRange = range;
+  showToast('Rango: ' + btn.textContent, 'default');
+}
+
+function customRange() { showToast('Selector personalizado disponible al regenerar prototipo','warning'); }
+
+function toggleCompare() {
+  compareEnabled = !compareEnabled;
+  document.getElementById('compareSwitch').classList.toggle('on', compareEnabled);
+  document.getElementById('prevLine').style.display = compareEnabled ? '' : 'none';
+  showToast(compareEnabled ? 'Comparativa activada' : 'Comparativa desactivada','default');
+}
+
+function applyTableFilters() {
+  const ch = document.getElementById('filterChannel').value;
+  const st = document.getElementById('filterStatus').value;
+  filteredCampaigns = CAMPAIGNS.filter(c => (!ch || c.channel === ch) && (!st || c.status === st));
+  renderTable();
+}
+
+function clearFilters() {
+  document.getElementById('filterChannel').value = '';
+  document.getElementById('filterStatus').value = '';
+  applyTableFilters();
+}
+
+// ======================================================================
+//  Render table
+// ======================================================================
+function renderTable() {
+  const tb = document.getElementById('campaignsBody');
+  const empty = document.getElementById('tableEmpty');
+  const tbl = document.getElementById('campaignsTable');
+  if (filteredCampaigns.length === 0) {
+    tbl.style.display = 'none';
+    empty.classList.add('visible');
+    return;
+  }
+  tbl.style.display = '';
+  empty.classList.remove('visible');
+  const totalRev = CAMPAIGNS.reduce((s,c)=>s+c.revenue,0);
+  tb.innerHTML = filteredCampaigns.map(c => {
+    const pct = (c.revenue / totalRev * 100).toFixed(1);
+    const deltaCls = c.delta > 0 ? 'up' : 'down';
+    return `<tr onclick="drillCampaign('${c.id}')">
+      <td><strong>${c.name}</strong><br><span class="num" style="color:var(--neutral-400)">${c.id}</span></td>
+      <td><span class="badge" style="background:${CHANNEL_COLOR[c.channel]}22;color:${CHANNEL_COLOR[c.channel]}">${CHANNEL_LABEL[c.channel]}</span></td>
+      <td class="num">${c.sessions.toLocaleString('en-US')}</td>
+      <td class="num">${c.conv.toFixed(2)}%</td>
+      <td><div class="progress"><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,pct*3)}%;background:${CHANNEL_COLOR[c.channel]}"></div></div><span class="progress-text">${pct}%</span></div></td>
+      <td class="num">$${c.revenue.toLocaleString('en-US')}</td>
+      <td><span class="badge badge-${deltaCls}">${c.delta>0?'+':''}${c.delta}%</span></td>
+      <td>${STATUS_LABEL[c.status]}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ======================================================================
+//  Drill-down
+// ======================================================================
+function drillDown(kpi) {
+  const titles = { sessions:'Sesiones', users:'Usuarios únicos', conv:'Conversión', aov:'Ticket promedio', revenue:'Ingresos' };
+  openDrill(titles[kpi] || 'KPI', 'Desglose del KPI seleccionado por canal, dispositivo y geografía.', [
+    {k:'Mejor canal',v:'Organic Search (38%)'},
+    {k:'Mejor dispositivo',v:'Mobile iOS (52%)'},
+    {k:'Top país',v:'México (61%)'},
+    {k:'Crecimiento intersemanal',v:'+4.2%'},
+  ]);
+}
+
+function drillStep(step) {
+  const map = {
+    'visitas':   { t:'Visita a la home',     s:'128,420 sesiones · top fuente: Google organic' },
+    'catalogo':  { t:'Vista a producto',     s:'54,802 vistas · 57.3% bounce desde la home' },
+    'carrito':   { t:'Añadido al carrito',   s:'18,994 add-to-cart · 65.4% drop antes del checkout' },
+    'checkout':  { t:'Inicia checkout',      s:'6,217 checkouts iniciados · 67.3% drop antes del pago' },
+    'compra':    { t:'Compra completada',    s:'2,873 compras · ticket promedio $184' },
+  };
+  const d = map[step];
+  openDrill(d.t, d.s, [
+    {k:'Tasa de continuación',v:'42.7%'},
+    {k:'Tiempo promedio en paso',v:'2m 14s'},
+    {k:'Top abandono',v:'Carga lenta de imágenes (37%)'},
+    {k:'Acción sugerida',v:'A/B test layout de producto'},
+  ]);
+}
+
+function drillChannel(ch) {
+  openDrill('Canal: ' + CHANNEL_LABEL[ch], 'Detalle de campañas y costos por canal.', [
+    {k:'Sesiones',v:'48,799'},
+    {k:'CAC promedio',v:'$12.40'},
+    {k:'Tasa de conversión',v:'3.9%'},
+    {k:'Ingresos',v:'$184,200'},
+  ]);
+}
+
+function drillCampaign(id) {
+  const c = CAMPAIGNS.find(x => x.id === id);
+  if (!c) return;
+  openDrill(c.name, c.id + ' · canal ' + CHANNEL_LABEL[c.channel], [
+    {k:'Sesiones',v:c.sessions.toLocaleString('en-US')},
+    {k:'Conversión',v:c.conv.toFixed(2) + '%'},
+    {k:'Ingresos',v:'$' + c.revenue.toLocaleString('en-US')},
+    {k:'Δ período anterior',v:(c.delta>0?'+':'') + c.delta + '%'},
+    {k:'Estado',v:STATUS_LABEL[c.status]},
+  ]);
+}
+
+function openDrill(title, subtitle, stats) {
+  document.getElementById('drillTitle').textContent = title;
+  document.getElementById('drillSubtitle').textContent = subtitle;
+  document.getElementById('drillStats').innerHTML = stats.map(s =>
+    `<div class="modal-stat-row"><span>${s.k}</span><strong>${s.v}</strong></div>`
+  ).join('');
+  document.getElementById('drillModal').classList.add('open');
+}
+
+function closeDrill() { document.getElementById('drillModal').classList.remove('open'); }
+function exportDrill() {
+  const r = ROLES[currentRoleIdx];
+  if (!r.canExport) { showToast('Tu rol no permite exportar datos sensibles','warning'); return; }
+  closeDrill();
+  showToast('Detalle exportado a CSV','success');
+}
+
+// ======================================================================
+//  Sidebar navigation
+// ======================================================================
+function setView(el, view) {
+  document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  const titles = {
+    overview:'Resumen de marketing', campaigns:'Campañas', channels:'Canales',
+    audience:'Audiencia', funnel:'Funnel de conversión', attribution:'Atribución',
+    cohorts:'Cohortes', revenue:'Ingresos', ltv:'LTV / CAC', config:'Configuración'
+  };
+  document.getElementById('pageTitle').textContent = titles[view] || 'Vista';
+  if (view !== 'overview') showToast('Vista "' + (titles[view]||view) + '" disponible al regenerar','default');
+}
+
+function checkAdmin(el, target) {
+  const r = ROLES[currentRoleIdx];
+  if (!r.canConfig) { showToast('Configuración solo para analistas con permiso de admin','warning'); return; }
+  setView(el, target);
+}
+
+// ======================================================================
+//  Roles
+// ======================================================================
+function cycleRole() {
+  currentRoleIdx = (currentRoleIdx + 1) % ROLES.length;
+  const r = ROLES[currentRoleIdx];
+  document.getElementById('userAvatar').textContent = r.abbr;
+  showToast('Vista: ' + r.role, 'default');
+}
+
+// ======================================================================
+//  Misc
+// ======================================================================
+function showToast(msg, kind) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 3000);
+}
+
+// Demo: doble-click en avatar dispara error
+document.querySelector('.user-avatar').addEventListener('dblclick', () => {
+  document.getElementById('dashContent').style.display = 'none';
+  document.getElementById('errorState').classList.add('visible');
+  showToast('Error simulado del servicio de analítica','error');
+});
+</script>
+</body>
+</html>
