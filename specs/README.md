@@ -4,6 +4,7 @@
 
 ## Features iniciales
 - [001-reservations](001-reservations/spec-funcional.md)
+- [002-public-site](002-public-site/spec-funcional.md)
 
 ## Estructura esperada por feature visual
 - product-design.md
