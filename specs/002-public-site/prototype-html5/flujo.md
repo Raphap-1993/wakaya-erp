@@ -10,8 +10,8 @@ Home
 
 ## Flujos secundarios
 
-- Home -> Eventos -> Solicitud de evento -> Success
-- Home -> Full Day -> Solicitud full day -> Success
+- Home -> Eventos -> Solicitud de evento -> Solicitud enviada
+- Home -> Full Day -> Solicitud full day -> Solicitud enviada
 
 ## Pantallas y estados cubiertos
 
@@ -22,7 +22,7 @@ Home
 | Detalle de habitación | Click en card o CTA "Ver detalle" | success |
 | Eventos | Teaser editorial y navegación superior | success, error |
 | Full Day | Teaser editorial y navegación superior | success, error |
-| Solicitud enviada | Submit del modal de prereserva | success |
+| Solicitud enviada | Submit del modal de prereserva, evento o full day en la vista de confirmación compartida | success |
 
 ## Estados UI
 
@@ -30,7 +30,7 @@ Home
 |---|---|
 | loading | Al aplicar búsqueda desde el hero |
 | empty | Fechas/huéspedes sin coincidencia en la disponibilidad referencial |
-| error | Envío demo con email vacío o simulación de falla |
+| error | Falla recuperable de envío, conexión o error del servicio demo |
 | success | Solicitud enviada con CTA de seguimiento |
 
 ## Datos mock
