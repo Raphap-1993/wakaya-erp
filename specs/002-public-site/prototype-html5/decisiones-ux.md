@@ -32,6 +32,6 @@
 ## Contrato del prototipo
 
 - Estados: loading, empty, error, success
-- Roles: visitante web, huésped potencial, prospecto de evento, prospecto de full day
+- Roles: Visitante web, Huesped potencial, Prospecto de evento, Prospecto de full day
 - Entidades: habitación, categoría, tarifa, solicitud, evento, full day
 - RF representados: RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-07, RF-08

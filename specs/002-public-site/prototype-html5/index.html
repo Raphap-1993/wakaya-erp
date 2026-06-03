@@ -810,6 +810,18 @@
       flex-wrap: wrap;
     }
 
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .hero-arrow {
       position: absolute;
       top: 50%;
@@ -883,7 +895,8 @@
       border-right: 1px solid rgba(35, 40, 51, 0.1);
     }
 
-    .booking-band-field span {
+    .booking-band-field span,
+    .booking-band-field label {
       display: block;
       margin-bottom: 10px;
       font-size: 13px;
@@ -1456,55 +1469,7 @@
               </p>
             </div>
 
-            <div class="room-grid" id="home-room-grid">
-              <article class="room-showcase-card">
-                <img src="https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg" alt="Bungalow Suite de Wakaya">
-                <div class="room-showcase-copy">
-                  <h3>Bungalow Suite</h3>
-                  <p>La categoría más íntima: madera cálida, descanso privado y una estadía más exclusiva desde la llegada.</p>
-                  <div class="room-showcase-meta">
-                    <span>2 huéspedes</span>
-                    <span>Desde S/ 420</span>
-                  </div>
-                  <div class="room-showcase-actions">
-                    <button class="button-primary" type="button" data-room-target="suite">Ver detalle</button>
-                    <button class="button-quiet" type="button" data-target-view="habitaciones">Más info</button>
-                  </div>
-                </div>
-              </article>
-
-              <article class="room-showcase-card">
-                <img src="https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg" alt="Bungalow Familiar de Wakaya">
-                <div class="room-showcase-copy">
-                  <h3>Bungalow Familiar</h3>
-                  <p>Mayor amplitud para compartir piscina, jardines y descanso cuando el plan es familiar o con grupo pequeño.</p>
-                  <div class="room-showcase-meta">
-                    <span>4 huéspedes</span>
-                    <span>Desde S/ 350</span>
-                  </div>
-                  <div class="room-showcase-actions">
-                    <button class="button-primary" type="button" data-room-target="familiar">Ver detalle</button>
-                    <button class="button-quiet" type="button" data-target-view="habitaciones">Comparar</button>
-                  </div>
-                </div>
-              </article>
-
-              <article class="room-showcase-card">
-                <img src="https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg" alt="Bungalow Matrimonial de Wakaya">
-                <div class="room-showcase-copy">
-                  <h3>Bungalow Matrimonial</h3>
-                  <p>Una entrada flexible a Wakaya para escapadas cortas con integración natural y un rango más accesible.</p>
-                  <div class="room-showcase-meta">
-                    <span>2 huéspedes</span>
-                    <span>Desde S/ 250</span>
-                  </div>
-                  <div class="room-showcase-actions">
-                    <button class="button-primary" type="button" data-room-target="rio">Ver detalle</button>
-                    <button class="button-quiet" type="button" data-target-view="habitaciones">Tarifas</button>
-                  </div>
-                </div>
-              </article>
-            </div>
+            <div class="room-grid" id="home-room-grid"></div>
           </section>
 
           <section class="section-shell promo-section" aria-label="Paisaje y experiencia" data-reveal="4">
@@ -1651,74 +1616,19 @@
 
             <article class="summary-hero">
               <div class="summary-hero-copy">
-                <strong>Disponibilidad referencial</strong>
+                <strong id="catalog-context-title">Disponibilidad referencial</strong>
                 <p>
+                  <span id="catalog-context-copy">
                   En esta etapa se privilegia claridad: el visitante puede
                   comparar categoría, capacidad y estilo de estadía antes de
                   iniciar una solicitud manual con el equipo.
+                  </span>
                 </p>
               </div>
             </article>
           </div>
 
-          <div class="feature-grid" id="catalog-grid">
-            <article class="room-card">
-              <div class="room-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg')">
-                <span class="room-badge">Suite · S/ 420</span>
-              </div>
-              <div class="room-body">
-                <h3>Bungalow Suite</h3>
-                <p class="room-copy">Privacidad, mejor descanso y una llegada más exclusiva para parejas o estadías cortas con intención.</p>
-                <div class="room-meta">
-                  <span>2 huéspedes</span>
-                  <span>Mayor privacidad</span>
-                  <span>2 espacios referenciales</span>
-                </div>
-                <div class="room-actions">
-                  <button class="button-primary" type="button" data-room-target="suite">Ver detalle</button>
-                  <button class="button-quiet" type="button">Solicitar prereserva</button>
-                </div>
-              </div>
-            </article>
-
-            <article class="room-card">
-              <div class="room-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg')">
-                <span class="room-badge">Familiar · S/ 350</span>
-              </div>
-              <div class="room-body">
-                <h3>Bungalow Familiar</h3>
-                <p class="room-copy">Más amplitud, mejor acomodo y cercanía a las áreas comunes para quienes viven la salida en familia.</p>
-                <div class="room-meta">
-                  <span>4 huéspedes</span>
-                  <span>Amplio y cómodo</span>
-                  <span>3 espacios referenciales</span>
-                </div>
-                <div class="room-actions">
-                  <button class="button-primary" type="button" data-room-target="familiar">Ver detalle</button>
-                  <button class="button-quiet" type="button">Solicitar prereserva</button>
-                </div>
-              </div>
-            </article>
-
-            <article class="room-card">
-              <div class="room-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg')">
-                <span class="room-badge">Matrimonial · S/ 250</span>
-              </div>
-              <div class="room-body">
-                <h3>Bungalow Matrimonial</h3>
-                <p class="room-copy">La opción más flexible para una primera visita, con integración natural y un rango de entrada más accesible.</p>
-                <div class="room-meta">
-                  <span>2 huéspedes</span>
-                  <span>Escapada corta</span>
-                  <span>4 espacios referenciales</span>
-                </div>
-                <div class="room-actions">
-                  <button class="button-primary" type="button" data-room-target="rio">Ver detalle</button>
-                  <button class="button-quiet" type="button">Solicitar prereserva</button>
-                </div>
-              </div>
-            </article>
-          </div>
+          <div class="feature-grid" id="catalog-grid"></div>
         </div>
       </section>
 
@@ -1768,12 +1678,12 @@
                     <strong>Tarifa referencial</strong>
                     <span id="detail-price">S/ 420</span>
                   </div>
-                  <button class="button-primary" type="button">Solicitar prereserva</button>
+                  <button class="button-primary" id="detail-request-cta" type="button" data-request-kind="habitacion">Solicitar prereserva</button>
                 </div>
                 <p class="detail-note">
-                  Este botón deja visible el siguiente paso comercial. El flujo
-                  real de solicitud, loading, empty, error y success se completará
-                  en la siguiente tarea del prototipo.
+                  La solicitud sigue siendo manual: Wakaya confirma
+                  disponibilidad, tarifa final y siguientes pasos después del
+                  envío.
                 </p>
               </div>
             </article>
@@ -1784,18 +1694,22 @@
       <section class="view" id="view-eventos" data-view="eventos">
         <div class="page future-shell">
           <article class="future-card">
-            <p class="section-kicker">Vista preparada para Task 3</p>
+            <p class="section-kicker">Eventos en Wakaya</p>
             <h2>Eventos en Wakaya</h2>
             <p>
-              Esta vista ya existe dentro del entrypoint único para que el journey
-              completo no vuelva a nacer de cero. En la siguiente tarea se llenará
-              con su teaser editorial, CTA y la salida compartida de solicitud enviada.
+              Wakaya también funciona como venue natural para bodas íntimas,
+              retiros de empresa y celebraciones familiares, sin perder el tono
+              premium y cálido del ecolodge.
             </p>
             <ul>
               <li>Venue natural</li>
               <li>Bodas íntimas</li>
               <li>Retiros corporativos</li>
             </ul>
+            <div class="hero-actions" style="margin-top: 24px;">
+              <button class="button-primary" type="button" data-request-kind="evento">Solicitar propuesta</button>
+              <button class="button-secondary" type="button" data-target-view="home">Volver al inicio</button>
+            </div>
           </article>
         </div>
       </section>
@@ -1803,18 +1717,22 @@
       <section class="view" id="view-full-day" data-view="full-day">
         <div class="page future-shell">
           <article class="future-card">
-            <p class="section-kicker">Vista preparada para Task 3</p>
+            <p class="section-kicker">Full Day Wakaya</p>
             <h2>Full Day Wakaya</h2>
             <p>
-              La estructura ya reserva un espacio propio para el programa de día
-              completo. En la siguiente iteración se añadirá la propuesta de valor,
-              el formulario compartido y el cierre inequívoco en solicitud enviada.
+              El programa de día completo deja visible una alternativa de acceso
+              más corta a Wakaya para familias, grupos pequeños y visitas de un
+              solo día con coordinación manual.
             </p>
             <ul>
               <li>Piscina y jardines</li>
               <li>Ruta familiar</li>
               <li>Coordinación manual</li>
             </ul>
+            <div class="hero-actions" style="margin-top: 24px;">
+              <button class="button-primary" type="button" data-request-kind="full-day">Solicitar cupo</button>
+              <button class="button-secondary" type="button" data-target-view="home">Volver al inicio</button>
+            </div>
           </article>
         </div>
       </section>
@@ -1838,6 +1756,7 @@
             <span>Solicitud enviada; el equipo de Wakaya revisará disponibilidad y próximos pasos.</span>
           </article>
         </div>
+        <p class="sr-only" aria-hidden="true">Roles representados en el prototipo: Visitante web, Huesped potencial, Prospecto de evento y Prospecto de full day.</p>
       </section>
     </main>
 
@@ -1849,6 +1768,8 @@
   </div>
 
   <script>
+    const roomOrder = ["suite", "familiar", "rio"];
+
     const rooms = {
       suite: {
         title: "Bungalow Suite",
@@ -1856,9 +1777,13 @@
         guests: "2 huéspedes",
         price: "S/ 420",
         availability: "2 espacios referenciales",
-        badge: "Categoría más privada",
-        description: "La opción más privada para una noche con menos ruido y más aire. Su composición privilegia calma, madera cálida y una llegada que se sienta más exclusiva desde el primer momento.",
+        badge: "Suite · S/ 420",
         image: "https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg",
+        homeCopy: "La categoría más íntima: madera cálida, descanso privado y una estadía más exclusiva desde la llegada.",
+        catalogCopy: "Privacidad, mejor descanso y una llegada más exclusiva para parejas o estadías cortas con intención.",
+        catalogTags: ["Mayor privacidad", "2 espacios referenciales"],
+        homeSecondaryLabel: "Más info",
+        description: "La opción más privada para una noche con menos ruido y más aire. Su composición privilegia calma, madera cálida y una llegada que se sienta más exclusiva desde el primer momento.",
         amenities: [
           "Mayor privacidad y una atmósfera más íntima.",
           "Ideal para parejas o escapadas de descanso corto.",
@@ -1872,9 +1797,13 @@
         guests: "4 huéspedes",
         price: "S/ 350",
         availability: "3 espacios referenciales",
-        badge: "Categoría de mayor amplitud",
-        description: "Pensada para cuando el viaje se vive en grupo pequeño. La distribución da más aire, mejor acomodo y un punto de encuentro natural después de la piscina, el jardín y la comida.",
+        badge: "Familiar · S/ 350",
         image: "https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg",
+        homeCopy: "Mayor amplitud para compartir piscina, jardines y descanso cuando el plan es familiar o con grupo pequeño.",
+        catalogCopy: "Más amplitud, mejor acomodo y cercanía a las áreas comunes para quienes viven la salida en familia.",
+        catalogTags: ["Amplio y cómodo", "3 espacios referenciales"],
+        homeSecondaryLabel: "Comparar",
+        description: "Pensada para cuando el viaje se vive en grupo pequeño. La distribución da más aire, mejor acomodo y un punto de encuentro natural después de la piscina, el jardín y la comida.",
         amenities: [
           "Dormitorio amplio y mejor acomodo familiar.",
           "Ideal para grupos de 3 a 4 personas.",
@@ -1888,9 +1817,13 @@
         guests: "2 huéspedes",
         price: "S/ 250",
         availability: "4 espacios referenciales",
-        badge: "Categoría de entrada",
-        description: "Una manera cálida y flexible de entrar a Wakaya. Mantiene la sensación de naturaleza cercana y descanso, pero con un rango más accesible para una visita corta.",
+        badge: "Matrimonial · S/ 250",
         image: "https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg",
+        homeCopy: "Una entrada flexible a Wakaya para escapadas cortas con integración natural y un rango más accesible.",
+        catalogCopy: "La opción más flexible para una primera visita, con integración natural y un rango de entrada más accesible.",
+        catalogTags: ["Escapada corta", "4 espacios referenciales"],
+        homeSecondaryLabel: "Tarifas",
+        description: "Una manera cálida y flexible de entrar a Wakaya. Mantiene la sensación de naturaleza cercana y descanso, pero con un rango más accesible para una visita corta.",
         amenities: [
           "Integración con naturaleza y vegetación cercana.",
           "Capacidad cómoda para una escapada de pareja.",
@@ -1899,6 +1832,96 @@
         ]
       }
     };
+
+    const defaultRoomKey = roomOrder[0];
+
+    const bookingState = {
+      checkin: "",
+      checkout: "",
+      guests: "",
+      category: "all"
+    };
+
+    const bookingCheckin = document.getElementById("booking-checkin");
+    const bookingCheckout = document.getElementById("booking-checkout");
+    const bookingGuests = document.getElementById("booking-guests");
+    const bookingCategory = document.getElementById("booking-category");
+    const homeRoomGrid = document.getElementById("home-room-grid");
+    const catalogGrid = document.getElementById("catalog-grid");
+    const catalogContextTitle = document.getElementById("catalog-context-title");
+    const catalogContextCopy = document.getElementById("catalog-context-copy");
+    const detailRequestButton = document.getElementById("detail-request-cta");
+    const successCard = document.querySelector(".toast-notify span");
+    const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
+    const heroDots = Array.from(document.querySelectorAll(".hero-dot"));
+
+    let activeHeroSlide = 0;
+    let heroTimer = null;
+
+    function syncBookingState() {
+      bookingState.checkin = bookingCheckin.value;
+      bookingState.checkout = bookingCheckout.value;
+      bookingState.guests = bookingGuests.value;
+      bookingState.category = bookingCategory.value;
+    }
+
+    function roomCardMarkup(roomKey, variant) {
+      const room = rooms[roomKey];
+      const copy = variant === "home" ? room.homeCopy : room.catalogCopy;
+      const badge = variant === "home" ? `Desde ${room.price}` : room.badge;
+      const tags = variant === "home"
+        ? [room.guests, `Desde ${room.price}`]
+        : [room.guests, ...room.catalogTags];
+      const secondaryLabel = variant === "home" ? room.homeSecondaryLabel : "Solicitar prereserva";
+      const secondaryAttrs = variant === "home"
+        ? 'data-target-view="habitaciones"'
+        : `data-request-kind="habitacion" data-request-room="${roomKey}"`;
+
+      return `
+        <article class="${variant === "home" ? "room-showcase-card" : "room-card"}">
+          ${variant === "home" ? `<img src="${room.image}" alt="${room.title} de Wakaya">` : ""}
+          ${variant === "home" ? "" : `<div class="room-media" style="background-image:url('${room.image}')"><span class="room-badge">${badge}</span></div>`}
+          <div class="${variant === "home" ? "room-showcase-copy" : "room-body"}">
+            <h3>${room.title}</h3>
+            <p class="${variant === "home" ? "" : "room-copy"}">${copy}</p>
+            <div class="${variant === "home" ? "room-showcase-meta" : "room-meta"}">
+              ${tags.map((tag) => `<span>${tag}</span>`).join("")}
+            </div>
+            <div class="${variant === "home" ? "room-showcase-actions" : "room-actions"}">
+              <button class="button-primary" type="button" data-room-target="${roomKey}">Ver detalle</button>
+              <button class="button-quiet" type="button" ${secondaryAttrs}>${secondaryLabel}</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderRoomCollections() {
+      homeRoomGrid.innerHTML = roomOrder.map((roomKey) => roomCardMarkup(roomKey, "home")).join("");
+      catalogGrid.innerHTML = roomOrder.map((roomKey) => roomCardMarkup(roomKey, "catalog")).join("");
+    }
+
+    function updateCatalogContext() {
+      const room = rooms[bookingState.category];
+      if (room) {
+        catalogContextTitle.textContent = `Disponibilidad referencial · ${room.title}`;
+        catalogContextCopy.textContent = `Tu búsqueda quedó preparada para ${room.title}, ${bookingState.guests.toLowerCase()}, check in ${bookingState.checkin} y check out ${bookingState.checkout}. La confirmación final sigue siendo manual con el equipo de Wakaya.`;
+        return;
+      }
+
+      catalogContextTitle.textContent = "Disponibilidad referencial";
+      catalogContextCopy.textContent = "En esta etapa se privilegia claridad: el visitante puede comparar categoría, capacidad y estilo de estadía antes de iniciar una solicitud manual con el equipo.";
+    }
+
+    function setSelectedRoom(roomKey) {
+      if (!rooms[roomKey]) {
+        return;
+      }
+
+      bookingCategory.value = roomKey;
+      syncBookingState();
+      updateCatalogContext();
+    }
 
     function showView(viewName) {
       document.querySelectorAll(".view").forEach((section) => {
@@ -1917,7 +1940,7 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function renderRoomDetail(roomKey) {
+    function renderRoomDetail(roomKey, shouldNavigate = true) {
       const room = rooms[roomKey];
       if (!room) {
         return;
@@ -1935,8 +1958,51 @@
       document.getElementById("amenity-2").textContent = room.amenities[1];
       document.getElementById("amenity-3").textContent = room.amenities[2];
       document.getElementById("amenity-4").textContent = room.amenities[3];
-      showView("habitacion-detalle");
+      detailRequestButton.dataset.requestRoom = roomKey;
+
+      if (shouldNavigate) {
+        showView("habitacion-detalle");
+      }
     }
+
+    function setHeroSlide(nextIndex) {
+      activeHeroSlide = (nextIndex + heroSlides.length) % heroSlides.length;
+
+      heroSlides.forEach((slide, index) => {
+        slide.classList.toggle("is-active", index === activeHeroSlide);
+      });
+
+      heroDots.forEach((dot, index) => {
+        dot.classList.toggle("is-active", index === activeHeroSlide);
+      });
+    }
+
+    function startHeroAutoplay() {
+      window.clearInterval(heroTimer);
+      heroTimer = window.setInterval(() => {
+        setHeroSlide(activeHeroSlide + 1);
+      }, 4800);
+    }
+
+    function showRequestFeedback(kind, roomKey) {
+      const room = roomKey ? rooms[roomKey] : null;
+      const messages = {
+        evento: "Solicitud enviada para eventos. El equipo de Wakaya revisará disponibilidad del venue y próximos pasos.",
+        "full-day": "Solicitud enviada para Full Day. Wakaya revisará cupos y coordinación manual.",
+        habitacion: room
+          ? `Solicitud enviada para ${room.title}. Wakaya confirmará disponibilidad, tarifa final y siguientes pasos.`
+          : "Solicitud enviada. Wakaya revisará la disponibilidad y te responderá pronto."
+      };
+
+      successCard.textContent = messages[kind] || messages.habitacion;
+      showView("home");
+      document.querySelector(".state-bank").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    bookingCheckin.addEventListener("change", syncBookingState);
+    bookingCheckout.addEventListener("change", syncBookingState);
+    bookingGuests.addEventListener("change", syncBookingState);
+    bookingCategory.addEventListener("change", syncBookingState);
 
     document.addEventListener("click", (event) => {
       const targetButton = event.target.closest("[data-target-view]");
@@ -1946,13 +2012,48 @@
 
       const roomButton = event.target.closest("[data-room-target]");
       if (roomButton) {
+        setSelectedRoom(roomButton.dataset.roomTarget);
         renderRoomDetail(roomButton.dataset.roomTarget);
       }
 
+      const requestButton = event.target.closest("[data-request-kind]");
+      if (requestButton) {
+        const roomKey = requestButton.dataset.requestRoom || bookingState.category;
+        showRequestFeedback(requestButton.dataset.requestKind, roomKey === "all" ? null : roomKey);
+      }
+
+      const slideArrow = event.target.closest("[data-slide-dir]");
+      if (slideArrow) {
+        setHeroSlide(activeHeroSlide + Number(slideArrow.dataset.slideDir));
+        startHeroAutoplay();
+      }
+
+      const slideDot = event.target.closest(".hero-dot[data-slide]");
+      if (slideDot) {
+        setHeroSlide(Number(slideDot.dataset.slide));
+        startHeroAutoplay();
+      }
+
       if (event.target.id === "availability-cta") {
+        syncBookingState();
+        updateCatalogContext();
+
+        if (bookingState.category !== "all") {
+          setSelectedRoom(bookingState.category);
+          renderRoomDetail(bookingState.category);
+          return;
+        }
+
         showView("habitaciones");
       }
     });
+
+    syncBookingState();
+    renderRoomCollections();
+    updateCatalogContext();
+    renderRoomDetail(defaultRoomKey, false);
+    setHeroSlide(0);
+    startHeroAutoplay();
   </script>
 </body>
 </html>
