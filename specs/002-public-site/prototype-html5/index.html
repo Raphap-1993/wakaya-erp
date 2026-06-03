@@ -851,6 +851,8 @@
       height: 12px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.42);
+      padding: 0;
+      border: none;
     }
 
     .hero-dot.is-active {
@@ -1336,33 +1338,72 @@
       <section class="view is-active" id="view-home" data-view="home">
         <div class="home-shell">
           <section class="hero-slider" aria-label="Hero principal de Wakaya" data-reveal="1">
-            <article class="hero-slide is-active">
+            <article class="hero-slide is-active" data-slide="0">
               <img
                 class="hero-slide-media"
-                src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg"
-                alt="Piscina, jardines y bungalows de Wakaya"
+                src="https://wakayaecolodge.com/es/images/wakaya/banner/banner_2.jpg"
+                alt="Familia recorriendo la laguna de Wakaya"
               >
               <div class="hero-overlay"></div>
               <div class="section-shell">
                 <div class="hero-copy">
-                  <span class="hero-kicker">Pucallpa · agua · madera · descanso</span>
-                  <h1>Respira la naturaleza sin salir del confort.</h1>
-                  <p>
-                    Wakaya reúne piscina, laguna, jardines y bungalows de madera
-                    en una escapada amazónica más cálida, más simple y más visual.
-                  </p>
+                  <span class="hero-kicker">HOTEL WAKAYA ECOLODGE</span>
+                  <h1>Lo mejor de la selva del Perú.</h1>
+                  <p>Una llegada entre agua, vegetación y descanso tropical para vivir Wakaya como refugio, escapada y destino.</p>
                   <div class="hero-actions">
-                    <button class="button-secondary" type="button" data-target-view="habitaciones">Explorar bungalows</button>
+                    <button class="button-primary" type="button" data-target-view="habitaciones">Nuestras habitaciones</button>
+                    <button class="button-secondary" type="button" data-target-view="habitaciones">Reserva una ahora</button>
                   </div>
                 </div>
               </div>
             </article>
-            <button class="hero-arrow hero-arrow-prev" type="button" disabled aria-label="Slide anterior">←</button>
-            <button class="hero-arrow hero-arrow-next" type="button" disabled aria-label="Siguiente slide">→</button>
-            <div class="hero-dots" aria-hidden="true">
-              <span class="hero-dot is-active"></span>
-              <span class="hero-dot"></span>
-              <span class="hero-dot"></span>
+
+            <article class="hero-slide" data-slide="1">
+              <img
+                class="hero-slide-media"
+                src="https://wakayaecolodge.com/es/images/wakaya/banner/banner_1.jpg"
+                alt="Bungalows de Wakaya rodeados de vegetación"
+              >
+              <div class="hero-overlay"></div>
+              <div class="section-shell">
+                <div class="hero-copy">
+                  <span class="hero-kicker">BUNGALOWS · NATURALEZA · DESCANSO</span>
+                  <h1>Cálidos y cómodos bungalows.</h1>
+                  <p>Tres categorías visibles para elegir mejor la estadía, comparar capacidad y empezar la reserva con claridad.</p>
+                  <div class="hero-actions">
+                    <button class="button-primary" type="button" data-target-view="habitaciones">Explorar categorías</button>
+                    <button class="button-secondary" type="button" data-room-target="suite">Ver bungalow suite</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="hero-slide" data-slide="2">
+              <img
+                class="hero-slide-media"
+                src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_laguna.jpg"
+                alt="Vista de laguna y experiencia tropical en Wakaya"
+              >
+              <div class="hero-overlay"></div>
+              <div class="section-shell">
+                <div class="hero-copy">
+                  <span class="hero-kicker">EVENTOS · FULL DAY · EXPERIENCIA</span>
+                  <h1>Un refugio para dormir, celebrar y desconectar.</h1>
+                  <p>Hospedaje principal, servicios reales del ecolodge y una segunda línea comercial para eventos y visitas de día completo.</p>
+                  <div class="hero-actions">
+                    <button class="button-primary" type="button" data-target-view="eventos">Ver eventos</button>
+                    <button class="button-secondary" type="button" data-target-view="full-day">Ver full day</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <button class="hero-arrow hero-arrow-prev" type="button" data-slide-dir="-1" aria-label="Slide anterior">←</button>
+            <button class="hero-arrow hero-arrow-next" type="button" data-slide-dir="1" aria-label="Siguiente slide">→</button>
+            <div class="hero-dots" aria-label="Paginación del hero">
+              <button class="hero-dot is-active" type="button" data-slide="0" aria-label="Ir al slide 1"></button>
+              <button class="hero-dot" type="button" data-slide="1" aria-label="Ir al slide 2"></button>
+              <button class="hero-dot" type="button" data-slide="2" aria-label="Ir al slide 3"></button>
             </div>
           </section>
 
@@ -1488,8 +1529,8 @@
           <section class="section-shell services-section" aria-label="Servicios y actividades" data-reveal="5">
             <div class="section-head">
               <div>
-                <p class="section-kicker">Activities</p>
-                <h2>Activities</h2>
+                <p class="section-kicker">Servicios del ecolodge</p>
+                <h2>Servicios para una experiencia completa</h2>
               </div>
               <p>
                 Wakaya no vende solo habitaciones. También muestra experiencias
@@ -1515,15 +1556,15 @@
               <article class="service-tile">
                 <img src="https://wakayaecolodge.com/es/images/wakaya/services/DSC_5853-PLATO%20COMIDA.jpg" alt="Restaurante de Wakaya">
                 <div class="service-tile-copy">
-                  <strong>Restaurant</strong>
+                  <strong>Restaurante</strong>
                   <span>Comida y servicio para la experiencia completa.</span>
                 </div>
               </article>
               <article class="service-tile">
-                <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg" alt="Full Day en Wakaya">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_juegos_ninos.jpg" alt="Zona de juegos en Wakaya">
                 <div class="service-tile-copy">
-                  <strong>Full Day</strong>
-                  <span>Jornadas cortas con acceso y coordinación manual.</span>
+                  <strong>Zona de juegos</strong>
+                  <span>Apoyo para estadías familiares y momentos compartidos dentro del lodge.</span>
                 </div>
               </article>
             </div>
@@ -1553,17 +1594,17 @@
               <div class="immersive-gallery-main">
                 <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg" alt="Vista panorámica de Wakaya">
                 <div class="immersive-gallery-copy">
-                  <strong>Gallery</strong>
-                  <p>La experiencia combina agua, vegetación y espacios para desconectar o celebrar dentro del mismo lugar.</p>
+                  <strong>Galería Wakaya</strong>
+                  <p>La experiencia combina laguna, vegetación y espacios para desconectar o celebrar dentro del mismo lugar.</p>
                 </div>
               </div>
               <div class="gallery-stack">
                 <div class="gallery-card">
-                  <img src="https://wakayaecolodge.com/es/images/wakaya/services/DSC_5853-PLATO%20COMIDA.jpg" alt="Restaurante de Wakaya">
+                  <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_piscina.jpg" alt="Piscina de Wakaya">
                 </div>
                 <div class="gallery-card-copy">
                   <strong>Reserva manual</strong>
-                  <p>La web mantiene tarifas referenciales y claridad de capacidad mientras el equipo de Wakaya confirma disponibilidad y siguientes pasos.</p>
+                  <p>La web mantiene tarifas referenciales y claridad de capacidad mientras el equipo de Wakaya confirma disponibilidad, bungalow y siguientes pasos.</p>
                 </div>
               </div>
             </div>
