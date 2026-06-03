@@ -6,33 +6,35 @@
   <title>Wakaya Ecolodge | Prototipo público de reservas</title>
   <style>
     :root {
-      --brand: #9d6b43;
-      --brand-deep: #503728;
-      --brand-soft: rgba(157, 107, 67, 0.14);
-      --forest: #22453c;
-      --forest-deep: #173029;
-      --leaf: #5e826f;
-      --sunset: #cc8a55;
-      --sand: #f2e7d7;
-      --cream: #fbf7f1;
-      --surface: rgba(255, 248, 239, 0.78);
-      --surface-strong: #f5ebde;
-      --line: rgba(56, 38, 27, 0.12);
-      --line-strong: rgba(56, 38, 27, 0.24);
-      --ink: #1f1a17;
-      --ink-soft: #63594f;
+      --brand: #1fb566;
+      --brand-deep: #17924f;
+      --brand-soft: rgba(31, 181, 102, 0.14);
+      --forest: #16392f;
+      --forest-deep: #102821;
+      --leaf: #3f8a67;
+      --sunset: #d9b37b;
+      --mist: #f6f3ed;
+      --sand: #f5efe6;
+      --cream: #fcf8f2;
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-strong: #ffffff;
+      --line: rgba(35, 40, 51, 0.12);
+      --line-strong: rgba(35, 40, 51, 0.2);
+      --ink: #232833;
+      --ink-soft: #6f7480;
       --white: #ffffff;
-      --shadow-soft: 0 14px 40px rgba(50, 31, 18, 0.08);
-      --shadow-card: 0 24px 64px rgba(44, 24, 14, 0.12);
-      --shadow-hero: inset 0 -120px 160px rgba(16, 20, 17, 0.44);
+      --shadow-soft: 0 14px 32px rgba(21, 27, 39, 0.08);
+      --shadow-card: 0 24px 64px rgba(21, 27, 39, 0.14);
+      --shadow-hero: 0 22px 74px rgba(16, 24, 20, 0.18);
+      --shadow-band: 0 16px 48px rgba(21, 27, 39, 0.12);
       --radius-sm: 10px;
       --radius-md: 18px;
-      --radius-lg: 28px;
-      --radius-xl: 38px;
-      --content-w: 1240px;
-      --font-display: "Avenir Next", "Helvetica Neue", "Manrope", sans-serif;
-      --font-accent: "Avenir Next Condensed", "Arial Narrow", "Avenir Next", "Helvetica Neue", sans-serif;
-      --font-body: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+      --radius-lg: 22px;
+      --radius-xl: 34px;
+      --content-w: 1320px;
+      --font-display: "Avenir Next", "Segoe UI", sans-serif;
+      --font-accent: "Avenir Next", "Segoe UI", sans-serif;
+      --font-body: "Avenir Next", "Segoe UI", sans-serif;
       --transition: 180ms ease;
     }
 
@@ -51,8 +53,8 @@
       font-family: var(--font-body);
       color: var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(204, 138, 85, 0.2), transparent 28%),
-        linear-gradient(180deg, #f7f0e7 0%, #fbf7f1 52%, #f2e8da 100%);
+        radial-gradient(circle at top left, rgba(31, 181, 102, 0.08), transparent 24%),
+        linear-gradient(180deg, #fbf8f2 0%, var(--mist) 50%, var(--sand) 100%);
     }
 
     img {
@@ -86,7 +88,7 @@
       top: 0;
       z-index: 40;
       backdrop-filter: blur(18px);
-      background: rgba(251, 247, 241, 0.74);
+      background: rgba(246, 243, 237, 0.9);
       border-bottom: 1px solid var(--line);
     }
 
@@ -109,9 +111,9 @@
     .brand-mark {
       width: 44px;
       height: 44px;
-      border-radius: 15px;
+      border-radius: 16px;
       background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 46%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 46%),
         linear-gradient(135deg, var(--forest), var(--brand));
       display: grid;
       place-items: center;
@@ -126,7 +128,7 @@
       display: block;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--ink-soft);
+      color: #7a807d;
       font-size: 10px;
       margin-bottom: 3px;
     }
@@ -142,26 +144,27 @@
     .public-nav {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
     .public-nav button {
       background: transparent;
-      color: var(--ink-soft);
-      padding: 9px 14px;
+      color: #586068;
+      padding: 10px 16px;
       border-radius: 999px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.11em;
     }
 
     .public-nav button:hover,
     .public-nav button[aria-current="page"] {
-      background: var(--brand-soft);
-      color: var(--brand-deep);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--forest-deep);
+      box-shadow: 0 6px 18px rgba(21, 27, 39, 0.08);
     }
 
     .hub-link {
@@ -170,7 +173,7 @@
       border: 1px solid var(--line);
       border-radius: 999px;
       padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.82);
     }
 
     .hub-link:hover {
@@ -189,7 +192,7 @@
     .page {
       max-width: var(--content-w);
       margin: 0 auto;
-      padding: 0 28px 100px;
+      padding: 0 28px 112px;
     }
 
     .eyebrow {
@@ -197,92 +200,116 @@
       align-items: center;
       gap: 8px;
       font-size: 11px;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.84);
-      margin-bottom: 16px;
+      color: rgba(255, 251, 246, 0.84);
+      margin-bottom: 18px;
+      font-weight: 600;
     }
 
     .eyebrow::before {
       content: "";
-      width: 34px;
+      width: 40px;
       height: 1px;
-      background: rgba(255, 255, 255, 0.62);
+      background: rgba(255, 255, 255, 0.54);
     }
 
     .hero {
       display: grid;
-      padding: 30px 0 74px;
+      padding: 34px 0 54px;
     }
 
     .hero-media {
       position: relative;
       overflow: hidden;
-      border-radius: 36px;
-      min-height: 700px;
+      border-radius: 42px;
+      min-height: 720px;
       box-shadow: var(--shadow-card);
-      background:
-        inset 0 -140px 180px rgba(15, 18, 17, 0.62),
-        linear-gradient(180deg, rgba(14, 18, 15, 0.42), rgba(14, 18, 15, 0.64)),
-        url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80") center/cover;
+      background: linear-gradient(180deg, #ebe4d8 0%, #d1cac0 100%);
     }
 
+    .hero-photo {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      z-index: 0;
+    }
+
+    .hero-media::before,
     .hero-media::after {
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        radial-gradient(circle at 18% 14%, rgba(255, 244, 232, 0.22), transparent 22%),
-        radial-gradient(circle at 85% 18%, rgba(204, 138, 85, 0.18), transparent 24%);
       pointer-events: none;
+    }
+
+    .hero-media::before {
+      z-index: 1;
+      background:
+        inset 0 -140px 180px rgba(12, 14, 13, 0.44),
+        linear-gradient(180deg, rgba(14, 18, 15, 0.14), rgba(14, 18, 15, 0.38)),
+        linear-gradient(90deg, rgba(16, 18, 16, 0.28) 0%, rgba(16, 18, 16, 0.14) 42%, rgba(16, 18, 16, 0.08) 100%);
+    }
+
+    .hero-media::after {
+      z-index: 2;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(9, 13, 11, 0.08) 40%, rgba(9, 13, 11, 0.46) 100%),
+        radial-gradient(circle at 18% 14%, rgba(255, 244, 232, 0.08), transparent 24%),
+        radial-gradient(circle at 86% 18%, rgba(203, 152, 91, 0.16), transparent 24%);
     }
 
     .hero-grid {
       position: relative;
-      z-index: 1;
-      min-height: 700px;
+      z-index: 3;
+      min-height: 720px;
       display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(340px, 430px);
-      align-items: center;
-      padding: 58px;
-      gap: 36px;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+      align-items: end;
+      padding: 58px 58px 46px;
+      gap: 44px;
     }
 
     .hero-copy h1 {
-      max-width: 620px;
-      font-family: var(--font-accent);
-      font-size: clamp(3.2rem, 6vw, 5.4rem);
-      line-height: 0.88;
-      font-weight: 800;
-      letter-spacing: -0.05em;
+      max-width: 560px;
+      font-family: var(--font-display);
+      font-size: clamp(3.1rem, 5vw, 4.9rem);
+      line-height: 0.92;
+      font-weight: 700;
+      letter-spacing: -0.045em;
       color: var(--white);
-      margin-bottom: 18px;
-      text-shadow: 0 10px 34px rgba(0, 0, 0, 0.28);
+      margin-bottom: 20px;
+      text-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
     }
 
     .hero-copy p {
-      max-width: 500px;
-      font-size: 16px;
+      max-width: 460px;
+      font-size: 15px;
       line-height: 1.7;
-      color: rgba(255, 248, 239, 0.82);
-      margin-bottom: 24px;
-      text-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+      color: rgba(255, 249, 242, 0.9);
+      margin-bottom: 26px;
+      text-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
     }
 
     .hero-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 26px;
     }
 
     .hero-meta span {
-      border: 1px solid rgba(255, 255, 255, 0.26);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 999px;
-      padding: 9px 13px;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.78);
-      background: rgba(255, 255, 255, 0.06);
+      padding: 10px 14px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      letter-spacing: 0.03em;
     }
 
     .hero-actions {
@@ -299,15 +326,15 @@
       justify-content: center;
       gap: 8px;
       border-radius: 999px;
-      padding: 14px 22px;
+      padding: 15px 22px;
       font-size: 13px;
       font-weight: 700;
     }
 
     .button-primary {
-      background: var(--white);
-      color: var(--ink);
-      box-shadow: 0 8px 20px rgba(17, 16, 13, 0.14);
+      background: var(--brand);
+      color: var(--white);
+      box-shadow: 0 12px 28px rgba(23, 146, 79, 0.2);
     }
 
     .button-primary:hover {
@@ -315,41 +342,49 @@
     }
 
     .button-secondary {
-      background: transparent;
+      background: rgba(255, 255, 255, 0.14);
       color: var(--white);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.28);
     }
 
     .button-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .button-quiet {
-      background: rgba(157, 107, 67, 0.12);
-      color: var(--brand-deep);
-      border: 1px solid rgba(157, 107, 67, 0.18);
+      background: var(--brand-soft);
+      color: var(--forest-deep);
+      border: 1px solid rgba(31, 181, 102, 0.2);
     }
 
     .button-quiet:hover {
-      background: rgba(157, 107, 67, 0.18);
+      background: rgba(31, 181, 102, 0.22);
+    }
+
+    .booking-actions .button-primary:hover,
+    .room-actions .button-primary:hover,
+    .detail-price .button-primary:hover {
+      background: var(--brand-deep);
     }
 
     .booking-panel {
-      align-self: center;
-      background: rgba(252, 246, 238, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.26);
-      border-radius: 30px;
-      padding: 24px;
+      align-self: end;
+      background: rgba(255, 252, 248, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      border-radius: 34px;
+      padding: 26px;
       box-shadow: var(--shadow-card);
       color: var(--ink);
+      transform: translateY(44px);
+      backdrop-filter: blur(16px);
     }
 
     .booking-panel h2 {
-      font-family: var(--font-accent);
-      font-size: 32px;
-      line-height: 0.98;
-      font-weight: 800;
-      letter-spacing: -0.04em;
+      font-family: var(--font-display);
+      font-size: 26px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: -0.045em;
       margin-bottom: 12px;
       color: var(--forest-deep);
     }
@@ -374,7 +409,7 @@
     .field label {
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.18em;
       color: var(--ink-soft);
       font-weight: 700;
     }
@@ -383,9 +418,9 @@
     .field select {
       height: 48px;
       width: 100%;
-      border-radius: 16px;
+      border-radius: 18px;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.92);
       padding: 0 14px;
       color: var(--ink);
     }
@@ -405,7 +440,7 @@
     }
 
     .section {
-      padding-top: 44px;
+      padding-top: 58px;
     }
 
     .section-head {
@@ -413,32 +448,32 @@
       justify-content: space-between;
       align-items: end;
       gap: 18px;
-      margin-bottom: 22px;
+      margin-bottom: 26px;
       flex-wrap: wrap;
     }
 
     .section-head p {
       max-width: 580px;
-      color: var(--ink-soft);
+      color: #6a6158;
       line-height: 1.7;
       font-size: 15px;
     }
 
     .section-kicker {
       font-size: 11px;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--brand);
-      font-weight: 800;
-      margin-bottom: 8px;
+      font-weight: 700;
+      margin-bottom: 10px;
     }
 
     .section-title {
-      font-family: var(--font-accent);
-      font-size: clamp(2.1rem, 3.6vw, 3.15rem);
-      line-height: 0.92;
-      font-weight: 800;
-      letter-spacing: -0.045em;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      line-height: 0.96;
+      font-weight: 700;
+      letter-spacing: -0.04em;
       color: var(--forest-deep);
       margin-bottom: 8px;
     }
@@ -447,25 +482,25 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
-      margin-top: -24px;
+      margin-top: -2px;
       position: relative;
       z-index: 2;
     }
 
     .trust-card {
-      border-radius: 24px;
-      padding: 20px;
-      background: rgba(255, 248, 239, 0.9);
+      border-radius: 26px;
+      padding: 22px;
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
     }
 
     .trust-card strong {
       display: block;
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 19px;
+      font-weight: 700;
       color: var(--forest-deep);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .trust-card span {
@@ -483,8 +518,8 @@
 
     .room-card {
       overflow: hidden;
-      border-radius: 28px;
-      background: rgba(255, 250, 244, 0.82);
+      border-radius: 32px;
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
       transition: transform var(--transition), box-shadow var(--transition);
@@ -497,7 +532,7 @@
 
     .room-media {
       position: relative;
-      height: 320px;
+      height: 340px;
       background-size: cover;
       background-position: center;
     }
@@ -506,40 +541,41 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(9, 11, 9, 0.08), rgba(9, 11, 9, 0.46));
+      background: linear-gradient(180deg, rgba(9, 11, 9, 0.04), rgba(9, 11, 9, 0.38));
     }
 
     .room-badge {
       position: absolute;
-      left: 18px;
-      bottom: 18px;
+      left: 20px;
+      bottom: 20px;
       z-index: 1;
-      background: rgba(255, 248, 239, 0.9);
+      background: rgba(255, 252, 247, 0.94);
       color: var(--brand-deep);
       border-radius: 999px;
-      padding: 9px 14px;
-      font-size: 12px;
+      padding: 10px 15px;
+      font-size: 11px;
       font-weight: 700;
+      letter-spacing: 0.04em;
     }
 
     .room-body {
-      padding: 22px;
+      padding: 24px;
     }
 
     .room-body h3 {
-      font-family: var(--font-accent);
-      font-size: 28px;
+      font-family: var(--font-display);
+      font-size: 24px;
       color: var(--forest-deep);
       margin-bottom: 10px;
-      line-height: 0.96;
-      font-weight: 800;
-      letter-spacing: -0.035em;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.03em;
     }
 
     .room-copy {
-      min-height: 76px;
+      min-height: 84px;
       font-size: 15px;
-      line-height: 1.7;
+      line-height: 1.75;
       color: var(--ink-soft);
       margin-bottom: 18px;
     }
@@ -552,12 +588,12 @@
     }
 
     .room-meta span {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--ink-soft);
-      padding: 7px 10px;
+      padding: 8px 11px;
       border-radius: 999px;
       border: 1px solid var(--line);
-      background: var(--cream);
+      background: rgba(252, 248, 242, 0.9);
     }
 
     .room-actions {
@@ -569,45 +605,45 @@
     .editorial-split {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
-      gap: 22px;
-      margin-top: 22px;
+      gap: 24px;
+      margin-top: 8px;
     }
 
     .editorial-panel {
-      border-radius: 30px;
+      border-radius: 34px;
       overflow: hidden;
-      min-height: 280px;
+      min-height: 320px;
       position: relative;
       box-shadow: var(--shadow-soft);
-      background: rgba(255, 248, 239, 0.86);
+      background: rgba(255, 255, 255, 0.88);
       border: 1px solid var(--line);
     }
 
     .editorial-panel.primary {
       background:
-        linear-gradient(180deg, rgba(15, 18, 16, 0.14), rgba(15, 18, 16, 0.46)),
-        url("https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80") center/cover;
+        linear-gradient(180deg, rgba(15, 18, 16, 0.06), rgba(15, 18, 16, 0.46)),
+        url("https://wakayaecolodge.com/es/images/wakaya/eventos/evenos_celebraciones_familiar.jpg") center/cover;
       color: var(--white);
-      padding: 34px;
+      padding: 36px;
       display: flex;
       align-items: end;
     }
 
     .editorial-panel.secondary {
-      padding: 30px;
+      padding: 34px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       background:
-        radial-gradient(circle at top right, rgba(157, 107, 67, 0.18), transparent 26%),
-        linear-gradient(180deg, rgba(255, 249, 241, 0.95), rgba(245, 235, 222, 0.96));
+        radial-gradient(circle at top right, rgba(203, 152, 91, 0.16), transparent 28%),
+        linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(245, 238, 229, 0.98));
     }
 
     .editorial-panel h4 {
-      font-family: var(--font-accent);
-      font-size: 34px;
-      line-height: 0.96;
-      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 700;
       letter-spacing: -0.04em;
       margin-bottom: 12px;
     }
@@ -620,29 +656,29 @@
     }
 
     .catalog-shell {
-      padding-top: 58px;
+      padding-top: 66px;
     }
 
     .catalog-summary {
       display: grid;
       grid-template-columns: minmax(260px, 320px) 1fr;
-      gap: 26px;
+      gap: 28px;
       margin-bottom: 28px;
     }
 
     .summary-card {
-      border-radius: 28px;
-      padding: 26px;
-      background: linear-gradient(180deg, rgba(255, 248, 239, 0.95), rgba(244, 236, 226, 0.96));
+      border-radius: 32px;
+      padding: 30px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 240, 232, 0.98));
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
     }
 
     .summary-card h2 {
-      font-family: var(--font-accent);
-      font-size: 34px;
-      line-height: 0.96;
-      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 31px;
+      line-height: 1;
+      font-weight: 700;
       letter-spacing: -0.04em;
       color: var(--forest-deep);
       margin-bottom: 12px;
@@ -669,11 +705,11 @@
     }
 
     .summary-hero {
-      border-radius: 28px;
-      min-height: 280px;
+      border-radius: 32px;
+      min-height: 300px;
       background:
-        linear-gradient(180deg, rgba(14, 18, 15, 0.1), rgba(14, 18, 15, 0.46)),
-        url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80") center/cover;
+        linear-gradient(180deg, rgba(14, 18, 15, 0.08), rgba(14, 18, 15, 0.4)),
+        url("https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg") center/cover;
       box-shadow: var(--shadow-soft);
       position: relative;
       overflow: hidden;
@@ -681,9 +717,9 @@
 
     .summary-hero-copy {
       position: absolute;
-      left: 30px;
-      bottom: 28px;
-      max-width: 430px;
+      left: 32px;
+      bottom: 30px;
+      max-width: 420px;
       color: var(--white);
     }
 
@@ -701,7 +737,7 @@
     }
 
     .detail-shell {
-      padding-top: 58px;
+      padding-top: 66px;
     }
 
     .detail-back {
@@ -709,7 +745,7 @@
       align-items: center;
       gap: 8px;
       color: var(--ink-soft);
-      margin-bottom: 18px;
+      margin-bottom: 22px;
       font-size: 13px;
       font-weight: 700;
     }
@@ -717,25 +753,25 @@
     .detail-grid {
       display: grid;
       grid-template-columns: 1.08fr 0.92fr;
-      gap: 28px;
+      gap: 30px;
       align-items: stretch;
     }
 
     .detail-media {
-      border-radius: 34px;
+      border-radius: 38px;
       overflow: hidden;
-      min-height: 620px;
+      min-height: 640px;
       background-size: cover;
       background-position: center;
       box-shadow: var(--shadow-card);
     }
 
     .detail-card {
-      border-radius: 34px;
-      background: rgba(255, 249, 241, 0.96);
+      border-radius: 38px;
+      background: rgba(255, 255, 255, 0.96);
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
-      padding: 34px;
+      padding: 36px;
       display: flex;
       flex-direction: column;
     }
@@ -745,15 +781,15 @@
       text-transform: uppercase;
       letter-spacing: 0.18em;
       color: var(--brand);
-      font-weight: 800;
+      font-weight: 700;
       margin-bottom: 10px;
     }
 
     .detail-card h1 {
-      font-family: var(--font-accent);
+      font-family: var(--font-display);
       font-size: clamp(2.6rem, 4.3vw, 3.8rem);
-      line-height: 0.9;
-      font-weight: 800;
+      line-height: 0.94;
+      font-weight: 700;
       letter-spacing: -0.05em;
       color: var(--forest-deep);
       margin-bottom: 14px;
@@ -790,9 +826,9 @@
     }
 
     .amenity {
-      padding: 14px 14px 14px 16px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.78);
+      padding: 15px 15px 15px 16px;
+      border-radius: 20px;
+      background: rgba(252, 249, 244, 0.92);
       border: 1px solid var(--line);
     }
 
@@ -835,10 +871,10 @@
     }
 
     .detail-price span {
-      font-family: var(--font-accent);
-      font-size: 42px;
-      line-height: 0.92;
-      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 38px;
+      line-height: 0.96;
+      font-weight: 700;
       letter-spacing: -0.045em;
       color: var(--forest-deep);
     }
@@ -850,15 +886,15 @@
     }
 
     .future-shell {
-      padding-top: 58px;
+      padding-top: 66px;
     }
 
     .future-card {
-      border-radius: 32px;
-      padding: 34px;
+      border-radius: 36px;
+      padding: 38px;
       background:
-        radial-gradient(circle at top right, rgba(157, 107, 67, 0.18), transparent 26%),
-        linear-gradient(180deg, rgba(255, 249, 241, 0.98), rgba(245, 235, 222, 0.98));
+        radial-gradient(circle at top right, rgba(203, 152, 91, 0.18), transparent 26%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 239, 231, 0.98));
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
       min-height: 360px;
@@ -868,10 +904,10 @@
     }
 
     .future-card h2 {
-      font-family: var(--font-accent);
-      font-size: 42px;
-      line-height: 0.94;
-      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 38px;
+      line-height: 0.98;
+      font-weight: 700;
       letter-spacing: -0.045em;
       color: var(--forest-deep);
       margin-bottom: 14px;
@@ -911,7 +947,7 @@
     .state-card {
       padding: 18px;
       border-radius: 22px;
-      background: rgba(255, 249, 241, 0.82);
+      background: rgba(255, 255, 255, 0.88);
       border: 1px solid var(--line);
     }
 
@@ -940,12 +976,519 @@
       line-height: 1.7;
     }
 
+    .home-shell {
+      background: var(--mist);
+      padding-bottom: 88px;
+    }
+
+    .section-shell {
+      max-width: var(--content-w);
+      margin: 0 auto;
+      padding: 96px 28px;
+    }
+
+    .section-head h2,
+    .intro-shell h2,
+    .promo-copy h2,
+    .experience-copy h2,
+    .final-cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.05em;
+      font-weight: 800;
+    }
+
+    .hero-slider {
+      position: relative;
+      min-height: 760px;
+      overflow: hidden;
+      background: var(--forest-deep);
+      box-shadow: var(--shadow-hero);
+    }
+
+    .hero-slide {
+      position: relative;
+      min-height: 760px;
+    }
+
+    .hero-slide-media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 20, 26, 0.34), rgba(15, 20, 26, 0.56));
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      max-width: 760px;
+      padding: 220px 0 140px;
+      color: var(--white);
+    }
+
+    .hero-kicker {
+      margin-bottom: 20px;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .hero-copy h1 {
+      max-width: 640px;
+      font-size: clamp(4rem, 8vw, 6.2rem);
+      line-height: 0.92;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--white);
+      text-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-copy p {
+      max-width: 540px;
+      margin-top: 20px;
+      font-size: 16px;
+      line-height: 1.75;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 18px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .hero-arrow {
+      position: absolute;
+      top: 50%;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.46);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--white);
+      transform: translateY(-50%);
+      z-index: 3;
+    }
+
+    .hero-arrow[disabled] {
+      opacity: 0.72;
+      cursor: default;
+    }
+
+    .hero-arrow-prev {
+      left: 42px;
+    }
+
+    .hero-arrow-next {
+      right: 42px;
+    }
+
+    .hero-dots {
+      position: absolute;
+      left: 50%;
+      bottom: 122px;
+      display: flex;
+      gap: 10px;
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    .hero-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .hero-dot.is-active {
+      background: var(--brand);
+    }
+
+    .hero-booking-band {
+      position: relative;
+      z-index: 3;
+      max-width: var(--content-w);
+      margin: -64px auto 0;
+      padding: 0 28px;
+    }
+
+    .booking-band {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.15fr) repeat(4, minmax(0, 1fr)) auto;
+      gap: 0;
+      align-items: stretch;
+      background: var(--white);
+      border-radius: 34px;
+      box-shadow: var(--shadow-band);
+      overflow: hidden;
+    }
+
+    .booking-band-copy,
+    .booking-band-field {
+      padding: 24px 28px;
+      border-right: 1px solid rgba(35, 40, 51, 0.1);
+    }
+
+    .booking-band-copy strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--forest-deep);
+    }
+
+    .booking-band-copy p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--ink-soft);
+    }
+
+    .booking-band-field {
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+
+    .booking-band-field label {
+      font-size: 13px;
+      color: var(--ink-soft);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .booking-band-field input,
+    .booking-band-field select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--ink);
+      font-size: 17px;
+      outline: none;
+    }
+
+    .booking-band-cta {
+      display: inline-flex;
+      min-width: 228px;
+      align-items: center;
+      justify-content: center;
+      background: #313646;
+      color: var(--white);
+      font-weight: 800;
+      padding: 0 28px;
+    }
+
+    .intro-shell {
+      padding-top: 48px;
+      padding-bottom: 12px;
+      text-align: center;
+    }
+
+    .intro-shell p:last-child {
+      max-width: 720px;
+      margin: 18px auto 0;
+      color: var(--ink-soft);
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    .room-section {
+      padding-top: 110px;
+    }
+
+    .room-section .section-head {
+      margin-bottom: 34px;
+    }
+
+    .room-section .room-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .room-showcase-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 18px 42px rgba(23, 30, 44, 0.08);
+    }
+
+    .room-showcase-card img {
+      width: 100%;
+      height: 420px;
+      object-fit: cover;
+    }
+
+    .room-showcase-copy {
+      padding: 24px;
+    }
+
+    .room-showcase-copy h3 {
+      font-size: 1.5rem;
+      line-height: 1.05;
+      color: var(--forest-deep);
+      margin-bottom: 12px;
+    }
+
+    .room-showcase-copy p {
+      min-height: 72px;
+      color: var(--ink-soft);
+      line-height: 1.7;
+    }
+
+    .room-showcase-meta {
+      display: flex;
+      gap: 14px;
+      margin: 18px 0;
+      color: var(--ink-soft);
+      font-size: 15px;
+      flex-wrap: wrap;
+    }
+
+    .room-showcase-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .promo-section,
+    .services-section,
+    .experience-section,
+    .gallery-section,
+    .final-cta-section {
+      padding-top: 72px;
+    }
+
+    .promo-split {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .promo-copy,
+    .experience-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 42px;
+      border-radius: var(--radius-xl);
+      background: var(--white);
+      box-shadow: 0 18px 42px rgba(23, 30, 44, 0.08);
+    }
+
+    .promo-copy h2,
+    .experience-copy h2 {
+      margin: 12px 0 18px;
+      color: var(--forest-deep);
+    }
+
+    .promo-copy p:last-child,
+    .experience-copy p:last-of-type {
+      color: var(--ink-soft);
+      line-height: 1.8;
+    }
+
+    .promo-split img,
+    .experience-split img {
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      object-fit: cover;
+      border-radius: var(--radius-xl);
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .service-tile {
+      position: relative;
+      min-height: 220px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 16px 34px rgba(23, 30, 44, 0.08);
+      background: var(--white);
+    }
+
+    .service-tile img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .service-tile::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(16, 24, 20, 0.06), rgba(16, 24, 20, 0.62));
+      z-index: 1;
+    }
+
+    .service-tile-copy {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 22px;
+      z-index: 2;
+      color: var(--white);
+    }
+
+    .service-tile strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1.15rem;
+    }
+
+    .service-tile span {
+      line-height: 1.65;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .experience-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .immersive-gallery {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .immersive-gallery-main,
+    .gallery-card {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: var(--white);
+      box-shadow: 0 16px 34px rgba(23, 30, 44, 0.08);
+    }
+
+    .immersive-gallery-main {
+      min-height: 420px;
+    }
+
+    .immersive-gallery-main img,
+    .gallery-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .immersive-gallery-main::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 20, 26, 0.04), rgba(15, 20, 26, 0.54));
+    }
+
+    .immersive-gallery-copy {
+      position: absolute;
+      left: 32px;
+      right: 32px;
+      bottom: 32px;
+      z-index: 1;
+      color: var(--white);
+    }
+
+    .immersive-gallery-copy strong {
+      display: inline-block;
+      margin-bottom: 10px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .immersive-gallery-copy p,
+    .gallery-card-copy p {
+      line-height: 1.75;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .gallery-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .gallery-card-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 28px;
+      min-height: 200px;
+      background: linear-gradient(135deg, var(--forest), #1d4a3e);
+      color: var(--white);
+    }
+
+    .gallery-card-copy strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .final-cta {
+      border-radius: var(--radius-xl);
+      padding: 56px;
+      background: linear-gradient(135deg, var(--forest), #1e4a3f);
+      color: var(--white);
+    }
+
+    .final-cta .section-kicker {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .final-cta h2 {
+      margin: 12px 0 18px;
+      color: var(--white);
+    }
+
+    .final-cta p:last-of-type {
+      max-width: 680px;
+      color: rgba(255, 255, 255, 0.84);
+      line-height: 1.75;
+    }
+
     @media (max-width: 1100px) {
       .hero-grid,
       .catalog-summary,
       .detail-grid,
       .editorial-split {
         grid-template-columns: 1fr;
+      }
+
+      .booking-band {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .room-section .room-grid,
+      .services-grid,
+      .immersive-gallery,
+      .promo-split,
+      .experience-split {
+        grid-template-columns: 1fr 1fr;
       }
 
       .trust-strip,
@@ -955,8 +1498,8 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .hero-media {
-        min-height: 840px;
+      .hero-copy {
+        padding: 190px 0 128px;
       }
     }
 
@@ -993,19 +1536,25 @@
       }
 
       .hero-copy h1 {
-        font-size: 54px;
+        font-size: 48px;
       }
 
       .booking-panel h2,
       .summary-card h2 {
-        font-size: 34px;
+        font-size: 30px;
       }
 
       .feature-grid,
       .room-grid,
       .trust-strip,
       .state-bank,
-      .amenities {
+      .amenities,
+      .booking-band,
+      .room-section .room-grid,
+      .services-grid,
+      .promo-split,
+      .experience-split,
+      .immersive-gallery {
         grid-template-columns: 1fr;
       }
 
@@ -1017,6 +1566,69 @@
 
       .detail-media {
         min-height: 320px;
+      }
+
+      .section-shell,
+      .hero-booking-band {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .hero-slider,
+      .hero-slide {
+        min-height: 640px;
+      }
+
+      .hero-copy {
+        padding: 168px 0 116px;
+      }
+
+      .hero-copy h1 {
+        max-width: 320px;
+        font-size: clamp(3rem, 14vw, 4.4rem);
+      }
+
+      .hero-arrow {
+        top: auto;
+        bottom: 34px;
+        transform: none;
+      }
+
+      .hero-arrow-prev {
+        left: 18px;
+      }
+
+      .hero-arrow-next {
+        right: 18px;
+      }
+
+      .hero-dots {
+        bottom: 92px;
+      }
+
+      .booking-band-copy,
+      .booking-band-field {
+        border-right: none;
+        border-bottom: 1px solid rgba(35, 40, 51, 0.1);
+      }
+
+      .booking-band-cta {
+        min-height: 72px;
+      }
+
+      .room-showcase-card img,
+      .promo-split img,
+      .experience-split img,
+      .immersive-gallery-main {
+        min-height: 280px;
+        height: 280px;
+      }
+
+      .promo-copy,
+      .experience-copy,
+      .final-cta,
+      .gallery-card-copy {
+        padding: 28px 24px;
       }
     }
   </style>
@@ -1038,207 +1650,264 @@
           <button type="button" data-target-view="eventos">Eventos</button>
           <button type="button" data-target-view="full-day">Full Day</button>
         </nav>
-        <a class="hub-link" href="../../../prototype/index.html">← Hub</a>
+        <a class="hub-link" href="../../../prototype/index.html" data-hub-link>← Hub</a>
       </div>
     </header>
 
     <main>
       <section class="view is-active" id="view-home" data-view="home">
-        <div class="page hero">
-          <div class="hero-media">
-            <div class="hero-grid">
-              <div class="hero-copy">
-                <span class="eyebrow">Hospedaje, descanso y celebraciones</span>
-                <h1>Escapadas cálidas entre agua, vegetación y tiempo bien vivido.</h1>
-                <p>
-                  Wakaya propone una estadía que se siente íntima desde la llegada:
-                  bungalows curados, naturaleza cercana y un ritmo más lento para
-                  familias, parejas y grupos que buscan desconectar sin salir del
-                  confort.
-                </p>
-                <div class="hero-meta">
-                  <span>Disponibilidad referencial</span>
-                  <span>Coordinación manual de pago</span>
-                  <span>Eventos y Full Day en la misma experiencia</span>
-                </div>
-                <div class="hero-actions">
-                  <button class="button-primary" type="button" data-target-view="habitaciones">Explorar bungalows</button>
-                  <button class="button-secondary" type="button" data-target-view="habitaciones">Ver tarifas base</button>
+        <div class="home-shell">
+          <section class="hero-slider" aria-label="Hero principal de Wakaya" data-reveal="1">
+            <article class="hero-slide is-active">
+              <img
+                class="hero-slide-media"
+                src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg"
+                alt="Piscina, jardines y bungalows de Wakaya"
+              >
+              <div class="hero-overlay"></div>
+              <div class="section-shell">
+                <div class="hero-copy">
+                  <span class="hero-kicker">Pucallpa · agua · madera · descanso</span>
+                  <h1>Respira la naturaleza sin salir del confort.</h1>
+                  <p>
+                    Wakaya reúne piscina, laguna, jardines y bungalows de madera
+                    en una escapada amazónica más cálida, más simple y más visual.
+                  </p>
+                  <div class="hero-actions">
+                    <button class="button-secondary" type="button" data-target-view="habitaciones">Explorar bungalows</button>
+                  </div>
                 </div>
               </div>
-
-              <aside class="booking-panel" aria-labelledby="booking-title">
-                <p class="section-kicker">Booking bar integrada</p>
-                <h2 id="booking-title">Revisa una estadía que sí se sienta tuya.</h2>
-                <p>
-                  La disponibilidad mostrada en esta fase es referencial. La
-                  aprobación final y el pago se coordinan después con el equipo de Wakaya.
-                </p>
-
-                <form class="booking-bar" id="booking-bar">
-                  <div class="field">
-                    <label for="booking-checkin">Llegada</label>
-                    <input id="booking-checkin" type="date" value="2026-06-12">
-                  </div>
-                  <div class="field">
-                    <label for="booking-checkout">Salida</label>
-                    <input id="booking-checkout" type="date" value="2026-06-14">
-                  </div>
-                  <div class="field">
-                    <label for="booking-guests">Huéspedes</label>
-                    <select id="booking-guests">
-                      <option>2 huéspedes</option>
-                      <option>3 huéspedes</option>
-                      <option>4 huéspedes</option>
-                      <option>5 huéspedes</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="booking-category">Categoría</label>
-                    <select id="booking-category">
-                      <option value="all">Todas las categorías</option>
-                      <option value="suite">Suite Canopy</option>
-                      <option value="familiar">Familiar Laguna</option>
-                      <option value="rio">Bungalow Río</option>
-                    </select>
-                  </div>
-                  <div class="booking-actions">
-                    <button class="button-primary" id="availability-cta" type="button">Ver disponibilidad</button>
-                    <button class="button-quiet" type="button" data-room-target="suite">Abrir Suite Canopy</button>
-                  </div>
-                </form>
-
-                <p class="booking-footnote">
-                  Estados preparados para la siguiente iteración: loading,
-                  empty, error y success, dentro del mismo journey público.
-                </p>
-              </aside>
+            </article>
+            <button class="hero-arrow hero-arrow-prev" type="button" disabled aria-label="Slide anterior">←</button>
+            <button class="hero-arrow hero-arrow-next" type="button" disabled aria-label="Siguiente slide">→</button>
+            <div class="hero-dots" aria-hidden="true">
+              <span class="hero-dot is-active"></span>
+              <span class="hero-dot"></span>
+              <span class="hero-dot"></span>
             </div>
-          </div>
-        </div>
-
-        <div class="page">
-          <section class="trust-strip" aria-label="Señales de confianza">
-            <article class="trust-card">
-              <strong>3 categorías</strong>
-              <span>Bungalows pensados para ritmos distintos: pareja, familia o escapada corta.</span>
-            </article>
-            <article class="trust-card">
-              <strong>S/ 460 → S/ 680</strong>
-              <span>Tarifario base visible para orientar la solicitud antes de la coordinación manual.</span>
-            </article>
-            <article class="trust-card">
-              <strong>Pago coordinado</strong>
-              <span>La web no promete reserva confirmada; el equipo valida disponibilidad y siguientes pasos.</span>
-            </article>
-            <article class="trust-card">
-              <strong>Evento y day pass</strong>
-              <span>La experiencia pública mantiene hospedaje primero, pero deja visible el resto del negocio.</span>
-            </article>
           </section>
 
-          <section class="section">
+          <div class="hero-booking-band">
+            <section class="booking-band" aria-label="Disponibilidad y prereserva" data-reveal="2">
+              <div class="booking-band-copy">
+                <strong>Disponibilidad referencial</strong>
+                <p>La web muestra tarifas base y capacidad. La aprobación final y el pago se coordinan manualmente con Wakaya.</p>
+              </div>
+              <div class="booking-band-field">
+                <label for="booking-checkin">Check in</label>
+                <input id="booking-checkin" type="date" value="2026-06-12">
+              </div>
+              <div class="booking-band-field">
+                <label for="booking-checkout">Check out</label>
+                <input id="booking-checkout" type="date" value="2026-06-14">
+              </div>
+              <div class="booking-band-field">
+                <label for="booking-guests">Personas</label>
+                <select id="booking-guests">
+                  <option>2 huéspedes</option>
+                  <option>3 huéspedes</option>
+                  <option>4 huéspedes</option>
+                  <option>5 huéspedes</option>
+                </select>
+              </div>
+              <div class="booking-band-field">
+                <label for="booking-category">Habitación</label>
+                <select id="booking-category">
+                  <option value="all">Todas las categorías</option>
+                  <option value="suite">Bungalow Suite</option>
+                  <option value="familiar">Bungalow Familiar</option>
+                  <option value="rio">Bungalow Matrimonial</option>
+                </select>
+              </div>
+              <button class="booking-band-cta" id="availability-cta" type="button">Consultar</button>
+            </section>
+          </div>
+
+          <section class="section-shell intro-shell" aria-label="Introducción a Wakaya" data-reveal="3">
+            <p class="section-kicker">Wakaya Ecolodge</p>
+            <h2>Wakaya Ecolodge</h2>
+            <p>
+              Un destino en Pucallpa para parejas, familias y grupos que buscan
+              estadía, full day y eventos en un mismo entorno natural, con
+              confirmación manual y trato más personal desde la reserva.
+            </p>
+          </section>
+
+          <section class="section-shell promo-section" aria-label="Paisaje y experiencia" data-reveal="4">
+            <div class="promo-split">
+              <div class="promo-copy">
+                <p class="section-kicker">About Us</p>
+                <h2>Jardines, piscina, laguna y recorridos suaves.</h2>
+                <p>
+                  Jardines, piscina, laguna y recorridos suaves para una experiencia
+                  más relajada que hotelera, pero sin perder claridad al reservar.
+                </p>
+              </div>
+              <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_piscina.jpg" alt="Laguna y naturaleza en Wakaya">
+            </div>
+          </section>
+
+          <section class="section-shell room-section" aria-label="Bungalows principales" data-reveal="5">
             <div class="section-head">
               <div>
-                <p class="section-kicker">Hospedaje primero</p>
-                <h2 class="section-title">Tres categorías para aterrizar rápido una escapada con intención.</h2>
+                <p class="section-kicker">Bungalows</p>
+                <h2>Bungalows</h2>
               </div>
               <p>
-                Esta home no funciona como listado masivo. Cada categoría resume
-                atmósfera, capacidad y precio base para que la decisión se sienta
-                curada, no mecánica.
+                Tres categorías visibles, con capacidad y tarifa base para que
+                el usuario entienda rápido qué opción le conviene antes de enviar
+                una prereserva.
               </p>
             </div>
 
             <div class="room-grid" id="home-room-grid">
-              <article class="room-card">
-                <div class="room-media" style="background-image:url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80')">
-                  <span class="room-badge">Desde S/ 540 · 2 huéspedes</span>
-                </div>
-                <div class="room-body">
-                  <h3>Suite Canopy</h3>
-                  <p class="room-copy">La opción más privada para bajar el ruido: terraza, luz suave y una noche pensada para ir más despacio.</p>
-                  <div class="room-meta">
-                    <span>Terraza privada</span>
-                    <span>Tina o ducha amplia</span>
-                    <span>3 espacios referenciales</span>
+              <article class="room-showcase-card">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg" alt="Bungalow Suite de Wakaya">
+                <div class="room-showcase-copy">
+                  <h3>Bungalow Suite</h3>
+                  <p>La categoría más íntima: madera cálida, descanso privado y una estadía más exclusiva desde la llegada.</p>
+                  <div class="room-showcase-meta">
+                    <span>2 huéspedes</span>
+                    <span>Desde S/ 420</span>
                   </div>
-                  <div class="room-actions">
+                  <div class="room-showcase-actions">
                     <button class="button-primary" type="button" data-room-target="suite">Ver detalle</button>
-                    <button class="button-quiet" type="button" data-target-view="habitaciones">Ver detalle ampliado</button>
+                    <button class="button-quiet" type="button" data-target-view="habitaciones">Más info</button>
                   </div>
                 </div>
               </article>
 
-              <article class="room-card">
-                <div class="room-media" style="background-image:url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&sat=-10')">
-                  <span class="room-badge">Desde S/ 680 · 4 huéspedes</span>
-                </div>
-                <div class="room-body">
-                  <h3>Familiar Laguna</h3>
-                  <p class="room-copy">El bungalow amplio para compartir agua, jardín y descanso sin perder comodidad cuando el viaje es en grupo pequeño.</p>
-                  <div class="room-meta">
-                    <span>2 camas amplias</span>
-                    <span>Zona social corta</span>
-                    <span>2 espacios referenciales</span>
+              <article class="room-showcase-card">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg" alt="Bungalow Familiar de Wakaya">
+                <div class="room-showcase-copy">
+                  <h3>Bungalow Familiar</h3>
+                  <p>Mayor amplitud para compartir piscina, jardines y descanso cuando el plan es familiar o con grupo pequeño.</p>
+                  <div class="room-showcase-meta">
+                    <span>4 huéspedes</span>
+                    <span>Desde S/ 350</span>
                   </div>
-                  <div class="room-actions">
+                  <div class="room-showcase-actions">
                     <button class="button-primary" type="button" data-room-target="familiar">Ver detalle</button>
-                    <button class="button-quiet" type="button" data-target-view="habitaciones">Comparar categorías</button>
+                    <button class="button-quiet" type="button" data-target-view="habitaciones">Comparar</button>
                   </div>
                 </div>
               </article>
 
-              <article class="room-card">
-                <div class="room-media" style="background-image:url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80')">
-                  <span class="room-badge">Desde S/ 460 · 3 huéspedes</span>
-                </div>
-                <div class="room-body">
-                  <h3>Bungalow Río</h3>
-                  <p class="room-copy">Una entrada cálida a Wakaya: vegetación cercana, proporción cómoda y tarifa base para una visita más flexible.</p>
-                  <div class="room-meta">
-                    <span>Acceso directo a jardines</span>
-                    <span>Ideal para escapada corta</span>
-                    <span>4 espacios referenciales</span>
+              <article class="room-showcase-card">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg" alt="Bungalow Matrimonial de Wakaya">
+                <div class="room-showcase-copy">
+                  <h3>Bungalow Matrimonial</h3>
+                  <p>Una entrada flexible a Wakaya para escapadas cortas con integración natural y un rango más accesible.</p>
+                  <div class="room-showcase-meta">
+                    <span>2 huéspedes</span>
+                    <span>Desde S/ 250</span>
                   </div>
-                  <div class="room-actions">
+                  <div class="room-showcase-actions">
                     <button class="button-primary" type="button" data-room-target="rio">Ver detalle</button>
-                    <button class="button-quiet" type="button" data-target-view="habitaciones">Ver categoría</button>
+                    <button class="button-quiet" type="button" data-target-view="habitaciones">Tarifas</button>
                   </div>
                 </div>
               </article>
             </div>
           </section>
 
-          <section class="section">
-            <div class="editorial-split">
-              <article class="editorial-panel primary">
-                <div>
-                  <p class="section-kicker" style="color: rgba(255, 244, 232, 0.8);">Teasers editoriales</p>
-                  <h4>Eventos y Full Day ya están dentro del mapa, pero todavía no compiten con la estadía.</h4>
-                  <p>
-                    La experiencia pública debe dejar claro que Wakaya también puede
-                    alojar celebraciones y jornadas de día completo, sin que el
-                    recorrido principal se distraiga del hospedaje.
-                  </p>
+          <section class="section-shell gallery-section" aria-label="Galería de Wakaya" data-reveal="6">
+            <div class="immersive-gallery">
+              <div class="immersive-gallery-main">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg" alt="Vista panorámica de Wakaya">
+                <div class="immersive-gallery-copy">
+                  <strong>Gallery</strong>
+                  <p>La experiencia combina agua, vegetación y espacios para desconectar o celebrar dentro del mismo lugar.</p>
                 </div>
-              </article>
+              </div>
+              <div class="gallery-stack">
+                <div class="gallery-card">
+                  <img src="https://wakayaecolodge.com/es/images/wakaya/services/DSC_5853-PLATO%20COMIDA.jpg" alt="Restaurante de Wakaya">
+                </div>
+                <div class="gallery-card-copy">
+                  <strong>Reserva manual</strong>
+                  <p>La web mantiene tarifas referenciales y claridad de capacidad mientras el equipo de Wakaya confirma disponibilidad y siguientes pasos.</p>
+                </div>
+              </div>
+            </div>
+          </section>
 
-              <article class="editorial-panel secondary">
-                <div>
-                  <p class="section-kicker">Próxima capa del prototipo</p>
-                  <h4>La siguiente iteración abrirá solicitudes reales para eventos, full day y prereserva.</h4>
-                  <p>
-                    Esta base ya deja montadas las vistas y la navegación. Lo
-                    siguiente será completar el formulario compartido, los estados
-                    de envío y la confirmación manual visible para el usuario.
-                  </p>
-                </div>
-                <div class="hero-actions">
-                  <button class="button-quiet" type="button" data-target-view="eventos">Abrir teaser de eventos</button>
-                  <button class="button-quiet" type="button" data-target-view="full-day">Abrir teaser de full day</button>
+          <section class="section-shell services-section" aria-label="Servicios y actividades" data-reveal="7">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">Activities</p>
+                <h2>Activities</h2>
+              </div>
+              <p>
+                Wakaya no vende solo habitaciones. También muestra experiencias
+                complementarias que deben convivir con el flujo principal de reserva.
+              </p>
+            </div>
+
+            <div class="services-grid">
+              <article class="service-tile">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_piscina.jpg" alt="Piscina de Wakaya">
+                <div class="service-tile-copy">
+                  <strong>Piscina</strong>
+                  <span>Áreas de relax y estancia de día.</span>
                 </div>
               </article>
+              <article class="service-tile">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_laguna.jpg" alt="Laguna en Wakaya">
+                <div class="service-tile-copy">
+                  <strong>Laguna</strong>
+                  <span>Paisaje y recorrido suave dentro del lodge.</span>
+                </div>
+              </article>
+              <article class="service-tile">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/services/DSC_5853-PLATO%20COMIDA.jpg" alt="Restaurante de Wakaya">
+                <div class="service-tile-copy">
+                  <strong>Restaurant</strong>
+                  <span>Comida y servicio para la experiencia completa.</span>
+                </div>
+              </article>
+              <article class="service-tile">
+                <img src="https://wakayaecolodge.com/es/images/wakaya/services/servicio_fullday_laguna.jpg" alt="Full Day en Wakaya">
+                <div class="service-tile-copy">
+                  <strong>Full Day</strong>
+                  <span>Jornadas cortas con acceso y coordinación manual.</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-shell experience-section" aria-label="Eventos y full day" data-reveal="8">
+            <div class="experience-split">
+              <article class="experience-copy">
+                <p class="section-kicker">Eventos y Full Day</p>
+                <h2>Eventos y Full Day</h2>
+                <p>
+                  El sitio debe mostrar que Wakaya también sirve para celebraciones,
+                  reuniones y visitas de día completo, sin romper el foco de
+                  hospedaje ni la lectura premium de la página.
+                </p>
+                <div class="hero-actions">
+                  <button class="button-primary" type="button" data-target-view="eventos">Ver eventos</button>
+                  <button class="button-secondary" type="button" data-target-view="full-day">Ver full day</button>
+                </div>
+              </article>
+              <img src="https://wakayaecolodge.com/es/images/wakaya/eventos/evenos_celebraciones_familiar.jpg" alt="Evento realizado en Wakaya">
+            </div>
+          </section>
+
+          <section class="section-shell final-cta-section" aria-label="Cierre comercial" data-reveal="9">
+            <div class="final-cta">
+              <p class="section-kicker">Reserva Wakaya</p>
+              <h2>Respira la naturaleza sin salir del confort.</h2>
+              <p>
+                Wakaya reúne piscina, laguna, jardines y bungalows de madera
+                en una escapada amazónica más cálida, más simple y más visual.
+              </p>
+              <div class="hero-actions">
+                <button class="button-primary" type="button" data-target-view="habitaciones">Explorar bungalows</button>
+                <button class="button-secondary" type="button" data-target-view="habitaciones">Consultar</button>
+              </div>
             </div>
           </section>
         </div>
@@ -1253,7 +1922,7 @@
               <p>
                 El catálogo muestra capacidad, rango referencial y el tipo de
                 experiencia que mejor encaja con cada visita. No es una tabla
-                fría; es una transición limpia entre inspiración y decisión.
+                fría; es una transición limpia entre inspiración, comparación y decisión.
               </p>
               <ul>
                 <li>Precios base visibles, no definitivos.</li>
@@ -1261,7 +1930,7 @@
                 <li>CTA directo a detalle y solicitud manual posterior.</li>
               </ul>
               <div class="booking-actions" style="margin-top:18px;">
-                <button class="button-primary" type="button" data-room-target="suite">Abrir Suite Canopy</button>
+                <button class="button-primary" type="button" data-room-target="suite">Abrir Bungalow Suite</button>
                 <button class="button-quiet" type="button" data-target-view="home">Volver al hero</button>
               </div>
             </article>
@@ -1272,7 +1941,7 @@
                 <p>
                   En esta etapa se privilegia claridad: el visitante puede
                   comparar categoría, capacidad y estilo de estadía antes de
-                  iniciar una solicitud manual.
+                  iniciar una solicitud manual con el equipo.
                 </p>
               </div>
             </article>
@@ -1280,16 +1949,16 @@
 
           <div class="feature-grid" id="catalog-grid">
             <article class="room-card">
-              <div class="room-media" style="background-image:url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80')">
-                <span class="room-badge">Suite · S/ 540</span>
+              <div class="room-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg')">
+                <span class="room-badge">Suite · S/ 420</span>
               </div>
               <div class="room-body">
-                <h3>Suite Canopy</h3>
-                <p class="room-copy">Privacidad, luz tenue y una composición más íntima para parejas o escapadas cortas con ritmo lento.</p>
+                <h3>Bungalow Suite</h3>
+                <p class="room-copy">Privacidad, mejor descanso y una llegada más exclusiva para parejas o estadías cortas con intención.</p>
                 <div class="room-meta">
                   <span>2 huéspedes</span>
-                  <span>Desayuno incluido</span>
-                  <span>3 espacios referenciales</span>
+                  <span>Mayor privacidad</span>
+                  <span>2 espacios referenciales</span>
                 </div>
                 <div class="room-actions">
                   <button class="button-primary" type="button" data-room-target="suite">Ver detalle</button>
@@ -1299,16 +1968,16 @@
             </article>
 
             <article class="room-card">
-              <div class="room-media" style="background-image:url('https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80')">
-                <span class="room-badge">Familiar · S/ 680</span>
+              <div class="room-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg')">
+                <span class="room-badge">Familiar · S/ 350</span>
               </div>
               <div class="room-body">
-                <h3>Familiar Laguna</h3>
-                <p class="room-copy">Más amplitud, mejor acomodo y cercanía a las zonas comunes para quienes convierten la salida en un pequeño ritual.</p>
+                <h3>Bungalow Familiar</h3>
+                <p class="room-copy">Más amplitud, mejor acomodo y cercanía a las áreas comunes para quienes viven la salida en familia.</p>
                 <div class="room-meta">
                   <span>4 huéspedes</span>
-                  <span>Doble descanso</span>
-                  <span>2 espacios referenciales</span>
+                  <span>Amplio y cómodo</span>
+                  <span>3 espacios referenciales</span>
                 </div>
                 <div class="room-actions">
                   <button class="button-primary" type="button" data-room-target="familiar">Ver detalle</button>
@@ -1318,15 +1987,15 @@
             </article>
 
             <article class="room-card">
-              <div class="room-media" style="background-image:url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80')">
-                <span class="room-badge">Río · S/ 460</span>
+              <div class="room-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg')">
+                <span class="room-badge">Matrimonial · S/ 250</span>
               </div>
               <div class="room-body">
-                <h3>Bungalow Río</h3>
-                <p class="room-copy">La opción más flexible para una primera visita, con vegetación inmediata y un rango de entrada más accesible.</p>
+                <h3>Bungalow Matrimonial</h3>
+                <p class="room-copy">La opción más flexible para una primera visita, con integración natural y un rango de entrada más accesible.</p>
                 <div class="room-meta">
-                  <span>3 huéspedes</span>
-                  <span>Jardines cercanos</span>
+                  <span>2 huéspedes</span>
+                  <span>Escapada corta</span>
                   <span>4 espacios referenciales</span>
                 </div>
                 <div class="room-actions">
@@ -1344,34 +2013,34 @@
           <button class="detail-back" type="button" data-target-view="habitaciones">← Volver a habitaciones</button>
 
           <div class="detail-grid">
-            <article class="detail-media" id="detail-media" style="background-image:url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80')"></article>
+            <article class="detail-media" id="detail-media" style="background-image:url('https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg')"></article>
 
             <article class="detail-card">
               <p class="detail-kicker" id="detail-kicker">Categoría destacada</p>
-              <h1 id="detail-title">Suite Canopy</h1>
+              <h1 id="detail-title">Bungalow Suite</h1>
               <div class="detail-meta">
                 <span id="detail-guests">2 huéspedes</span>
-                <span id="detail-price-chip">Desde S/ 540</span>
-                <span id="detail-availability">3 espacios referenciales</span>
+                <span id="detail-price-chip">Desde S/ 420</span>
+                <span id="detail-availability">2 espacios referenciales</span>
               </div>
               <p class="detail-description" id="detail-description">
-                La opción más privada para una noche con menos ruido y más aire. Su
-                composición privilegia calma, luz suave y una llegada que se sienta
-                más personal desde el primer momento.
+                La opción más privada para una noche con menos ruido y más aire.
+                Su composición privilegia calma, madera cálida y una llegada que
+                se sienta más exclusiva desde el primer momento.
               </p>
 
               <div class="amenities">
                 <article class="amenity">
                   <strong>Descanso curado</strong>
-                  <span id="amenity-1">Terraza privada con luz cálida al atardecer.</span>
+                  <span id="amenity-1">Mayor privacidad y una atmósfera más íntima.</span>
                 </article>
                 <article class="amenity">
                   <strong>Capacidad</strong>
-                  <span id="amenity-2">Ideal para parejas o escapadas muy cortas.</span>
+                  <span id="amenity-2">Ideal para parejas o escapadas de descanso corto.</span>
                 </article>
                 <article class="amenity">
                   <strong>Incluye</strong>
-                  <span id="amenity-3">Desayuno, acceso a piscina y áreas verdes.</span>
+                  <span id="amenity-3">Acceso a piscina, jardines y zonas comunes del lodge.</span>
                 </article>
                 <article class="amenity">
                   <strong>Coordinación</strong>
@@ -1383,7 +2052,7 @@
                 <div class="detail-price">
                   <div>
                     <strong>Tarifa referencial</strong>
-                    <span id="detail-price">S/ 540</span>
+                    <span id="detail-price">S/ 420</span>
                   </div>
                   <button class="button-primary" type="button">Solicitar prereserva</button>
                 </div>
@@ -1450,7 +2119,7 @@
             <strong>Error</strong>
             <span>No se pudo enviar la solicitud por una falla recuperable de conexión o servicio.</span>
           </article>
-          <article class="state-card">
+          <article class="state-card toast-notify" aria-label="Success toast notify preparado">
             <strong>Success</strong>
             <span>Solicitud enviada; el equipo de Wakaya revisará disponibilidad y próximos pasos.</span>
           </article>
@@ -1468,49 +2137,49 @@
   <script>
     const rooms = {
       suite: {
-        title: "Suite Canopy",
+        title: "Bungalow Suite",
         kicker: "Parejas · descanso íntimo",
         guests: "2 huéspedes",
-        price: "S/ 540",
-        availability: "3 espacios referenciales",
+        price: "S/ 420",
+        availability: "2 espacios referenciales",
         badge: "Categoría más privada",
-        description: "La opción más privada para una noche con menos ruido y más aire. Su composición privilegia calma, luz suave y una llegada que se sienta más personal desde el primer momento.",
-        image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80",
+        description: "La opción más privada para una noche con menos ruido y más aire. Su composición privilegia calma, madera cálida y una llegada que se sienta más exclusiva desde el primer momento.",
+        image: "https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg",
         amenities: [
-          "Terraza privada con luz cálida al atardecer.",
-          "Ideal para parejas o escapadas muy cortas.",
-          "Desayuno, acceso a piscina y áreas verdes.",
+          "Mayor privacidad y una atmósfera más íntima.",
+          "Ideal para parejas o escapadas de descanso corto.",
+          "Acceso a piscina, jardines y zonas comunes del lodge.",
           "La aprobación final y el pago se coordinan manualmente."
         ]
       },
       familiar: {
-        title: "Familiar Laguna",
+        title: "Bungalow Familiar",
         kicker: "Familias · amplitud compartida",
         guests: "4 huéspedes",
-        price: "S/ 680",
-        availability: "2 espacios referenciales",
+        price: "S/ 350",
+        availability: "3 espacios referenciales",
         badge: "Categoría de mayor amplitud",
-        description: "Pensada para cuando el viaje se vive en grupo pequeño. La distribución da más aire, más descanso y un punto de encuentro natural después del agua, el jardín y la comida.",
-        image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1400&q=80",
+        description: "Pensada para cuando el viaje se vive en grupo pequeño. La distribución da más aire, mejor acomodo y un punto de encuentro natural después de la piscina, el jardín y la comida.",
+        image: "https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg",
         amenities: [
-          "Dormitorios amplios y mejor acomodo familiar.",
+          "Dormitorio amplio y mejor acomodo familiar.",
           "Ideal para grupos de 3 a 4 personas.",
-          "Acceso cercano a zonas comunes y jardín.",
+          "Acceso cercano a zonas comunes y áreas verdes.",
           "Coordinación manual de reserva y transferencia."
         ]
       },
       rio: {
-        title: "Bungalow Río",
+        title: "Bungalow Matrimonial",
         kicker: "Escapada flexible · primera visita",
-        guests: "3 huéspedes",
-        price: "S/ 460",
+        guests: "2 huéspedes",
+        price: "S/ 250",
         availability: "4 espacios referenciales",
         badge: "Categoría de entrada",
         description: "Una manera cálida y flexible de entrar a Wakaya. Mantiene la sensación de naturaleza cercana y descanso, pero con un rango más accesible para una visita corta.",
-        image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80",
+        image: "https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg",
         amenities: [
-          "Contacto directo con jardines y vegetación.",
-          "Capacidad cómoda para hasta 3 personas.",
+          "Integración con naturaleza y vegetación cercana.",
+          "Capacidad cómoda para una escapada de pareja.",
           "Buena opción para estancia corta o primera reserva.",
           "La validación final se realiza con el equipo de Wakaya."
         ]
