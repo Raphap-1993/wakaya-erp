@@ -20,11 +20,21 @@ const DEFAULT_KEY_DENYLIST = new Set([
   "address", "direccion", "lat", "lng", "geo",
 ]);
 
-const PATTERN_REPLACEMENTS: Array<[RegExp, (match: string) => string]> = [
+type PatternReplacement = readonly [
+  pattern: RegExp,
+  replacer:
+    | ((match: string, ...args: [offset: number, input: string]) => string)
+    | ((
+      match: string,
+      ...args: [head: string, domain: string, offset: number, input: string]
+    ) => string),
+];
+
+const PATTERN_REPLACEMENTS: PatternReplacement[] = [
   // Email: deja primer caracter + dominio.
   [
     /\b([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})\b/g,
-    (_match, head: string, domain: string) => `${head}***@${domain}`,
+    (_match: string, head: string, domain: string) => `${head}***@${domain}`,
   ],
   // Visa/Mastercard/Amex (16 digitos con o sin separador).
   [

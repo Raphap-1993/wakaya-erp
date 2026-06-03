@@ -2,11 +2,11 @@
 // Uso: npx vitest run tests/contract
 // Requiere: npm install -D @pact-foundation/pact
 
-import { PactV3, MatchersV3 } from '@pact-foundation/pact';
-import { describe, it, expect } from 'vitest';
 import path from 'node:path';
+import { PactV3, MatchersV3 } from '@pact-foundation/pact';
+import { describe, expect, it } from 'vitest';
 
-const { like, eachLike, iso8601DateTime, uuid } = MatchersV3;
+const { like, eachLike, datetime, uuid } = MatchersV3;
 const apiResourcePath = '/api/reservations'.startsWith('__') ? '/api/resource' : '/api/reservations';
 const apiResourcePlural = 'reservations'.startsWith('__') ? 'resources' : 'reservations';
 const webComponentName = 'wakaya-erp-web'.startsWith('__') ? 'web' : 'wakaya-erp-web';
@@ -37,7 +37,7 @@ describe(`Pact contract: list ${apiResourcePlural}`, () => {
           items: eachLike({
             id: uuid(),
             status: like('open'),
-            updatedAt: iso8601DateTime(),
+            updatedAt: datetime("yyyy-MM-dd'T'HH:mm:ss.SSSX", '2026-06-03T10:15:30.000Z'),
           }),
           page: like(1),
           pageSize: like(20),
