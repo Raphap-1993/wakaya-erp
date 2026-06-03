@@ -32,8 +32,7 @@ la parsea para poblar la memoria del agente IA.
 | gate-spdd-approved | Pendiente | spdd-frontend.md |
 
 ## Decisiones
-- El prototipo aprobado alimenta campos, filtros, permisos, transiciones y estados de error del API contract.
-- La disponibilidad se modela con bloqueo atomico por bungalow y fecha.
+- El prototipo aprobado alimenta campos, filtros, permisos y estados de error del API contract.
 
 ## Preguntas abiertas
-- Canon exacto de estados y permisos de recepcion vs administracion.
+- Catalogo final de estados.
