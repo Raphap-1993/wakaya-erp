@@ -51,8 +51,12 @@ const links = db
 
 const issues = [];
 for (const link of links) {
-  if (!validateTarget(link)) {
-    issues.push(link);
+  const invalidTargets = findInvalidTargets(link);
+  if (invalidTargets.length > 0) {
+    issues.push({
+      ...link,
+      target_ref: invalidTargets.join(", "),
+    });
   }
 }
 
@@ -100,18 +104,33 @@ function collectFiles(rootDir, dirs, exts) {
   return result;
 }
 
-function validateTarget(link) {
-  const target = String(link.target_ref || "").trim();
-  if (!target || target === "-") return true; // celdas vacias
+function findInvalidTargets(link) {
+  const rawTarget = String(link.target_ref || "").trim();
+  if (!rawTarget || rawTarget === "-") return [];
 
-  switch (link.target_type) {
+  const targets = splitTargetRefs(link.target_type, rawTarget);
+  return targets.filter((target) => !validateSingleTarget(link.target_type, target));
+}
+
+function splitTargetRefs(targetType, target) {
+  if ((targetType === "codigo" || targetType === "test") && target.includes(",")) {
+    return target
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+  return [target];
+}
+
+function validateSingleTarget(targetType, target) {
+  switch (targetType) {
     case "codigo":
     case "test": {
       // Buscar archivo por nombre base o por path parcial.
       const t = target.toLowerCase();
       return sourceFiles.some((f) => {
         const fname = basename(f).toLowerCase();
-        return fname.includes(t.replace(/\..*$/, "")) || f.toLowerCase().endsWith(t.toLowerCase());
+        return fname.includes(t.replace(/\..*$/, "")) || f.toLowerCase().endsWith(t);
       });
     }
     case "api": {
