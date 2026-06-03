@@ -23,7 +23,7 @@
 | 001-reservations | gate-prototype-ready | Pendiente | specs/001-reservations/prototype-validation.md |
 | 001-reservations | gate-spdd-approved | Pendiente | specs/001-reservations/spdd-frontend.md |
 | 002-public-site | gate-prototype-ready | Pendiente | specs/002-public-site/prototype-validation.md |
-| 002-public-site | gate-spdd-approved | Pendiente | specs/002-public-site/spdd-frontend.md |
+| 002-public-site | gate-spdd-approved | Pendiente | specs/002-public-site/prototype-validation.md |
 
 ## Requerimientos sin implementacion
 - `001-reservations` ya tiene codigo y test enlazados en su matriz viva.

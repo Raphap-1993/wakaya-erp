@@ -17,9 +17,13 @@ la parsea para poblar la memoria del agente IA.
 
 | RF | HU | UX/SPDD | Prototipo | API | BD | Codigo | Test | Estado | Evidencia |
 |---|---|---|---|---|---|---|---|---|---|
-| RF-01 | HU-01 | spdd-frontend.md | prototype-html5/index.html | GET /api/reservations | wakaya-erp | - | - | Prototipo en revision | prototype-validation.md |
-| RF-02 | HU-01 | spdd-frontend.md | prototype-html5/index.html | GET /api/reservations/{id} | wakaya-erp | - | - | Prototipo en revision | prototype-validation.md |
-| RNF-01 | HU-01 | spdd-frontend.md | prototype-html5/index.html | 401/403 | rbac | - | - | En diseno SDD | docs/fase-3-arquitectura/03.08-auth-authz.md |
+| RF-01 | HU-01 | spdd-frontend.md | prototype-html5/index.html | GET /api/reservations | reservation, bungalow, reservation_occupancy | src/lib/reservations/store.ts, src/app/api/reservations/route.ts | src/app/api/reservations/route.test.ts, src/lib/reservations/persistence.test.ts | Implementado y validado | prototype-validation.md |
+| RF-02 | HU-01 | spdd-frontend.md | prototype-html5/index.html | GET /api/reservations/{id} | reservation, reservation_audit | src/lib/reservations/store.ts, src/app/api/reservations/[id]/route.ts | src/app/api/reservations/[id]/route.test.ts | Implementado y validado | prototype-validation.md |
+| RF-03 | HU-02 | spdd-frontend.md | prototype-html5/index.html | POST /api/reservations/{id}/assign | reservation, bungalow, reservation_audit | src/lib/reservations/store.ts, src/app/api/reservations/[id]/assign/route.ts | src/app/api/reservations/[id]/assign/route.test.ts | Implementado y validado | reglas-negocio-estados-criterios.md |
+| RF-04 | HU-02 | spdd-frontend.md | prototype-html5/index.html | POST /api/reservations/{id}/status | reservation, reservation_audit | src/lib/reservations/state-machine.ts, src/lib/reservations/store.ts, src/app/api/reservations/[id]/status/route.ts | src/app/api/reservations/[id]/status/route.test.ts, tests/unit/reservations/state-machine.test.ts | Implementado y validado | reglas-negocio-estados-criterios.md |
+| RF-05 | HU-03 | spdd-frontend.md | prototype-html5/index.html | GET /api/reservations/{id}/audit | reservation_audit | src/lib/reservations/audit.ts, src/lib/reservations/store.ts, src/app/api/reservations/[id]/audit/route.ts | src/app/api/reservations/[id]/audit/route.test.ts | Implementado y validado | prototype-validation.md |
+| RF-06 | HU-04 | spdd-frontend.md | prototype-html5/index.html | POST /api/public/reservations | reservation, bungalow, reservation_occupancy | src/components/public-site/booking-band.tsx, src/lib/reservations/store.ts, src/app/api/public/reservations/route.ts | src/app/api/public/reservations/route.test.ts, src/lib/reservations/persistence.test.ts | Implementado y validado | prototype-validation.md |
+| RNF-01 | HU-01 | spdd-frontend.md | prototype-html5/index.html | 401/403 | rbac | src/lib/rbac.ts, src/middleware/authn.ts | src/middleware/authn.test.ts | Implementado y validado | docs/fase-3-arquitectura/03.08-auth-authz.md |
 
 ## Gates
 | Gate | Estado | Evidencia |
@@ -28,7 +32,8 @@ la parsea para poblar la memoria del agente IA.
 | gate-spdd-approved | Pendiente | spdd-frontend.md |
 
 ## Decisiones
-- El prototipo aprobado alimenta campos, filtros, permisos y estados de error del API contract.
+- El prototipo aprobado alimenta campos, filtros, permisos, transiciones y estados de error del API contract.
+- La disponibilidad se modela con bloqueo atomico por bungalow y fecha.
 
 ## Preguntas abiertas
-- Catalogo final de estados.
+- Canon exacto de estados y permisos de recepcion vs administracion.
