@@ -7,23 +7,25 @@ HTML5-first en esta ronda. Figma o Stitch se usan como soporte de direccion,
 pero la referencia navegable del proyecto debe vivir en HTML5 dentro del repo.
 
 ## Ruta HTML5
-`prototype-html5/`
+`prototype-html5/index.html`
 
-## Archivos esperados en la siguiente iteracion
-- `home.html`
-- `habitaciones.html`
-- `habitacion-detalle.html`
-- `eventos.html`
-- `full-day.html`
+## Golden de referencia
+- Path: referencia visual externa `Parador`
+- Por que este golden: aporta hero slider, booking band protagonista, cards
+  comerciales y ritmo hospitality.
+- Patrones estructurales que voy a replicar:
+  - hero slider dominante con CTA
+  - booking band flotante inmediatamente debajo
+  - habitaciones destacadas primero
+  - bloques promo y galeria en secuencia comercial
 
 ## Pantallas cubiertas
-- Home premium
-- Catalogo curado de habitaciones
-- Detalle de habitacion con CTA
-- Eventos
-- Full Day
-- Estado de solicitud enviada
+- `prototype-html5/index.html#view-home`
+- `prototype-html5/index.html#view-habitaciones`
+- `prototype-html5/index.html#view-habitacion-detalle`
+- `prototype-html5/index.html#view-eventos`
+- `prototype-html5/index.html#view-full-day`
 
 ## Estado
-Diseno aprobado para pasar a prototipo navegable. Todavia sin validacion humana
-del HTML final porque aun no existe la implementacion del prototipo.
+Direccion aprobada para redisenar la home y el entrypoint unico. La revision
+humana del HTML final sigue pendiente y no aprueba ningun gate todavia.

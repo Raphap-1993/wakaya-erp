@@ -5,9 +5,10 @@
 - Dominio del spec: hospitality / lodge / reserva guiada
 - Actor principal: visitante web que evalúa hospedaje premium
 - Tarea principal navegable de inicio a fin: descubrir Wakaya -> revisar habitaciones -> abrir detalle -> enviar prereserva manual
-- Patrón visual elegido (streaming / operativo / ecommerce / educación / salud / dashboard / otro): otro — hospitality editorial + ecommerce-guided
-- Por qué NO se usa una shell genérica sidenav+tabla: el sitio es una superficie pública aspiracional; una shell SaaS rompería la atmósfera premium, la venta emocional del lodge y el journey de conversión.
+- Patrón visual elegido (streaming / operativo / ecommerce / educación / salud / dashboard / otro): otro — hospitality premium comercial inspirado casi directo en `Parador`
+- Por qué NO se usa una shell genérica sidenav+tabla: el sitio es una superficie pública aspiracional; una shell SaaS rompería la atmósfera premium, el peso comercial del hero slider y el journey de conversión.
 - Interacciones del prototipo (mínimo 3, expresadas como acciones reales del producto):
+  - navegar el hero slider y entrar por CTA principal
   - elegir fechas y huéspedes en la booking bar flotante
   - abrir una categoría de habitación y pasar al detalle
   - enviar una solicitud de prereserva, evento o full day
@@ -15,23 +16,18 @@
 
 ## Golden de referencia
 
-- Path: `ejemplos/fase-2-ux-ui/prototype-html5-golden/ecommerce-checkout/index.html` + `ejemplos/fase-2-ux-ui/prototype-html5-golden/streaming-catalogo-player/index.html`
-- Por qué este golden: `ecommerce-checkout` aporta estructura comercial, CTA y summary guiado; `streaming-catalogo-player` aporta hero editorial, ritmo visual y navegación inmersiva.
+- Path: referencia visual externa `Parador`
+- Por qué este golden: aporta hero slider, booking band protagonista, cards comerciales y ritmo hospitality.
 - Patrones estructurales que voy a replicar:
-  - hero dominante con narrativa y CTA claros
-  - topbar ligera con navegación editorial y link discreto al hub
-  - bloques secundarios con cards visuales y transiciones a detalle
-- Tokens base reutilizados de `:root` (≥ 8):
-  - `--brand`
-  - `--brand-deep`
-  - `--sand`
-  - `--forest`
-  - `--sunset`
-  - `--surface`
-  - `--surface-strong`
-  - `--ink`
-  - `--muted`
-  - `--shadow-lg`
+  - hero slider dominante con CTA
+  - booking band flotante inmediatamente debajo
+  - habitaciones destacadas primero
+  - bloques promo y galeria en secuencia comercial
+- Señales de traduccion a Wakaya:
+  - paleta verde Wakaya y neutros calidos
+  - fotos de laguna, personas, bungalows y vegetacion
+  - copy de hospedaje primero con eventos y full day como lineas secundarias
+  - cierre comercial claro sin reutilizar la home actual como base visual
 
 ## Contrato del prototipo
 
