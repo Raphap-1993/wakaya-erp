@@ -82,7 +82,7 @@ function walk(
   opts: Required<RedactOptions>,
   depth: number,
 ): unknown {
-  if (depth > opts.maxDepth) {
+  if (depth >= opts.maxDepth) {
     return "[REDACTED:DEPTH]";
   }
   if (value === null || value === undefined) {
