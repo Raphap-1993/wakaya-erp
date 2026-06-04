@@ -1,9 +1,19 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+let mockedPathname = '/prototype/public-site';
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => mockedPathname,
+}));
 
 import { PlayHeader } from './play-header';
 
 describe('PlayHeader', () => {
+  beforeEach(() => {
+    mockedPathname = '/prototype/public-site';
+  });
+
   it('renders the canonical public navigation', () => {
     const html = renderToStaticMarkup(<PlayHeader />);
 
@@ -12,5 +22,13 @@ describe('PlayHeader', () => {
     expect(html).toContain('/prototype/public-site/services');
     expect(html).toContain('/prototype/public-site/contact');
     expect(html).toContain('Reservar ahora');
+  });
+
+  it('marks the current route link with aria-current', () => {
+    mockedPathname = '/prototype/public-site/services';
+
+    const html = renderToStaticMarkup(<PlayHeader />);
+
+    expect(html).toContain('aria-current="page" href="/prototype/public-site/services"');
   });
 });
