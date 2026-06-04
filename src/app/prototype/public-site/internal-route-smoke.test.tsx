@@ -5,6 +5,7 @@ import PublicSiteLayout from './layout';
 import PublicSitePrototypePage from './page';
 import PublicSiteAboutPage from './about/page';
 import PublicSiteBungalowsPage from './bungalows/page';
+import PublicSiteBungalowDetailPage from './bungalows/[slug]/page';
 import PublicSiteServicesPage from './services/page';
 import PublicSiteEventsPage from './events/page';
 import PublicSiteGalleryPage from './gallery/page';
@@ -55,5 +56,28 @@ describe('PublicSiteInternalRoutes', () => {
     expect(html).toContain(
       'href="/prototype/public-site/contact">Solicitar novedades</a>',
     );
+  });
+
+  it('renders the bungalow detail route inside the shared shell', async () => {
+    const html = renderToStaticMarkup(
+      <PublicSiteLayout>
+        {await PublicSiteBungalowDetailPage({
+          params: Promise.resolve({
+            slug: 'bungalow-familiar',
+          }),
+          searchParams: Promise.resolve({
+            category: 'bungalow-familiar',
+            checkIn: '2026-07-10',
+            checkOut: '2026-07-12',
+            guests: '4',
+          }),
+        })}
+      </PublicSiteLayout>,
+    );
+
+    expect(html).toContain('Bungalow Familiar');
+    expect(html).toContain('Navegación pública Wakaya');
+    expect(html).toContain('href="/prototype/public-site/bungalows?category=bungalow-familiar');
+    expect(html).toContain('<footer');
   });
 });

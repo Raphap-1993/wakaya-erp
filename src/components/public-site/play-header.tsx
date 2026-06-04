@@ -12,6 +12,10 @@ export function PlayHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  function isActive(href: string) {
+    return pathname === href || pathname?.startsWith(`${href}/`) === true;
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
@@ -38,7 +42,7 @@ export function PlayHeader() {
             <Link
               key={item.href}
               href={item.href as Route}
-              aria-current={pathname === item.href ? 'page' : undefined}
+              aria-current={isActive(item.href) ? 'page' : undefined}
               onClick={() => setOpen(false)}
             >
               {item.label}

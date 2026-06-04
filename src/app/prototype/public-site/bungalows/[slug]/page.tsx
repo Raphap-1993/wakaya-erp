@@ -10,14 +10,32 @@ import styles from '@/components/public-site/public-site-theme.module.css';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams?:
+    | Promise<Record<string, string | string[] | undefined>>
+    | Record<string, string | string[] | undefined>;
 };
+
+function getSingleValue(value: string | string[] | undefined) {
+  return typeof value === 'string' ? value : '';
+}
+
+async function resolveSearchParams(
+  searchParams: PageProps['searchParams'],
+): Promise<Record<string, string | string[] | undefined>> {
+  if (!searchParams) {
+    return {};
+  }
+
+  return searchParams instanceof Promise ? await searchParams : searchParams;
+}
 
 export function generateStaticParams() {
   return publicBungalows.map((bungalow) => ({ slug: bungalow.slug }));
 }
 
-export default async function BungalowDetailPage({ params }: PageProps) {
+export default async function BungalowDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = await resolveSearchParams(searchParams);
   const room = publicBungalows.find((item) => item.slug === slug);
 
   if (!room) {
@@ -25,6 +43,27 @@ export default async function BungalowDetailPage({ params }: PageProps) {
   }
 
   const roomName = getPublicBungalowLabel(room);
+  const backSearchParams = new URLSearchParams();
+  const category = getSingleValue(resolvedSearchParams.category) || room.slug;
+  const checkIn = getSingleValue(resolvedSearchParams.checkIn);
+  const checkOut = getSingleValue(resolvedSearchParams.checkOut);
+  const guests = getSingleValue(resolvedSearchParams.guests);
+
+  backSearchParams.set('category', category);
+
+  if (checkIn) {
+    backSearchParams.set('checkIn', checkIn);
+  }
+
+  if (checkOut) {
+    backSearchParams.set('checkOut', checkOut);
+  }
+
+  if (guests) {
+    backSearchParams.set('guests', guests);
+  }
+
+  const backHref = `/prototype/public-site/bungalows?${backSearchParams.toString()}`;
 
   return (
     <>
@@ -64,7 +103,7 @@ export default async function BungalowDetailPage({ params }: PageProps) {
               <a className={styles.primaryButton} href="/prototype/public-site/contact">
                 Coordinar reserva
               </a>
-              <a className={styles.ghostButton} href="/prototype/public-site/bungalows">
+              <a className={styles.ghostButton} href={backHref}>
                 Volver a resultados
               </a>
             </div>

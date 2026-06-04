@@ -16,7 +16,16 @@ test.describe('public site prototype route', () => {
       page.getByRole('heading', { level: 1, name: /resultados de búsqueda/i }),
     ).toBeVisible();
 
-    await page.getByRole('link', { name: /ver detalle/i }).first().click();
+    await page
+      .getByRole('link', { name: /ver detalle de bungalow familiar/i })
+      .click();
     await expect(page).toHaveURL(/\/prototype\/public-site\/bungalows\//);
+    await expect(
+      page.getByRole('heading', { level: 1, name: /bungalow familiar/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: /navegación pública wakaya/i }),
+    ).toBeVisible();
+    await expect(page.getByRole('contentinfo')).toBeVisible();
   });
 });

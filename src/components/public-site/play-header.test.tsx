@@ -31,4 +31,12 @@ describe('PlayHeader', () => {
 
     expect(html).toContain('aria-current="page" href="/prototype/public-site/services"');
   });
+
+  it('keeps the bungalow nav item active on nested detail routes', () => {
+    mockedPathname = '/prototype/public-site/bungalows/bungalow-familiar';
+
+    const html = renderToStaticMarkup(<PlayHeader />);
+
+    expect(html).toContain('aria-current="page" href="/prototype/public-site/bungalows"');
+  });
 });

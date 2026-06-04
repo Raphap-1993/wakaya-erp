@@ -22,6 +22,8 @@ describe('BungalowsPage', () => {
     expect(html).toContain('2026-07-12');
     expect(html).toContain('4 huéspedes');
     expect(html).not.toContain('Bungalow Matrimonial');
+    expect(html).toContain('aria-label="Ver detalle de Bungalow Familiar"');
+    expect(html).toContain('href="/prototype/public-site/bungalows/bungalow-familiar"');
   });
 
   it('renders an empty state when category has no matching bungalow', async () => {

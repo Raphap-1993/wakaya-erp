@@ -92,6 +92,7 @@ export default function BungalowsPage({ searchParams }: PageProps) {
                   <span>{room.priceFrom}</span>
                 </div>
                 <a
+                  aria-label={`Ver detalle de ${getPublicBungalowLabel(room)}`}
                   className={styles.primaryButton}
                   href={`/prototype/public-site/bungalows/${room.slug}`}
                 >
