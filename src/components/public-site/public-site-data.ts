@@ -19,6 +19,7 @@ export const publicFooterNav = [
 export const publicBungalows = [
   {
     slug: 'bungalow-familiar',
+    bookingRequestBungalowId: 'bungalow-family',
     name: 'Bungalow Familiar',
     homeName: undefined,
     featuredOnHome: true,
@@ -31,6 +32,7 @@ export const publicBungalows = [
   },
   {
     slug: 'bungalow-matrimonial',
+    bookingRequestBungalowId: 'bungalow-matrimonial',
     name: 'Bungalow Matrimonial',
     homeName: undefined,
     featuredOnHome: true,
@@ -43,6 +45,7 @@ export const publicBungalows = [
   },
   {
     slug: 'bungalow-doble',
+    bookingRequestBungalowId: 'bungalow-suite',
     name: 'Bungalow Doble',
     homeName: 'Bungalow Suite',
     featuredOnHome: true,
@@ -55,6 +58,7 @@ export const publicBungalows = [
   },
   {
     slug: 'bungalow-triple',
+    bookingRequestBungalowId: null,
     name: 'Bungalow Triple',
     homeName: undefined,
     featuredOnHome: false,
