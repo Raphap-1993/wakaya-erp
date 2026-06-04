@@ -1,3 +1,4 @@
+import type { Route } from 'next';
 import Link from 'next/link';
 
 import { BookingBand } from '@/components/public-site/booking-band';
@@ -31,13 +32,13 @@ export default function PublicSitePrototypePage() {
             <div className={styles.heroActions}>
               <Link
                 className={styles.primaryButton}
-                href="/prototype/public-site/bungalows"
+                href={'/prototype/public-site/bungalows' as Route}
               >
                 Consultar disponibilidad
               </Link>
               <Link
                 className={styles.ghostButton}
-                href="/prototype/public-site/bungalows"
+                href={'/prototype/public-site/bungalows' as Route}
               >
                 Ver bungalows
               </Link>
@@ -86,7 +87,7 @@ export default function PublicSitePrototypePage() {
 
                 <Link
                   className={styles.primaryButton}
-                  href="/prototype/public-site/bungalows"
+                  href={'/prototype/public-site/bungalows' as Route}
                 >
                   Ver detalle
                 </Link>
@@ -122,7 +123,7 @@ export default function PublicSitePrototypePage() {
           {publications.map((item) => (
             <article key={item.slug} className={styles.publicationCard}>
               <strong>{item.title}</strong>
-              <Link href="/prototype/public-site/publications">Leer más</Link>
+              <Link href={'/prototype/public-site/publications' as Route}>Leer más</Link>
             </article>
           ))}
         </div>
@@ -138,7 +139,7 @@ export default function PublicSitePrototypePage() {
           </p>
           <Link
             className={styles.primaryButton}
-            href="/prototype/public-site/contact"
+            href={'/prototype/public-site/contact' as Route}
           >
             Solicitar novedades
           </Link>
