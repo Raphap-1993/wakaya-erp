@@ -2,36 +2,17 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { BookingBand } from './booking-band';
-import { publicBungalows } from './public-site-data';
 
 describe('BookingBand', () => {
-  it('renders the public booking surface with a submit action', () => {
+  it('renders a GET form that points to the bungalow results page', () => {
     const html = renderToStaticMarkup(<BookingBand />);
-    const publicRoomOptions = publicBungalows
-      .flatMap((room) =>
-        room.bookingRequestBungalowId
-          ? [
-              {
-                bungalowId: room.bookingRequestBungalowId,
-                label: room.homeName ?? room.name,
-              },
-            ]
-          : [],
-      );
 
-    expect(html).toContain('Disponibilidad referencial');
-    expect(html).toContain('Consultar');
-    expect(html).toContain('Check in');
-    expect(html).toContain('Check out');
-    expect(html).toContain('Revisar monitor interno');
-    expect(html).toContain('Todas las categorías');
-
-    for (const option of publicRoomOptions) {
-      expect(html).toContain(option.label);
-      expect(html).toContain(`value="${option.bungalowId}"`);
-    }
-
-    expect(html).not.toContain('Bungalow Triple');
-    expect(html).not.toContain('value="bungalow-triple"');
+    expect(html).toContain('action="/prototype/public-site/bungalows"');
+    expect(html).toContain('method="get"');
+    expect(html).toContain('name="checkIn"');
+    expect(html).toContain('name="checkOut"');
+    expect(html).toContain('name="guests"');
+    expect(html).toContain('name="category"');
+    expect(html).toContain('Consultar disponibilidad');
   });
 });
