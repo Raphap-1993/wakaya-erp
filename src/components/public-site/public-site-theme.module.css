@@ -307,6 +307,73 @@
   line-height: 1.85;
 }
 
+.homeHero {
+  margin: -112px -24px 0;
+}
+
+.homeHeroSlide {
+  min-height: 880px;
+  display: grid;
+  align-items: center;
+  padding: 180px 24px 160px;
+  border-radius: 0 0 44px 44px;
+  background-size: cover;
+  background-position: center;
+}
+
+.homeHeroCopy {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  color: #fff;
+}
+
+.homeHeroCopy h1 {
+  margin: 0 0 20px;
+  font-size: clamp(3.6rem, 7vw, 7.2rem);
+  line-height: 0.9;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.homeHeroCopy p {
+  max-width: 620px;
+  margin: 0 0 28px;
+  color: rgba(255, 248, 240, 0.9);
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+.homeHeroDeck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 720px;
+}
+
+.homeHeroDeckCard {
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  background: rgba(18, 27, 24, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.homeHeroDeckCard strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.homeHeroDeckCard span {
+  display: block;
+  color: rgba(255, 248, 240, 0.82);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
 .heroActions {
   display: flex;
   flex-wrap: wrap;
@@ -606,6 +673,28 @@
   margin-bottom: 72px;
 }
 
+.sectionHeader {
+  max-width: 760px;
+  margin-bottom: 26px;
+}
+
+.sectionHeader h2 {
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: clamp(2.5rem, 5vw, 4.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+  text-wrap: balance;
+}
+
+.sectionHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
 .aboutSection {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -748,6 +837,84 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.testimonialSection,
+.publicationSection,
+.newsletterSection {
+  padding: 56px 0;
+}
+
+.testimonialGrid,
+.publicationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.quoteCard,
+.publicationCard,
+.newsletterCard {
+  border: 1px solid rgba(80, 62, 44, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow-card);
+}
+
+.quoteCard,
+.publicationCard {
+  padding: 28px;
+}
+
+.quoteCard strong,
+.publicationCard strong {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.quoteCard p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.publicationCard a {
+  color: #a87122;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.newsletterCard {
+  display: grid;
+  gap: 18px;
+  padding: 36px;
+  background:
+    linear-gradient(135deg, rgba(23, 54, 47, 0.96), rgba(44, 79, 70, 0.94)),
+    radial-gradient(circle at top right, rgba(239, 173, 26, 0.24), transparent 28%);
+}
+
+.newsletterCard h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.newsletterCard p {
+  max-width: 640px;
+  margin: 0;
+  color: rgba(255, 250, 244, 0.84);
+  font-size: 15px;
+  line-height: 1.85;
 }
 
 .activityHeader {
@@ -999,6 +1166,10 @@
   .footer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .homeHeroCopy {
+    width: min(100%, 680px);
+  }
 }
 
 @media (max-width: 920px) {
@@ -1074,6 +1245,20 @@
   .footer {
     grid-template-columns: 1fr 1fr;
   }
+
+  .homeHero {
+    margin: -102px -16px 0;
+  }
+
+  .homeHeroSlide {
+    min-height: 760px;
+    padding: 170px 24px 132px;
+  }
+
+  .testimonialGrid,
+  .publicationGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1132,5 +1317,30 @@
   .eventCopyCard,
   .footerCard {
     padding: 24px;
+  }
+
+  .homeHero {
+    margin-top: -94px;
+  }
+
+  .homeHeroSlide {
+    min-height: 680px;
+    padding: 150px 18px 112px;
+  }
+
+  .homeHeroCopy h1 {
+    font-size: clamp(2.9rem, 14vw, 4.6rem);
+  }
+
+  .homeHeroCopy p {
+    font-size: 16px;
+  }
+
+  .homeHeroDeck {
+    grid-template-columns: 1fr;
+  }
+
+  .newsletterCard {
+    padding: 28px 24px;
   }
 }

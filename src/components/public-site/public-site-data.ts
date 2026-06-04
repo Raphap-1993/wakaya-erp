@@ -71,6 +71,47 @@ export const publicBungalows = [
   },
 ] as const;
 
+export const homeSlides = [
+  {
+    eyebrow: 'Hotel Wakaya Ecolodge',
+    title: 'Un encuentro con lo mágico',
+    copy:
+      'Laguna, jardines, piscina y bungalows cálidos en una experiencia tropical premium.',
+    image:
+      'https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya1.png',
+  },
+  {
+    eyebrow: 'Hospitalidad tropical',
+    title: 'Lo mejor de la selva del Perú',
+    copy:
+      'Una llegada más emocional, más visual y más clara para reservar.',
+    image:
+      'https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya2.png',
+  },
+] as const;
+
+export const testimonials = [
+  {
+    name: 'Familias',
+    quote: 'Un entorno natural para descansar del ruido de la ciudad.',
+  },
+  {
+    name: 'Parejas',
+    quote: 'Bungalows cálidos, agua, jardines y mejor sensación de retiro.',
+  },
+] as const;
+
+export const publications = [
+  {
+    slug: 'bodas-en-wakaya',
+    title: 'Celebraciones en un entorno natural',
+  },
+  {
+    slug: 'full-day-pucallpa',
+    title: 'Cómo vivir un Full Day en Wakaya',
+  },
+] as const;
+
 export const footerContact = {
   place: 'Pucallpa · Perú',
   domain: 'wakayaecolodge.com',
