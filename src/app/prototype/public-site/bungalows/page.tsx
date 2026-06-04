@@ -1,10 +1,15 @@
-import { publicBungalows } from '@/components/public-site/public-site-data';
+import { use } from 'react';
+
+import {
+  getPublicBungalowLabel,
+  publicBungalows,
+} from '@/components/public-site/public-site-data';
 import styles from '@/components/public-site/public-site-theme.module.css';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type PageProps = {
-  searchParams?: Promise<SearchParams>;
+  searchParams?: Promise<SearchParams> | SearchParams;
 };
 
 function getSingleValue(value: string | string[] | undefined) {
@@ -19,8 +24,28 @@ function formatGuests(guests: string) {
   return guests.includes('huésped') ? guests : `${guests} huéspedes`;
 }
 
-export default async function BungalowsPage({ searchParams }: PageProps) {
-  const params = searchParams ? await searchParams : {};
+function isPromiseSearchParams(
+  value: Promise<SearchParams> | SearchParams,
+): value is Promise<SearchParams> {
+  return typeof (value as Promise<SearchParams>).then === 'function';
+}
+
+function resolveSearchParams(
+  searchParams?: Promise<SearchParams> | SearchParams,
+): SearchParams {
+  if (!searchParams) {
+    return {};
+  }
+
+  if (isPromiseSearchParams(searchParams)) {
+    return use(searchParams as Promise<SearchParams>);
+  }
+
+  return searchParams;
+}
+
+export default function BungalowsPage({ searchParams }: PageProps) {
+  const params = resolveSearchParams(searchParams);
   const category = getSingleValue(params.category);
   const checkIn = getSingleValue(params.checkIn);
   const checkOut = getSingleValue(params.checkOut);
@@ -47,7 +72,7 @@ export default async function BungalowsPage({ searchParams }: PageProps) {
           {checkIn || 'Sin fecha'} · {checkOut || 'Sin fecha'} · {formatGuests(guests)}
         </strong>
         <span>
-          Categoría: {selectedCategory ? selectedCategory.homeName ?? selectedCategory.name : category || 'Todas las categorías'}
+          Categoría: {selectedCategory ? getPublicBungalowLabel(selectedCategory) : category || 'Todas las categorías'}
         </span>
       </div>
 
@@ -56,11 +81,11 @@ export default async function BungalowsPage({ searchParams }: PageProps) {
           rooms.map((room) => (
             <article key={room.slug} className={styles.roomCard}>
               <div className={styles.roomImage}>
-                <img src={room.image} alt={room.name} />
+                <img src={room.image} alt={getPublicBungalowLabel(room)} />
               </div>
               <div className={styles.roomBody}>
                 <span className={styles.roomEyebrow}>{room.eyebrow}</span>
-                <h3>{room.name}</h3>
+                <h3>{getPublicBungalowLabel(room)}</h3>
                 <p>{room.description}</p>
                 <div className={styles.roomMeta}>
                   <span>{room.capacity}</span>

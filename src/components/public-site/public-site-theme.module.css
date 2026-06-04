@@ -311,6 +311,59 @@
   margin: -112px -24px 0;
 }
 
+.pageHero {
+  margin: 0 0 42px;
+  padding: 56px 0 8px;
+}
+
+.pageHeroInner {
+  max-width: 760px;
+}
+
+.pageHeroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: #a87122;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.pageHeroEyebrow::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: rgba(168, 113, 34, 0.46);
+}
+
+.pageHeroBreadcrumb {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.pageHeroTitle {
+  margin: 0 0 18px;
+  color: var(--text);
+  font-size: clamp(3rem, 5vw, 5.3rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+  text-wrap: balance;
+}
+
+.pageHeroCopy {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
 .homeHeroSlide {
   min-height: 880px;
   display: grid;
@@ -1270,6 +1323,10 @@
     min-height: 420px;
   }
 
+  .pageHero {
+    padding-top: 28px;
+  }
+
   .heroStack {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
@@ -1316,6 +1373,10 @@
 
   .heroLead {
     font-size: 16px;
+  }
+
+  .pageHeroTitle {
+    font-size: clamp(2.6rem, 13vw, 4.2rem);
   }
 
   .heroActions,

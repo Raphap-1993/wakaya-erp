@@ -46,8 +46,8 @@ export const publicBungalows = [
   {
     slug: 'bungalow-doble',
     bookingRequestBungalowId: 'bungalow-suite',
-    name: 'Bungalow Doble',
-    homeName: 'Bungalow Suite',
+    name: 'Bungalow Suite',
+    homeName: undefined,
     featuredOnHome: true,
     eyebrow: 'Para descanso cálido y flexible',
     description:
@@ -117,3 +117,10 @@ export const footerContact = {
   domain: 'wakayaecolodge.com',
   note: 'Atención personalizada del equipo Wakaya',
 };
+
+export function getPublicBungalowLabel(bungalow: {
+  homeName?: string | undefined;
+  name: string;
+}) {
+  return bungalow.homeName ?? bungalow.name;
+}
