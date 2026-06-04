@@ -24,6 +24,32 @@ function formatGuests(guests: string) {
   return guests.includes('huésped') ? guests : `${guests} huéspedes`;
 }
 
+function buildDetailHref(args: {
+  slug: string;
+  category: string;
+  checkIn: string;
+  checkOut: string;
+  guests: string;
+}) {
+  const searchParams = new URLSearchParams();
+
+  searchParams.set('category', args.category || args.slug);
+
+  if (args.checkIn) {
+    searchParams.set('checkIn', args.checkIn);
+  }
+
+  if (args.checkOut) {
+    searchParams.set('checkOut', args.checkOut);
+  }
+
+  if (args.guests) {
+    searchParams.set('guests', args.guests);
+  }
+
+  return `/prototype/public-site/bungalows/${args.slug}?${searchParams.toString()}`;
+}
+
 function isPromiseSearchParams(
   value: Promise<SearchParams> | SearchParams,
 ): value is Promise<SearchParams> {
@@ -78,29 +104,40 @@ export default function BungalowsPage({ searchParams }: PageProps) {
 
       <div className={styles.roomGrid}>
         {rooms.length > 0 ? (
-          rooms.map((room) => (
-            <article key={room.slug} className={styles.roomCard}>
-              <div className={styles.roomImage}>
-                <img src={room.image} alt={getPublicBungalowLabel(room)} />
-              </div>
-              <div className={styles.roomBody}>
-                <span className={styles.roomEyebrow}>{room.eyebrow}</span>
-                <h3>{getPublicBungalowLabel(room)}</h3>
-                <p>{room.description}</p>
-                <div className={styles.roomMeta}>
-                  <span>{room.capacity}</span>
-                  <span>{room.priceFrom}</span>
+          rooms.map((room) => {
+            const roomLabel = getPublicBungalowLabel(room);
+            const detailHref = buildDetailHref({
+              slug: room.slug,
+              category,
+              checkIn,
+              checkOut,
+              guests,
+            });
+
+            return (
+              <article key={room.slug} className={styles.roomCard}>
+                <div className={styles.roomImage}>
+                  <img src={room.image} alt={roomLabel} />
                 </div>
-                <a
-                  aria-label={`Ver detalle de ${getPublicBungalowLabel(room)}`}
-                  className={styles.primaryButton}
-                  href={`/prototype/public-site/bungalows/${room.slug}`}
-                >
-                  Ver detalle
-                </a>
-              </div>
-            </article>
-          ))
+                <div className={styles.roomBody}>
+                  <span className={styles.roomEyebrow}>{room.eyebrow}</span>
+                  <h3>{roomLabel}</h3>
+                  <p>{room.description}</p>
+                  <div className={styles.roomMeta}>
+                    <span>{room.capacity}</span>
+                    <span>{room.priceFrom}</span>
+                  </div>
+                  <a
+                    aria-label={`Ver detalle de ${roomLabel}`}
+                    className={styles.primaryButton}
+                    href={detailHref}
+                  >
+                    Ver detalle
+                  </a>
+                </div>
+              </article>
+            );
+          })
         ) : (
           <div className={styles.emptyCard}>
             <strong>No encontramos coincidencias con esos filtros.</strong>

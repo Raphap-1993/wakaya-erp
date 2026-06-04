@@ -23,7 +23,9 @@ describe('BungalowsPage', () => {
     expect(html).toContain('4 huéspedes');
     expect(html).not.toContain('Bungalow Matrimonial');
     expect(html).toContain('aria-label="Ver detalle de Bungalow Familiar"');
-    expect(html).toContain('href="/prototype/public-site/bungalows/bungalow-familiar"');
+    expect(html).toContain(
+      'href="/prototype/public-site/bungalows/bungalow-familiar?category=bungalow-familiar&amp;checkIn=2026-07-10&amp;checkOut=2026-07-12&amp;guests=4"',
+    );
   });
 
   it('renders an empty state when category has no matching bungalow', async () => {
@@ -50,7 +52,9 @@ describe('BungalowsPage', () => {
 
     expect(resultsHtml).toContain('Bungalow Suite');
     expect(resultsHtml).not.toContain('Bungalow Doble');
-    expect(resultsHtml).toContain('href="/prototype/public-site/bungalows/bungalow-doble"');
+    expect(resultsHtml).toContain(
+      'href="/prototype/public-site/bungalows/bungalow-doble?category=bungalow-doble"',
+    );
 
     const { default: BungalowDetailPage } = await import('./[slug]/page');
 

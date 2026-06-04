@@ -19,7 +19,11 @@ test.describe('public site prototype route', () => {
     await page
       .getByRole('link', { name: /ver detalle de bungalow familiar/i })
       .click();
-    await expect(page).toHaveURL(/\/prototype\/public-site\/bungalows\//);
+    await expect(
+      page,
+    ).toHaveURL(
+      /\/prototype\/public-site\/bungalows\/bungalow-familiar\?category=bungalow-familiar&checkIn=2026-07-10&checkOut=2026-07-12&guests=4/,
+    );
     await expect(
       page.getByRole('heading', { level: 1, name: /bungalow familiar/i }),
     ).toBeVisible();
@@ -27,5 +31,11 @@ test.describe('public site prototype route', () => {
       page.getByRole('navigation', { name: /navegación pública wakaya/i }),
     ).toBeVisible();
     await expect(page.getByRole('contentinfo')).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: /volver a resultados/i }),
+    ).toHaveAttribute(
+      'href',
+      '/prototype/public-site/bungalows?category=bungalow-familiar&checkIn=2026-07-10&checkOut=2026-07-12&guests=4',
+    );
   });
 });
