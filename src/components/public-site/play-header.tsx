@@ -1,17 +1,14 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { publicNav } from './public-site-data';
 import styles from './public-site-theme.module.css';
 
-const navItems = [
-  { label: 'Inicio', href: '#home' },
-  { label: 'Bungalows', href: '#bungalows' },
-  { label: 'Experiencias', href: '#activities' },
-  { label: 'Eventos', href: '#events' },
-];
-
 export function PlayHeader() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
@@ -35,17 +32,26 @@ export function PlayHeader() {
       </button>
 
       <div className={`${styles.navWrap} ${open ? styles.navOpen : ''}`}>
-        <nav className={styles.nav} aria-label="Navegación del prototipo público">
-          {navItems.map((item) => (
-            <a key={item.label} href={item.href} onClick={() => setOpen(false)}>
+        <nav className={styles.nav} aria-label="Navegación pública Wakaya">
+          {publicNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={pathname === item.href ? 'page' : undefined}
+              onClick={() => setOpen(false)}
+            >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
-        <a className={styles.headerCta} href="#booking" onClick={() => setOpen(false)}>
-          Consultar
-        </a>
+        <Link
+          className={styles.headerCta}
+          href="/prototype/public-site/bungalows"
+          onClick={() => setOpen(false)}
+        >
+          Reservar ahora
+        </Link>
       </div>
     </header>
   );

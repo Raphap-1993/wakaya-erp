@@ -1,22 +1,16 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
 
-import { PlayHeader } from "./play-header";
+import { PlayHeader } from './play-header';
 
-describe("PlayHeader", () => {
-  it("does not depend on next/link for hash navigation", () => {
-    const source = readFileSync(path.join(process.cwd(), "src/components/public-site/play-header.tsx"), "utf8");
-
-    expect(source).not.toMatch(/from\s+["']next\/link["']/);
-  });
-
-  it("renders hash navigation links for the public prototype", () => {
+describe('PlayHeader', () => {
+  it('renders the canonical public navigation', () => {
     const html = renderToStaticMarkup(<PlayHeader />);
 
-    expect(html).toContain('href="#home"');
-    expect(html).toContain('href="#booking"');
-    expect(html).toContain("Consultar");
+    expect(html).toContain('/prototype/public-site/about');
+    expect(html).toContain('/prototype/public-site/bungalows');
+    expect(html).toContain('/prototype/public-site/services');
+    expect(html).toContain('/prototype/public-site/contact');
+    expect(html).toContain('Reservar ahora');
   });
 });
