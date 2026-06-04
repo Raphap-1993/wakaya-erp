@@ -124,7 +124,12 @@ export default function PublicSitePrototypePage() {
           {publications.map((item) => (
             <article key={item.slug} className={styles.publicationCard}>
               <strong>{item.title}</strong>
-              <Link href={'/prototype/public-site/publications' as Route}>Leer más</Link>
+              <Link
+                aria-label={`Leer más sobre ${item.title}`}
+                href={'/prototype/public-site/publications' as Route}
+              >
+                Leer más
+              </Link>
             </article>
           ))}
         </div>
