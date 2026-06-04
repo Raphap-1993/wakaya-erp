@@ -1,3 +1,4 @@
+import type { Route } from 'next';
 import Link from 'next/link';
 
 import { footerContact, publicNav } from './public-site-data';
@@ -20,7 +21,7 @@ export function PlayFooter() {
           <ul>
             {publicNav.slice(0, 4).map((item) => (
               <li key={item.href}>
-                <Link href={item.href}>{item.label}</Link>
+                <Link href={item.href as Route}>{item.label}</Link>
               </li>
             ))}
           </ul>

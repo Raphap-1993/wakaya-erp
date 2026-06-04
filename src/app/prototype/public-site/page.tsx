@@ -1,36 +1,7 @@
 import { PlaySectionTitle } from '@/components/public-site/play-section-title';
 import { BookingBand } from '@/components/public-site/booking-band';
+import { publicBungalows } from '@/components/public-site/public-site-data';
 import styles from '@/components/public-site/public-site-theme.module.css';
-
-const rooms = [
-  {
-    id: 'suite',
-    name: 'Bungalow Suite',
-    eyebrow: 'Para una estadía más íntima',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg',
-    description:
-      'La categoría más privada para una escapada amazónica más silenciosa, más cálida y con mejor sensación de retiro.',
-    chips: ['2 huéspedes', 'Desde S/ 420'],
-  },
-  {
-    id: 'familiar',
-    name: 'Bungalow Familiar',
-    eyebrow: 'Para familias y grupos pequeños',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg',
-    description:
-      'Más amplitud para compartir jardines, piscina y descanso con una lectura clara de capacidad y tarifa base.',
-    chips: ['4 huéspedes', 'Desde S/ 350'],
-  },
-  {
-    id: 'matrimonial',
-    name: 'Bungalow Matrimonial',
-    eyebrow: 'Para una llegada más accesible',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg',
-    description:
-      'Una forma más directa de conocer Wakaya sin perder el tono premium ni la experiencia de naturaleza del lodge.',
-    chips: ['2 huéspedes', 'Desde S/ 250'],
-  },
-];
 
 const activities = [
   {
@@ -66,6 +37,8 @@ const heroStats = [
   { title: 'Prereserva guiada', text: 'Disponibilidad referencial y validación humana antes de confirmar.' },
   { title: 'Eventos y full day', text: 'Servicios paralelos visibles desde la home, sin romper el foco principal.' },
 ];
+
+const featuredRooms = publicBungalows.filter((room) => room.featuredOnHome);
 
 export default function PublicSitePrototypePage() {
   return (
@@ -201,19 +174,19 @@ export default function PublicSitePrototypePage() {
           </div>
 
           <div className={styles.roomGrid}>
-            {rooms.map((room) => (
-              <article key={room.id} className={styles.roomCard}>
+            {featuredRooms.map((room) => (
+              <article key={room.slug} className={styles.roomCard}>
                 <div className={styles.roomImage}>
-                  <img src={room.image} alt={room.name} />
+                  <img src={room.image} alt={room.homeName ?? room.name} />
                 </div>
 
                 <div className={styles.roomBody}>
                   <span className={styles.roomEyebrow}>{room.eyebrow}</span>
-                  <h3>{room.name}</h3>
+                  <h3>{room.homeName ?? room.name}</h3>
                   <p>{room.description}</p>
 
                   <div className={styles.roomMeta}>
-                    {room.chips.map((chip) => (
+                    {[room.capacity, room.priceFrom].map((chip) => (
                       <span key={chip}>{chip}</span>
                     ))}
                   </div>
