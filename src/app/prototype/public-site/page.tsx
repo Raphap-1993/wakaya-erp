@@ -87,9 +87,10 @@ export default function PublicSitePrototypePage() {
 
                 <Link
                   className={styles.primaryButton}
-                  href={'/prototype/public-site/bungalows' as Route}
+                  aria-label={`Ver disponibilidad de ${room.homeName ?? room.name}`}
+                  href={`/prototype/public-site/bungalows?category=${room.slug}` as Route}
                 >
-                  Ver detalle
+                  Ver disponibilidad
                 </Link>
               </div>
             </article>
