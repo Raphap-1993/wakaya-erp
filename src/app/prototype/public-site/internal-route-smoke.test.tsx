@@ -14,9 +14,9 @@ import PublicSiteContactPage from './contact/page';
 describe('PublicSiteInternalRoutes', () => {
   it('renders the current public routes inside the shared shell', () => {
     const routes = [
-      { heading: 'Respira la naturaleza', page: <PublicSitePrototypePage /> },
-      { heading: 'Nosotros', page: <PublicSiteAboutPage /> },
-      { heading: 'Bungalows', page: <PublicSiteBungalowsPage /> },
+      { heading: 'Un encuentro con lo mágico', page: <PublicSitePrototypePage /> },
+      { heading: 'Acerca de Wakaya', page: <PublicSiteAboutPage /> },
+      { heading: 'Resultados de búsqueda', page: <PublicSiteBungalowsPage /> },
       { heading: 'Servicios', page: <PublicSiteServicesPage /> },
       { heading: 'Eventos', page: <PublicSiteEventsPage /> },
       { heading: 'Galería', page: <PublicSiteGalleryPage /> },
@@ -44,9 +44,16 @@ describe('PublicSiteInternalRoutes', () => {
       </PublicSiteLayout>,
     );
 
-    expect(html).toContain('href="/prototype/public-site/bungalows">Ver detalle</a>');
-    expect(html).toContain('href="/prototype/public-site/bungalows">Más info</a>');
-    expect(html).toContain('href="/prototype/public-site/events">Ver eventos</a>');
-    expect(html).toContain('href="/prototype/public-site/services">Ver full day</a>');
+    expect(html).toContain('href="/prototype/public-site/bungalows">Consultar disponibilidad</a>');
+    expect(html).toContain('href="/prototype/public-site/bungalows">Ver bungalows</a>');
+    expect(html).toContain(
+      'href="/prototype/public-site/bungalows?category=bungalow-familiar">Ver disponibilidad</a>',
+    );
+    expect(html).toContain(
+      'href="/prototype/public-site/publications">Leer más</a>',
+    );
+    expect(html).toContain(
+      'href="/prototype/public-site/contact">Solicitar novedades</a>',
+    );
   });
 });
