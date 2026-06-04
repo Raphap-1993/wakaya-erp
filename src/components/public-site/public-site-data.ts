@@ -9,6 +9,13 @@ export const publicNav = [
   { label: 'Contacto', href: '/prototype/public-site/contact' },
 ] as const;
 
+export const publicFooterNav = [
+  { label: 'Inicio', href: '/prototype/public-site' },
+  { label: 'Nosotros', href: '/prototype/public-site/about' },
+  { label: 'Bungalows', href: '/prototype/public-site/bungalows' },
+  { label: 'Servicios', href: '/prototype/public-site/services' },
+] as const;
+
 export const publicBungalows = [
   {
     slug: 'bungalow-familiar',

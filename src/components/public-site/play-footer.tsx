@@ -1,7 +1,7 @@
 import type { Route } from 'next';
 import Link from 'next/link';
 
-import { footerContact, publicNav } from './public-site-data';
+import { footerContact, publicFooterNav } from './public-site-data';
 import styles from './public-site-theme.module.css';
 
 export function PlayFooter() {
@@ -19,7 +19,7 @@ export function PlayFooter() {
         <div className={styles.footerColumn}>
           <h4>Explora</h4>
           <ul>
-            {publicNav.slice(0, 4).map((item) => (
+            {publicFooterNav.map((item) => (
               <li key={item.href}>
                 <Link href={item.href as Route}>{item.label}</Link>
               </li>

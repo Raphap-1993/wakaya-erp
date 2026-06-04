@@ -1,3 +1,6 @@
+import type { Route } from 'next';
+import Link from 'next/link';
+
 import { PlaySectionTitle } from '@/components/public-site/play-section-title';
 import { BookingBand } from '@/components/public-site/booking-band';
 import { publicBungalows } from '@/components/public-site/public-site-data';
@@ -192,12 +195,12 @@ export default function PublicSitePrototypePage() {
                   </div>
 
                   <div className={styles.actions}>
-                    <button className={styles.primaryButton} type="button">
+                    <Link className={styles.primaryButton} href={'/prototype/public-site/bungalows' as Route}>
                       Ver detalle
-                    </button>
-                    <button className={styles.ghostButton} type="button">
+                    </Link>
+                    <Link className={styles.ghostButton} href={'/prototype/public-site/bungalows' as Route}>
                       Más info
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </article>
@@ -270,12 +273,12 @@ export default function PublicSitePrototypePage() {
               </ul>
 
               <div className={styles.actions}>
-                <button className={styles.primaryButton} type="button">
+                <Link className={styles.primaryButton} href={'/prototype/public-site/events' as Route}>
                   Ver eventos
-                </button>
-                <button className={styles.ghostButton} type="button">
+                </Link>
+                <Link className={styles.ghostButton} href={'/prototype/public-site/services' as Route}>
                   Ver full day
-                </button>
+                </Link>
               </div>
             </div>
           </div>
