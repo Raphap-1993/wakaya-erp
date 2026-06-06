@@ -3,384 +3,1674 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wakaya ERP — Agenda operativa</title>
+<title>Wakaya ERP - Consola operativa de reservas</title>
 <style>
-  /* === DESIGN TOKENS === */
   :root {
-    --brand: #1F4E79;
-    --brand-dark: #163A5C;
-    --brand-light: #E8F0F9;
-    --brand-mid: #C9DCEF;
-    --success: #047857;
-    --warning: #B45309;
-    --danger: #B91C1C;
-    --neutral-50: #F9FAFB;
-    --neutral-100: #F3F4F6;
-    --neutral-200: #E5E7EB;
-    --neutral-300: #D1D5DB;
-    --neutral-400: #9CA3AF;
-    --neutral-500: #6B7280;
-    --neutral-600: #4B5563;
-    --neutral-700: #374151;
-    --neutral-800: #1F2937;
-    --neutral-900: #111827;
-    --sidebar-w: 220px;
-    --topbar-h: 56px;
-    --banner-h: 28px;
-    --font: 'Segoe UI', system-ui, sans-serif;
-    --radius: 6px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
-    --transition: 0.18s ease;
+    --brand: #1f4e79;
+    --brand-dark: #163a5c;
+    --brand-light: #e7f1fb;
+    --brand-soft: #d4e7f6;
+    --ink: #102033;
+    --success: #0f766e;
+    --success-soft: #d1fae5;
+    --warning: #b45309;
+    --warning-soft: #fef3c7;
+    --danger: #b91c1c;
+    --danger-soft: #fee2e2;
+    --neutral-50: #f8fafc;
+    --neutral-100: #f1f5f9;
+    --neutral-200: #e2e8f0;
+    --neutral-300: #cbd5e1;
+    --neutral-400: #94a3b8;
+    --neutral-500: #64748b;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1e293b;
+    --neutral-900: #0f172a;
+    --surface: rgba(255, 255, 255, 0.92);
+    --topbar-h: 70px;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.12);
+    --font-sans: "Segoe UI", system-ui, sans-serif;
+    --transition: 0.2s ease;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--neutral-100); color: var(--neutral-800); min-height: 100vh; }
-  button, input, select { font: inherit; }
 
-  .hub-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--neutral-400); text-decoration: none; padding: 4px 8px; border-radius: var(--radius); transition: var(--transition); }
-  .hub-link:hover { background: var(--neutral-100); color: var(--brand); }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-  .topbar { position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h); background: #fff; border-bottom: 1px solid var(--neutral-200); display: flex; align-items: center; padding: 0 20px; gap: 16px; z-index: 100; box-shadow: var(--shadow-sm); }
-  .topbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--brand); }
-  .topbar-brand .logo { width: 30px; height: 30px; background: var(--brand); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 800; }
-  .topbar-search { flex: 1; max-width: 380px; position: relative; }
-  .topbar-search input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--neutral-300); border-radius: var(--radius); font-size: 13px; background: var(--neutral-50); outline: none; }
-  .topbar-search input:focus { border-color: var(--brand); background: #fff; }
-  .topbar-search .ico { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--neutral-400); }
-  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-  .user-menu { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 10px; border-radius: var(--radius); }
-  .user-menu:hover { background: var(--neutral-100); }
-  .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
-  .user-meta { font-size: 12px; line-height: 1.3; }
-  .user-meta strong { display: block; font-size: 13px; color: var(--neutral-800); }
-  .role-tag { display: inline-flex; padding: 2px 7px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: #EDE9FE; color: #5B21B6; }
+  body {
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    color: var(--neutral-800);
+    background:
+      radial-gradient(circle at top left, rgba(31, 78, 121, 0.16), transparent 34%),
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 28%),
+      linear-gradient(180deg, #f8fafc 0%, #eef4fa 54%, #f8fafc 100%);
+  }
 
-  .app-layout { margin-top: var(--topbar-h); }
+  button,
+  input {
+    font: inherit;
+  }
 
-  .sidebar { width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--neutral-200); position: fixed; top: var(--topbar-h); bottom: 0; left: 0; padding: 14px 0; }
-  .sidebar-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--neutral-400); padding: 4px 16px; display: block; }
-  .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; color: var(--neutral-600); font-size: 13px; cursor: pointer; transition: var(--transition); }
-  .sidebar-item:hover { background: var(--neutral-100); color: var(--neutral-800); }
-  .sidebar-item.active { background: var(--brand-light); color: var(--brand); font-weight: 600; border-left: 3px solid var(--brand); padding-left: 13px; }
+  [hidden] {
+    display: none !important;
+  }
 
-  .main-content { margin-left: var(--sidebar-w); padding: 22px 24px; }
-  .page-header { display: flex; justify-content: space-between; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
-  .page-title h1 { font-size: 22px; font-weight: 700; color: var(--neutral-900); }
-  .page-title .breadcrumb { font-size: 12px; color: var(--neutral-500); margin-bottom: 4px; }
-  .page-title p { font-size: 13px; color: var(--neutral-500); margin-top: 2px; }
+  .hub-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--neutral-500);
+    text-decoration: none;
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    transition: var(--transition);
+  }
 
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: var(--transition); }
-  .btn-primary { background: var(--brand); color: #fff; }
-  .btn-primary:hover { background: var(--brand-dark); }
-  .btn-secondary { background: #fff; color: var(--neutral-700); border: 1px solid var(--neutral-300); }
-  .btn-secondary:hover { background: var(--neutral-50); }
-  .btn-ghost { background: transparent; color: var(--neutral-600); }
+  .hub-link:hover {
+    color: var(--brand);
+    background: rgba(255, 255, 255, 0.8);
+  }
 
-  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
-  .kpi-card { background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius); padding: 14px 18px; box-shadow: var(--shadow-sm); }
-  .kpi-card.highlight { border-color: var(--brand); }
-  .kpi-card.highlight .kpi-value { color: var(--brand); }
-  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--neutral-500); font-weight: 600; }
-  .kpi-value { font-size: 26px; font-weight: 800; color: var(--neutral-900); margin-top: 4px; }
-  .kpi-delta { font-size: 11px; margin-top: 4px; color: var(--neutral-500); }
-  .kpi-delta.up { color: var(--success); }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: var(--topbar-h);
+    padding: 14px 22px;
+    backdrop-filter: blur(16px);
+    background: rgba(244, 248, 252, 0.86);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.66);
+  }
 
-  .filter-bar { background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .filter-group { display: flex; align-items: center; gap: 8px; }
-  .filter-group label { font-size: 12px; color: var(--neutral-600); }
-  .filter-select { padding: 6px 10px; border: 1px solid var(--neutral-300); border-radius: var(--radius); font-size: 12px; background: #fff; min-width: 130px; }
-  .filter-count { font-size: 12px; color: var(--neutral-500); margin-left: auto; }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: max-content;
+    font-weight: 700;
+    color: var(--brand);
+  }
 
-  .table-card { background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
-  table { width: 100%; border-collapse: collapse; }
-  thead { background: var(--neutral-50); }
-  th { padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--neutral-500); border-bottom: 1px solid var(--neutral-200); }
-  td { padding: 12px 14px; font-size: 13px; color: var(--neutral-700); border-bottom: 1px solid var(--neutral-100); }
-  tbody tr { cursor: pointer; transition: var(--transition); }
-  tbody tr:hover td { background: var(--neutral-50); }
+  .logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--brand) 0%, #2a6ca7 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
 
-  .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; margin-right: 5px; }
-  .badge-pending { background: #FEF3C7; color: #92400E; }
-  .badge-in-review { background: #DBEAFE; color: #1E40AF; }
-  .badge-approved { background: #D1FAE5; color: #065F46; }
-  .badge-closed { background: var(--neutral-100); color: var(--neutral-500); }
+  .topbar-search {
+    position: relative;
+    flex: 1;
+    max-width: 560px;
+  }
 
-  .priority { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; }
-  .priority-dot { width: 8px; height: 8px; border-radius: 50%; }
-  .priority-high { color: var(--danger); }
-  .priority-high .priority-dot { background: var(--danger); }
-  .priority-medium { color: var(--warning); }
-  .priority-medium .priority-dot { background: var(--warning); }
-  .priority-low { color: var(--success); }
-  .priority-low .priority-dot { background: var(--success); }
+  .topbar-search .ico {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--neutral-400);
+    pointer-events: none;
+  }
 
-  .empty-state, .loading-state, .error-state { text-align: center; padding: 56px 24px; display: none; }
-  .empty-state.visible, .loading-state.visible, .error-state.visible { display: block; }
-  .state-ico { font-size: 42px; margin-bottom: 14px; opacity: 0.5; }
-  .empty-state h3, .error-state h3 { font-size: 16px; font-weight: 600; color: var(--neutral-700); margin-bottom: 6px; }
-  .empty-state p, .error-state p, .loading-state p { font-size: 13px; color: var(--neutral-500); margin-bottom: 18px; }
-  .spinner { width: 32px; height: 32px; border: 3px solid var(--neutral-200); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .topbar-search input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px 0 38px;
+    border-radius: 999px;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--neutral-800);
+    outline: none;
+    transition: var(--transition);
+  }
 
-  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
-  .toast { background: var(--neutral-800); color: #fff; padding: 12px 16px; border-radius: var(--radius); font-size: 13px; min-width: 280px; box-shadow: var(--shadow-md); animation: slidein 0.25s ease; }
-  .toast.success { background: var(--success); }
-  .toast.error { background: var(--danger); }
-  @keyframes slidein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .topbar-search input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(31, 78, 121, 0.12);
+    background: #fff;
+  }
 
-  .seed-warning { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius); padding: 12px 14px; font-size: 12px; color: #92400E; margin-bottom: 16px; }
-  .seed-warning strong { color: #78350F; }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
 
-  @media (max-width: 1100px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 900px) { .sidebar { display: none; } .main-content { margin-left: 0; padding: 14px; } .kpi-row { grid-template-columns: 1fr 1fr; } }
+  .role-pill,
+  .user-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: max-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .role-pill {
+    font-size: 12px;
+    color: var(--neutral-600);
+  }
+
+  .role-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1f4e79 0%, #0f766e 100%);
+  }
+
+  .user-meta {
+    line-height: 1.2;
+  }
+
+  .user-meta strong {
+    display: block;
+    font-size: 13px;
+    color: var(--neutral-800);
+  }
+
+  .user-meta span {
+    font-size: 11px;
+    color: var(--neutral-500);
+  }
+
+  .main-shell {
+    padding: 28px 24px 36px;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .page-title .breadcrumb {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .page-title h1 {
+    font-size: 32px;
+    line-height: 1.05;
+    color: var(--neutral-900);
+    margin-bottom: 8px;
+  }
+
+  .page-title p {
+    max-width: 620px;
+    color: var(--neutral-600);
+    font-size: 14px;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: min(100%, 560px);
+    align-items: flex-end;
+  }
+
+  .view-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .view-btn,
+  .chip,
+  .btn {
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .view-btn {
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--neutral-600);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+  }
+
+  .view-btn.active,
+  .view-btn:hover {
+    color: var(--brand);
+    border-color: rgba(31, 78, 121, 0.25);
+    background: rgba(231, 241, 251, 0.9);
+  }
+
+  .action-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand) 0%, #2a6ca7 100%);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-secondary {
+    color: var(--neutral-700);
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+  }
+
+  .btn-secondary:hover {
+    background: #fff;
+  }
+
+  .btn-ghost {
+    color: var(--neutral-500);
+    background: transparent;
+  }
+
+  .btn-danger {
+    color: var(--danger);
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(185, 28, 28, 0.2);
+  }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .kpi-card {
+    padding: 18px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .kpi-card.highlight {
+    border-color: rgba(31, 78, 121, 0.34);
+    background: linear-gradient(180deg, rgba(231, 241, 251, 0.98) 0%, rgba(255, 255, 255, 0.96) 100%);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--neutral-500);
+  }
+
+  .kpi-value {
+    margin-top: 8px;
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--neutral-900);
+  }
+
+  .kpi-delta {
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+
+  .kpi-delta.up {
+    color: var(--success);
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .agenda-panel,
+  .detail-panel {
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .agenda-panel {
+    padding: 16px;
+  }
+
+  .panel-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .panel-heading h2 {
+    font-size: 18px;
+    color: var(--neutral-900);
+  }
+
+  .panel-heading p {
+    font-size: 13px;
+    color: var(--neutral-500);
+  }
+
+  .panel-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .filter-count {
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 0.86) 100%);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+  }
+
+  .chip {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--neutral-600);
+    background: #fff;
+    border: 1px solid rgba(203, 213, 225, 0.85);
+  }
+
+  .chip.active,
+  .chip:hover {
+    color: var(--brand);
+    background: rgba(231, 241, 251, 0.98);
+    border-color: rgba(31, 78, 121, 0.25);
+  }
+
+  .table-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(226, 232, 240, 0.96);
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  .table-scroll {
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background: rgba(248, 250, 252, 0.96);
+  }
+
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--neutral-500);
+    border-bottom: 1px solid var(--neutral-200);
+  }
+
+  td {
+    padding: 14px 16px;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(241, 245, 249, 1);
+    font-size: 13px;
+    color: var(--neutral-700);
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  tbody tr:hover td {
+    background: rgba(248, 250, 252, 0.92);
+  }
+
+  tbody tr.selected td {
+    background: rgba(231, 241, 251, 0.98);
+  }
+
+  .cell-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cell-title strong {
+    color: var(--neutral-900);
+    font-size: 13px;
+  }
+
+  .cell-sub {
+    color: var(--neutral-500);
+    font-size: 11px;
+  }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .badge,
+  .signal,
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .badge::before,
+  .signal::before,
+  .status-pill::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .status-confirmed {
+    color: var(--brand);
+    background: rgba(221, 236, 249, 0.95);
+  }
+
+  .status-in-house {
+    color: var(--success);
+    background: rgba(209, 250, 229, 0.95);
+  }
+
+  .status-pending-review {
+    color: var(--warning);
+    background: rgba(254, 243, 199, 0.98);
+  }
+
+  .status-checked-out {
+    color: var(--neutral-600);
+    background: rgba(226, 232, 240, 0.98);
+  }
+
+  .status-blocked {
+    color: var(--danger);
+    background: rgba(254, 226, 226, 0.98);
+  }
+
+  .payment-paid {
+    color: var(--success);
+    background: rgba(209, 250, 229, 0.95);
+  }
+
+  .payment-partial {
+    color: var(--warning);
+    background: rgba(254, 243, 199, 0.98);
+  }
+
+  .payment-pending {
+    color: var(--danger);
+    background: rgba(254, 226, 226, 0.98);
+  }
+
+  .bungalow-pill {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--neutral-700);
+    background: rgba(241, 245, 249, 0.98);
+  }
+
+  .bungalow-pill.unassigned {
+    color: var(--warning);
+    background: rgba(255, 247, 237, 0.98);
+  }
+
+  .inline-signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .signal {
+    color: var(--brand);
+    background: rgba(231, 241, 251, 0.96);
+  }
+
+  .signal.warning {
+    color: var(--warning);
+    background: rgba(254, 243, 199, 0.98);
+  }
+
+  .signal.danger {
+    color: var(--danger);
+    background: rgba(254, 226, 226, 0.98);
+  }
+
+  .state-panel,
+  .empty-state,
+  .error-state {
+    padding: 46px 24px;
+    text-align: center;
+  }
+
+  .state-panel h3,
+  .empty-state h3,
+  .error-state h3 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    color: var(--neutral-900);
+  }
+
+  .state-panel p,
+  .empty-state p,
+  .error-state p {
+    font-size: 13px;
+    color: var(--neutral-500);
+    margin-bottom: 16px;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    border: 3px solid rgba(203, 213, 225, 0.66);
+    border-top-color: var(--brand);
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .detail-panel {
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+    padding: 18px;
+    min-height: 640px;
+  }
+
+  .detail-empty {
+    display: grid;
+    place-items: center;
+    min-height: 560px;
+    border: 1px dashed rgba(203, 213, 225, 0.95);
+    border-radius: calc(var(--radius-lg) - 8px);
+    color: var(--neutral-500);
+    text-align: center;
+    padding: 28px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.88) 0%, rgba(255, 255, 255, 0.95) 100%);
+  }
+
+  .detail-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .detail-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .detail-title h2 {
+    font-size: 24px;
+    color: var(--neutral-900);
+    margin-bottom: 4px;
+  }
+
+  .detail-title p {
+    font-size: 13px;
+    color: var(--neutral-500);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .detail-stat {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+    border: 1px solid rgba(226, 232, 240, 0.98);
+  }
+
+  .detail-stat span {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--neutral-500);
+    margin-bottom: 6px;
+  }
+
+  .detail-stat strong {
+    display: block;
+    font-size: 15px;
+    color: var(--neutral-900);
+  }
+
+  .detail-section {
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(226, 232, 240, 0.98);
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  .detail-section h3 {
+    font-size: 14px;
+    color: var(--neutral-900);
+    margin-bottom: 10px;
+  }
+
+  .detail-copy {
+    font-size: 13px;
+    color: var(--neutral-600);
+    line-height: 1.5;
+  }
+
+  .detail-tags,
+  .request-list,
+  .detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .request-tag {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--neutral-700);
+    background: rgba(241, 245, 249, 0.98);
+  }
+
+  .action-note {
+    font-size: 12px;
+    color: var(--neutral-500);
+    margin-top: 8px;
+  }
+
+  .audit-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .audit-item {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(241, 245, 249, 1);
+  }
+
+  .audit-item:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .audit-time {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--brand);
+  }
+
+  .audit-item strong {
+    display: block;
+    font-size: 13px;
+    color: var(--neutral-900);
+    margin-bottom: 3px;
+  }
+
+  .audit-item p {
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+
+  .toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toast {
+    min-width: 250px;
+    max-width: 320px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 13px;
+    background: var(--neutral-800);
+    box-shadow: var(--shadow-md);
+    animation: slide-in 0.22s ease;
+  }
+
+  .toast.success {
+    background: var(--success);
+  }
+
+  .toast.error {
+    background: var(--danger);
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 1240px) {
+    .workspace {
+      grid-template-columns: 1fr;
+    }
+
+    .detail-panel {
+      position: static;
+      min-height: auto;
+    }
+
+    .detail-empty {
+      min-height: 240px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .topbar {
+      flex-wrap: wrap;
+      padding: 14px 16px;
+    }
+
+    .topbar-search {
+      order: 3;
+      flex-basis: 100%;
+      max-width: none;
+    }
+
+    .topbar-right,
+    .header-actions {
+      min-width: 100%;
+      align-items: flex-start;
+    }
+
+    .view-switcher,
+    .action-row {
+      justify-content: flex-start;
+    }
+
+    .main-shell {
+      padding: 22px 14px 28px;
+    }
+
+    .page-title h1 {
+      font-size: 27px;
+    }
+
+    .kpi-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .kpi-row {
+      grid-template-columns: 1fr;
+    }
+
+    .panel-heading {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .filter-bar {
+      align-items: stretch;
+    }
+
+    .filter-bar .chip,
+    .filter-bar .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .detail-head {
+      flex-direction: column;
+    }
+
+    .audit-item {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
 </style>
 </head>
 <body>
-
 <header class="topbar">
   <div class="topbar-brand">
-    <div class="logo">0</div>
+    <div class="logo">W</div>
     Wakaya ERP
   </div>
-  <a class="hub-link" href="../../../prototype/index.html" title="Volver al hub del producto">← Hub</a>
+  <a class="hub-link" href="../../../prototype/index.html" title="Volver al hub del producto" data-hub-link>← Hub</a>
   <div class="topbar-search">
     <span class="ico">🔍</span>
-    <input type="text" placeholder="Buscar por número o responsable..." oninput="handleSearch(this.value)">
+    <input id="searchInput" type="text" placeholder="Buscar reserva, huésped o bungalow" oninput="handleSearch(this.value)">
   </div>
   <div class="topbar-right">
+    <div class="role-pill">
+      <span class="role-dot"></span>
+      Recepción · Turno mañana
+    </div>
     <div class="user-menu">
-      <div class="user-avatar">MR</div>
+      <div class="user-avatar">EV</div>
       <div class="user-meta">
-        <strong>María Rodríguez</strong>
-        <span class="role-tag">Supervisora</span>
+        <strong>Equipo Front Desk</strong>
+        <span>Agenda del día</span>
       </div>
     </div>
   </div>
 </header>
 
-<div class="app-layout">
-  <aside class="sidebar">
-    <span class="sidebar-label">Operación</span>
-    <a class="sidebar-item active" data-view="agenda" onclick="setView('agenda')">📋 Agenda</a>
-    <a class="sidebar-item" data-view="mios" onclick="setView('mios')">👤 Mis reservations</a>
-    <a class="sidebar-item" data-view="archivo" onclick="setView('archivo')">📂 Archivo</a>
-    <span class="sidebar-label">Reportes</span>
-    <a class="sidebar-item" data-view="seguimiento" onclick="setView('seguimiento')">📊 Seguimiento</a>
-    <a class="sidebar-item" data-view="auditoria" onclick="setView('auditoria')">🛡️ Auditoría</a>
-  </aside>
-
-  <main class="main-content">
-
-    <div class="seed-warning">
-      <strong>SEED nivel 2.</strong> Este prototipo es un punto de partida genérico saas-operativo.
-      Antes de validar con stakeholders, ejecuta <code>/prototype --mode html5</code> y regenera siguiendo
-      el golden de tu dominio en <code>ejemplos/fase-2-ux-ui/prototype-html5-golden/</code>.
-      Auto-rating obligatorio: <code>node ci/scripts/check-html5-prototype-quality.mjs --spec specs/001-reservations --strict</code>.
+<main class="main-shell">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="breadcrumb">Recepción · <span id="breadcrumbCurrent">Agenda del día</span></div>
+      <h1 id="pageTitle">Agenda operativa de reservas</h1>
+      <p>Control diario de llegadas, salidas, asignaciones y alertas de bungalow.</p>
     </div>
 
-    <div class="page-header">
-      <div class="page-title">
-        <div class="breadcrumb">Inicio · <span id="breadcrumbCurrent">Agenda</span></div>
-        <h1 id="pageTitle">Agenda de reservas</h1>
-        <p>Listado operativo con filtros y detalle por registro.</p>
+    <div class="header-actions">
+      <div class="view-switcher">
+        <button class="view-btn active" data-view="agenda" onclick="setView('agenda')">Agenda</button>
+        <button class="view-btn" data-view="arrivals" onclick="setView('arrivals')">Llegadas</button>
+        <button class="view-btn" data-view="departures" onclick="setView('departures')">Salidas</button>
+        <button class="view-btn" data-view="inhouse" onclick="setView('inhouse')">En casa</button>
+        <button class="view-btn" data-view="audit" onclick="setView('audit')">Auditoría</button>
       </div>
-      <div>
-        <button class="btn btn-secondary" onclick="handleExport()">⬇ Exportar</button>
-        <button class="btn btn-primary" onclick="handleNew()">+ Nuevo</button>
+
+      <div class="action-row">
+        <button class="btn btn-danger" onclick="toggleDemoError()">Fallo demo</button>
+        <button class="btn btn-secondary" onclick="handleExport()">Exportar agenda</button>
+        <button class="btn btn-primary" onclick="handleNew()">Nueva prereserva</button>
       </div>
     </div>
+  </div>
 
-    <div class="kpi-row">
-      <div class="kpi-card highlight"><div class="kpi-label">Pendientes</div><div class="kpi-value">6</div><div class="kpi-delta up">↑ 2 vs ayer</div></div>
-      <div class="kpi-card"><div class="kpi-label">En revisión</div><div class="kpi-value">3</div><div class="kpi-delta">Sin cambio</div></div>
-      <div class="kpi-card"><div class="kpi-label">Aprobados hoy</div><div class="kpi-value">9</div><div class="kpi-delta up">↑ 3 vs ayer</div></div>
-      <div class="kpi-card"><div class="kpi-label">Tiempo promedio</div><div class="kpi-value">2.4h</div><div class="kpi-delta">Sin cambio</div></div>
-    </div>
+  <div class="kpi-row">
+    <div class="kpi-card highlight"><div class="kpi-label">Llegadas hoy</div><div class="kpi-value">7</div><div class="kpi-delta up">2 sin bungalow</div></div>
+    <div class="kpi-card"><div class="kpi-label">Salidas hoy</div><div class="kpi-value">4</div><div class="kpi-delta">1 late checkout</div></div>
+    <div class="kpi-card"><div class="kpi-label">En casa</div><div class="kpi-value">18</div><div class="kpi-delta up">Ocupación 82%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Alertas</div><div class="kpi-value">3</div><div class="kpi-delta">2 pagos pendientes</div></div>
+  </div>
 
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label>Estado</label>
-        <select class="filter-select" id="filterStatus" onchange="applyFilters()">
-          <option value="">Todos</option>
-          <option value="pending">Pendiente</option>
-          <option value="in-review">En revisión</option>
-          <option value="approved">Aprobado</option>
-          <option value="closed">Cerrado</option>
-        </select>
+  <div class="workspace">
+    <section class="agenda-panel" data-panel="agenda">
+      <div class="panel-heading">
+        <div>
+          <h2>Agenda central</h2>
+          <p>Lista priorizada para operar reservas del día sin cambiar de pantalla.</p>
+        </div>
+        <div class="panel-meta">
+          <span class="filter-count" id="filterCount">0 reservas visibles</span>
+          <button class="btn btn-ghost" onclick="clearFilters()">Limpiar búsqueda</button>
+        </div>
       </div>
-      <div class="filter-group">
-        <label>Prioridad</label>
-        <select class="filter-select" id="filterPriority" onchange="applyFilters()">
-          <option value="">Todas</option>
-          <option value="high">Alta</option>
-          <option value="medium">Media</option>
-          <option value="low">Baja</option>
-        </select>
-      </div>
-      <span class="filter-count" id="filterCount"></span>
-      <button class="btn btn-ghost" onclick="clearFilters()">Limpiar filtros</button>
-    </div>
 
-    <div class="table-card">
-      <div class="loading-state" id="loadingState">
-        <div class="spinner"></div>
-        <p>Cargando reservations…</p>
+      <div class="filter-bar">
+        <button class="chip active" data-quick-filter="unassigned" onclick="setQuickFilter('unassigned')">Sin bungalow</button>
+        <button class="chip" data-quick-filter="arrivals" onclick="setQuickFilter('arrivals')">Llegadas hoy</button>
+        <button class="chip" data-quick-filter="departures" onclick="setQuickFilter('departures')">Salidas hoy</button>
+        <button class="chip" data-quick-filter="payment" onclick="setQuickFilter('payment')">Pago pendiente</button>
+        <button class="chip" data-quick-filter="inhouse" onclick="setQuickFilter('inhouse')">Alojados</button>
       </div>
-      <div class="error-state" id="errorState">
-        <div class="state-ico">⚠️</div>
-        <h3>No se pudo cargar la agenda</h3>
-        <p>Hubo un problema de conexión. Verifica tu red e intenta de nuevo.</p>
-        <button class="btn btn-primary" onclick="retryLoad()">Reintentar carga</button>
-      </div>
-      <div class="empty-state" id="emptyState">
-        <div class="state-ico">🔍</div>
-        <h3>No hay resultados con esos filtros</h3>
-        <p>Prueba cambiando los criterios de búsqueda o limpia los filtros activos.</p>
-        <button class="btn btn-secondary" onclick="clearFilters()">Limpiar filtros</button>
-      </div>
-      <table id="caseTable">
-        <thead>
-          <tr>
-            <th>Número</th>
-            <th>Asunto</th>
-            <th>Prioridad</th>
-            <th>Estado</th>
-            <th>Última actualización</th>
-            <th>Responsable</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
 
-  </main>
-</div>
+      <div class="table-card">
+        <div class="state-panel loading-state" id="loadingState" hidden>
+          <div class="spinner"></div>
+          <h3>Cargando agenda</h3>
+          <p>Actualizando reservas, pagos y disponibilidad de bungalow.</p>
+        </div>
+
+        <div class="table-scroll">
+          <table id="reservationsTable">
+            <thead>
+              <tr>
+                <th>Reserva</th>
+                <th>Huésped</th>
+                <th>Estadía</th>
+                <th>Bungalow</th>
+                <th>Pago</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <h3>No hay reservas con este foco</h3>
+          <p>Prueba con otra búsqueda o vuelve a la agenda completa del turno.</p>
+          <button class="btn btn-secondary" onclick="clearFilters()">Restablecer agenda</button>
+        </div>
+
+        <div class="error-state" id="errorState" hidden>
+          <h3>No se pudo cargar la agenda</h3>
+          <p>El tablero quedó sin sincronía. Reintenta para recuperar lista, detalle y auditoría.</p>
+          <button class="btn btn-primary" onclick="retryLoad()">Reintentar</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="detail-panel" id="detailPanel" data-pane="detail">
+      <div class="detail-empty" id="detailEmpty">Selecciona una reserva para revisar asignación y auditoría.</div>
+      <div class="detail-body" id="detailBody" hidden></div>
+    </aside>
+  </div>
+</main>
 
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-const MOCK_RECORDS = [
-  { id:'REG-2024-0009', subject:'reservations — caso operativo 09', priority:'high',   status:'pending',   date:'2024-11-12', owner:'María Rodríguez' },
-  { id:'REG-2024-0008', subject:'reservations — caso operativo 08', priority:'high',   status:'in-review', date:'2024-11-11', owner:'Roberto Gómez' },
-  { id:'REG-2024-0007', subject:'reservations — caso operativo 07', priority:'medium', status:'pending',   date:'2024-11-11', owner:'María Rodríguez' },
-  { id:'REG-2024-0006', subject:'reservations — caso operativo 06', priority:'medium', status:'approved',  date:'2024-11-09', owner:'Javier Lima' },
-  { id:'REG-2024-0005', subject:'reservations — caso operativo 05', priority:'low',    status:'pending',   date:'2024-11-08', owner:'Sin asignar' },
-  { id:'REG-2024-0004', subject:'reservations — caso operativo 04', priority:'medium', status:'in-review', date:'2024-11-07', owner:'Roberto Gómez' },
-  { id:'REG-2024-0003', subject:'reservations — caso operativo 03', priority:'low',    status:'approved',  date:'2024-11-05', owner:'Javier Lima' },
-  { id:'REG-2024-0002', subject:'reservations — caso operativo 02', priority:'high',   status:'closed',    date:'2024-11-02', owner:'María Rodríguez' },
+const RESERVATIONS = [
+  {
+    id: "RES-240606-071",
+    guest: "Elena Vargas",
+    status: "confirmed",
+    payment: "pending",
+    channel: "Web",
+    bungalow: null,
+    arrival: "2026-06-06",
+    departure: "2026-06-09",
+    nights: 3,
+    occupancy: "2 adultos",
+    quick: ["arrivals", "unassigned", "payment"],
+    alerts: ["Llegada hoy", "Pago pendiente"],
+    requests: ["Cuna", "Late arrival"],
+    note: "Confirmó llegada después de las 21:00 y espera llamada previa al ingreso.",
+    audit: [
+      { time: "08:10", actor: "Web pública", action: "Prereserva creada", delta: "draft -> pending_review" },
+      { time: "08:42", actor: "Recepción", action: "Reserva confirmada", delta: "pending_review -> confirmed" }
+    ]
+  },
+  {
+    id: "RES-240606-068",
+    guest: "Thomas Reed",
+    status: "in_house",
+    payment: "paid",
+    channel: "Agencia",
+    bungalow: "B-12",
+    arrival: "2026-06-04",
+    departure: "2026-06-07",
+    nights: 3,
+    occupancy: "2 adultos, 1 niño",
+    quick: ["departures", "inhouse"],
+    alerts: ["VIP"],
+    requests: ["Amenity premium"],
+    note: "Solicitó apoyo con traslado al muelle en su check-out.",
+    audit: [
+      { time: "09:00", actor: "Recepción", action: "Check-in registrado", delta: "confirmed -> in_house" }
+    ]
+  },
+  {
+    id: "RES-240606-073",
+    guest: "Sofía Meneses",
+    status: "pending_review",
+    payment: "pending",
+    channel: "Call center",
+    bungalow: null,
+    arrival: "2026-06-06",
+    departure: "2026-06-08",
+    nights: 2,
+    occupancy: "1 adulto",
+    quick: ["arrivals", "unassigned", "payment"],
+    alerts: ["Validar documento"],
+    requests: ["Early check-in"],
+    note: "Falta cargar documento de identidad antes de confirmar la llave.",
+    audit: [
+      { time: "07:58", actor: "Call center", action: "Reserva capturada", delta: "draft -> pending_review" },
+      { time: "08:05", actor: "Recepción", action: "Checklist pendiente", delta: "pending_review -> pending_review" }
+    ]
+  },
+  {
+    id: "RES-240606-066",
+    guest: "Carlos Hsu",
+    status: "confirmed",
+    payment: "paid",
+    channel: "Directo",
+    bungalow: "B-05",
+    arrival: "2026-06-06",
+    departure: "2026-06-10",
+    nights: 4,
+    occupancy: "2 adultos",
+    quick: ["arrivals"],
+    alerts: ["Aniversario"],
+    requests: ["Decoración ligera"],
+    note: "Recepción debe coordinar welcome card con housekeeping.",
+    audit: [
+      { time: "06:45", actor: "Administración", action: "Pago liquidado", delta: "pending -> paid" },
+      { time: "07:20", actor: "Recepción", action: "Bungalow confirmado", delta: "unassigned -> B-05" }
+    ]
+  },
+  {
+    id: "RES-240606-064",
+    guest: "Lucía Navarro",
+    status: "in_house",
+    payment: "partial",
+    channel: "OTA",
+    bungalow: "B-03",
+    arrival: "2026-06-03",
+    departure: "2026-06-08",
+    nights: 5,
+    occupancy: "2 adultos",
+    quick: ["inhouse", "payment"],
+    alerts: ["Saldo en recepción"],
+    requests: ["Cambio de almohadas"],
+    note: "Mantener visible el saldo antes del late checkout solicitado.",
+    audit: [
+      { time: "10:10", actor: "Caja", action: "Pago parcial registrado", delta: "pending -> partial" },
+      { time: "10:30", actor: "Recepción", action: "Solicitud de late checkout", delta: "in_house -> in_house" }
+    ]
+  },
+  {
+    id: "RES-240606-062",
+    guest: "Mia Chen",
+    status: "checked_out",
+    payment: "paid",
+    channel: "Web",
+    bungalow: "B-08",
+    arrival: "2026-06-02",
+    departure: "2026-06-06",
+    nights: 4,
+    occupancy: "1 adulto",
+    quick: ["departures"],
+    alerts: ["Facturar empresa"],
+    requests: ["Factura PDF"],
+    note: "Salida ya liberada; falta enviar comprobante por correo.",
+    audit: [
+      { time: "11:12", actor: "Recepción", action: "Check-out cerrado", delta: "in_house -> checked_out" }
+    ]
+  },
+  {
+    id: "RES-240606-060",
+    guest: "Arturo Peña",
+    status: "in_house",
+    payment: "paid",
+    channel: "Agencia",
+    bungalow: "B-14",
+    arrival: "2026-06-01",
+    departure: "2026-06-06",
+    nights: 5,
+    occupancy: "2 adultos",
+    quick: ["departures", "inhouse"],
+    alerts: ["Traslado 16:00"],
+    requests: ["Bellboy para equipaje"],
+    note: "Coordinar salida con transporte externo y porter a las 15:45.",
+    audit: [
+      { time: "07:40", actor: "Recepción", action: "Salida programada", delta: "in_house -> in_house" }
+    ]
+  },
+  {
+    id: "RES-240606-059",
+    guest: "Noa Klein",
+    status: "confirmed",
+    payment: "pending",
+    channel: "Web",
+    bungalow: null,
+    arrival: "2026-06-07",
+    departure: "2026-06-09",
+    nights: 2,
+    occupancy: "2 adultos",
+    quick: ["unassigned", "payment"],
+    alerts: ["Prepago pendiente"],
+    requests: ["Vista al jardín"],
+    note: "Reserva de mañana con prioridad de asignación antes del cierre del turno.",
+    audit: [
+      { time: "09:45", actor: "Web pública", action: "Reserva pagará en recepción", delta: "pending_review -> confirmed" }
+    ]
+  },
+  {
+    id: "RES-240606-058",
+    guest: "Daniel Costa",
+    status: "in_house",
+    payment: "paid",
+    channel: "Corporativo",
+    bungalow: "B-09",
+    arrival: "2026-06-05",
+    departure: "2026-06-09",
+    nights: 4,
+    occupancy: "1 adulto",
+    quick: ["inhouse"],
+    alerts: ["Minibar revisar"],
+    requests: ["Wake-up call 05:30"],
+    note: "Mantener recordatorio de llamada para traslado temprano al aeropuerto.",
+    audit: [
+      { time: "06:20", actor: "Recepción", action: "Nota de wake-up call", delta: "in_house -> in_house" }
+    ]
+  },
+  {
+    id: "RES-240606-057",
+    guest: "Greta Hall",
+    status: "blocked",
+    payment: "pending",
+    channel: "OTA",
+    bungalow: null,
+    arrival: "2026-06-06",
+    departure: "2026-06-08",
+    nights: 2,
+    occupancy: "2 adultos",
+    quick: ["arrivals", "unassigned", "payment"],
+    alerts: ["Conflicto de inventario", "Revisar tarifa"],
+    requests: ["Twin beds"],
+    note: "La reserva quedó en espera por choque de inventario y revisión de tarifa.",
+    audit: [
+      { time: "08:16", actor: "Motor de reservas", action: "Choque detectado", delta: "confirmed -> blocked" },
+      { time: "08:19", actor: "Recepción", action: "Escalada a administración", delta: "blocked -> blocked" }
+    ]
+  },
+  {
+    id: "RES-240606-055",
+    guest: "Paula Ríos",
+    status: "in_house",
+    payment: "paid",
+    channel: "Directo",
+    bungalow: "B-02",
+    arrival: "2026-06-04",
+    departure: "2026-06-06",
+    nights: 2,
+    occupancy: "2 adultos",
+    quick: ["departures", "inhouse"],
+    alerts: ["Late checkout"],
+    requests: ["Toallas extra"],
+    note: "Aprobado late checkout hasta las 14:00, coordinar limpieza diferida.",
+    audit: [
+      { time: "09:10", actor: "Recepción", action: "Late checkout aprobado", delta: "in_house -> in_house" }
+    ]
+  },
+  {
+    id: "RES-240606-052",
+    guest: "Kenji Sato",
+    status: "in_house",
+    payment: "partial",
+    channel: "Agencia",
+    bungalow: "B-15",
+    arrival: "2026-06-03",
+    departure: "2026-06-07",
+    nights: 4,
+    occupancy: "2 adultos",
+    quick: ["departures", "inhouse", "payment"],
+    alerts: ["Saldo USD"],
+    requests: ["Traslado puerto"],
+    note: "Pendiente cerrar diferencia por tipo de cambio antes de su salida.",
+    audit: [
+      { time: "08:55", actor: "Caja", action: "Saldo parcial confirmado", delta: "pending -> partial" }
+    ]
+  }
 ];
 
-const STATUS_LABELS = {
-  'pending':   { label:'Pendiente',   cls:'badge-pending' },
-  'in-review': { label:'En revisión', cls:'badge-in-review' },
-  'approved':  { label:'Aprobado',    cls:'badge-approved' },
-  'closed':    { label:'Cerrado',     cls:'badge-closed' },
-};
-const PRIORITY_LABELS = {
-  'high':   { label:'Alta',  cls:'priority-high' },
-  'medium': { label:'Media', cls:'priority-medium' },
-  'low':    { label:'Baja',  cls:'priority-low' },
+const STATUS_META = {
+  confirmed: { label: "Confirmada", cls: "status-confirmed" },
+  in_house: { label: "En casa", cls: "status-in-house" },
+  pending_review: { label: "En revisión", cls: "status-pending-review" },
+  checked_out: { label: "Salida", cls: "status-checked-out" },
+  blocked: { label: "Bloqueada", cls: "status-blocked" }
 };
 
-let filtered = [...MOCK_RECORDS];
-let searchTerm = '';
+const PAYMENT_META = {
+  paid: { label: "Pagado", cls: "payment-paid" },
+  partial: { label: "Parcial", cls: "payment-partial" },
+  pending: { label: "Pendiente", cls: "payment-pending" }
+};
 
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('loadingState').classList.add('visible');
-  document.getElementById('caseTable').style.display = 'none';
-  setTimeout(() => {
-    document.getElementById('loadingState').classList.remove('visible');
-    document.getElementById('caseTable').style.display = '';
-    renderTable();
-    updateCount();
-  }, 700);
+const VIEW_META = {
+  agenda: { title: "Agenda operativa de reservas", breadcrumb: "Agenda del día" },
+  arrivals: { title: "Llegadas priorizadas", breadcrumb: "Llegadas de hoy", quickFilter: "arrivals" },
+  departures: { title: "Salidas por cerrar", breadcrumb: "Salidas de hoy", quickFilter: "departures" },
+  inhouse: { title: "Reservas en casa", breadcrumb: "Huéspedes alojados", quickFilter: "inhouse" },
+  audit: { title: "Auditoría visible en contexto", breadcrumb: "Auditoría reciente", quickFilter: "payment" }
+};
+
+let currentView = "agenda";
+let currentQuickFilter = "unassigned";
+let searchTerm = "";
+let selectedReservationId = null;
+let filteredReservations = [];
+let demoError = false;
+
+window.addEventListener("DOMContentLoaded", () => {
+  simulateLoading();
 });
 
-function setView(view) {
-  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.toggle('active', el.dataset.view === view));
-  const titles = { agenda:'Agenda', mios:'Mis registros', archivo:'Archivo', seguimiento:'Seguimiento', auditoria:'Auditoría' };
-  document.getElementById('pageTitle').textContent = titles[view] || 'Agenda';
-  document.getElementById('breadcrumbCurrent').textContent = titles[view] || 'Agenda';
-  if (view !== 'agenda') showToast('Vista "' + titles[view] + '" — disponible en próxima iteración');
-}
-
-function applyFilters() {
-  const status = document.getElementById('filterStatus').value;
-  const priority = document.getElementById('filterPriority').value;
-  filtered = MOCK_RECORDS.filter(r => {
-    if (status && r.status !== status) return false;
-    if (priority && r.priority !== priority) return false;
-    if (searchTerm) {
-      const s = searchTerm.toLowerCase();
-      if (!(r.id + r.subject + r.owner).toLowerCase().includes(s)) return false;
+function simulateLoading() {
+  document.getElementById("loadingState").hidden = false;
+  document.getElementById("reservationsTable").hidden = true;
+  document.getElementById("emptyState").hidden = true;
+  document.getElementById("errorState").hidden = true;
+  setTimeout(() => {
+    if (demoError) {
+      showErrorState();
+      return;
     }
-    return true;
+    document.getElementById("loadingState").hidden = true;
+    document.getElementById("reservationsTable").hidden = false;
+    applyFilters();
+  }, 680);
+}
+
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll(".view-btn").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === view);
   });
-  renderTable();
-  updateCount();
-}
 
-function handleSearch(v) { searchTerm = v.trim(); applyFilters(); }
-function clearFilters() {
-  document.getElementById('filterStatus').value = '';
-  document.getElementById('filterPriority').value = '';
-  searchTerm = '';
-  applyFilters();
-  showToast('Filtros limpiados');
-}
+  const meta = VIEW_META[view] || VIEW_META.agenda;
+  document.getElementById("pageTitle").textContent = meta.title;
+  document.getElementById("breadcrumbCurrent").textContent = meta.breadcrumb;
 
-function renderTable() {
-  const tbody = document.getElementById('tableBody');
-  const tbl = document.getElementById('caseTable');
-  const empty = document.getElementById('emptyState');
-  tbody.innerHTML = '';
-  if (filtered.length === 0) { tbl.style.display = 'none'; empty.classList.add('visible'); return; }
-  tbl.style.display = ''; empty.classList.remove('visible');
-  for (const r of filtered) {
-    const st = STATUS_LABELS[r.status]; const pr = PRIORITY_LABELS[r.priority];
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td><strong>' + r.id + '</strong></td>' +
-      '<td>' + r.subject + '</td>' +
-      '<td><span class="priority ' + pr.cls + '"><span class="priority-dot"></span>' + pr.label + '</span></td>' +
-      '<td><span class="badge ' + st.cls + '">' + st.label + '</span></td>' +
-      '<td>' + r.date + '</td>' +
-      '<td>' + r.owner + '</td>';
-    tr.addEventListener('click', () => showToast('Abriendo detalle de ' + r.id + ' — implementa el panel de detalle al regenerar'));
-    tbody.appendChild(tr);
+  if (meta.quickFilter) {
+    setQuickFilter(meta.quickFilter, false);
+  } else {
+    applyFilters();
   }
 }
 
+function setQuickFilter(filterKey, announce = true) {
+  currentQuickFilter = filterKey;
+  document.querySelectorAll("[data-quick-filter]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.quickFilter === filterKey);
+  });
+  applyFilters();
+  if (announce) {
+    const labels = {
+      unassigned: "Sin bungalow",
+      arrivals: "Llegadas hoy",
+      departures: "Salidas hoy",
+      payment: "Pago pendiente",
+      inhouse: "Alojados"
+    };
+    showToast("Filtro activo: " + labels[filterKey]);
+  }
+}
+
+function handleSearch(value) {
+  searchTerm = value.trim().toLowerCase();
+  applyFilters();
+}
+
+function clearFilters() {
+  searchTerm = "";
+  document.getElementById("searchInput").value = "";
+  currentView = "agenda";
+  document.querySelectorAll(".view-btn").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === "agenda");
+  });
+  document.getElementById("pageTitle").textContent = VIEW_META.agenda.title;
+  document.getElementById("breadcrumbCurrent").textContent = VIEW_META.agenda.breadcrumb;
+  setQuickFilter("unassigned", false);
+  showToast("Agenda restablecida", "success");
+}
+
+function applyFilters() {
+  filteredReservations = RESERVATIONS.filter((reservation) => {
+    if (currentQuickFilter && !reservation.quick.includes(currentQuickFilter)) {
+      return false;
+    }
+
+    if (!searchTerm) {
+      return true;
+    }
+
+    const haystack = [
+      reservation.id,
+      reservation.guest,
+      reservation.channel,
+      reservation.bungalow || "sin bungalow",
+      reservation.occupancy
+    ].join(" ").toLowerCase();
+
+    return haystack.includes(searchTerm);
+  });
+
+  if (selectedReservationId && !filteredReservations.some((reservation) => reservation.id === selectedReservationId)) {
+    selectedReservationId = null;
+  }
+
+  renderTable();
+  renderDetail();
+  updateCount();
+}
+
+function renderTable() {
+  const tbody = document.getElementById("tableBody");
+  const table = document.getElementById("reservationsTable");
+  const emptyState = document.getElementById("emptyState");
+  const errorState = document.getElementById("errorState");
+  const loadingState = document.getElementById("loadingState");
+
+  loadingState.hidden = true;
+  errorState.hidden = true;
+  tbody.innerHTML = "";
+
+  if (demoError) {
+    showErrorState();
+    return;
+  }
+
+  if (filteredReservations.length === 0) {
+    table.hidden = true;
+    emptyState.hidden = false;
+    return;
+  }
+
+  table.hidden = false;
+  emptyState.hidden = true;
+
+  filteredReservations.forEach((reservation) => {
+    const row = document.createElement("tr");
+    row.className = reservation.id === selectedReservationId ? "selected" : "";
+    row.innerHTML = `
+      <td>
+        <div class="cell-title">
+          <strong>${reservation.id}</strong>
+          <span class="cell-sub">${reservation.channel}</span>
+        </div>
+      </td>
+      <td>
+        <div class="stack">
+          <strong>${reservation.guest}</strong>
+          <span class="cell-sub">${reservation.occupancy}</span>
+          <div class="inline-signals">${renderSignals(reservation.alerts)}</div>
+        </div>
+      </td>
+      <td>
+        <div class="stack">
+          <span>${formatDate(reservation.arrival)} → ${formatDate(reservation.departure)}</span>
+          <span class="cell-sub">${reservation.nights} noches</span>
+        </div>
+      </td>
+      <td>${renderBungalow(reservation.bungalow)}</td>
+      <td><span class="badge ${PAYMENT_META[reservation.payment].cls}">${PAYMENT_META[reservation.payment].label}</span></td>
+      <td><span class="badge ${STATUS_META[reservation.status].cls}">${STATUS_META[reservation.status].label}</span></td>
+    `;
+    row.addEventListener("click", () => selectReservation(reservation.id));
+    tbody.appendChild(row);
+  });
+}
+
+function renderSignals(alerts) {
+  return alerts.slice(0, 2).map((alert) => {
+    const kind = /pendiente|conflicto/i.test(alert) ? "danger" : /late|validar/i.test(alert) ? "warning" : "";
+    return `<span class="signal ${kind}">${alert}</span>`;
+  }).join("");
+}
+
+function renderBungalow(code) {
+  if (!code) {
+    return '<span class="bungalow-pill unassigned">Sin asignar</span>';
+  }
+  return `<span class="bungalow-pill">${code}</span>`;
+}
+
+function selectReservation(id) {
+  selectedReservationId = id;
+  renderTable();
+  renderDetail();
+}
+
+function renderDetail() {
+  const detailEmpty = document.getElementById("detailEmpty");
+  const detailBody = document.getElementById("detailBody");
+
+  if (!selectedReservationId) {
+    detailEmpty.hidden = false;
+    detailBody.hidden = true;
+    detailBody.innerHTML = "";
+    return;
+  }
+
+  const reservation = RESERVATIONS.find((item) => item.id === selectedReservationId);
+  if (!reservation) {
+    detailEmpty.hidden = false;
+    detailBody.hidden = true;
+    detailBody.innerHTML = "";
+    return;
+  }
+
+  detailEmpty.hidden = true;
+  detailBody.hidden = false;
+  detailBody.innerHTML = `
+    <div class="detail-shell">
+      <div class="detail-head">
+        <div class="detail-title">
+          <h2>${reservation.guest}</h2>
+          <p>${reservation.id} · ${reservation.channel} · ${reservation.occupancy}</p>
+        </div>
+        <div class="stack">
+          <span class="status-pill ${STATUS_META[reservation.status].cls}">${STATUS_META[reservation.status].label}</span>
+          <span class="status-pill ${PAYMENT_META[reservation.payment].cls}">${PAYMENT_META[reservation.payment].label}</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-stat">
+          <span>Llegada</span>
+          <strong>${formatDate(reservation.arrival)}</strong>
+        </div>
+        <div class="detail-stat">
+          <span>Salida</span>
+          <strong>${formatDate(reservation.departure)}</strong>
+        </div>
+        <div class="detail-stat">
+          <span>Bungalow</span>
+          <strong>${reservation.bungalow || "Sin asignar"}</strong>
+        </div>
+        <div class="detail-stat">
+          <span>Estadía</span>
+          <strong>${reservation.nights} noches</strong>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Contexto operativo</h3>
+        <p class="detail-copy">${reservation.note}</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Alertas visibles</h3>
+        <div class="detail-tags">${renderSignals(reservation.alerts)}</div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Solicitudes del huésped</h3>
+        <div class="request-list">${reservation.requests.map((request) => `<span class="request-tag">${request}</span>`).join("")}</div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Acciones listas para Task 4</h3>
+        <div class="detail-actions">
+          <button class="btn btn-primary" onclick="stubAction('${reservation.id}', 'assignment')">Preparar asignación</button>
+          <button class="btn btn-secondary" onclick="stubAction('${reservation.id}', 'checkin')">Registrar movimiento</button>
+          <button class="btn btn-secondary" onclick="stubAction('${reservation.id}', 'payment')">Revisar pago</button>
+        </div>
+        <p class="action-note">Este slice deja la consola, el contexto y la auditoría en sitio. La lógica transaccional se implementa después.</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Auditoría reciente</h3>
+        <ul class="audit-list">
+          ${reservation.audit.map((entry) => `
+            <li class="audit-item">
+              <div class="audit-time">${entry.time}</div>
+              <div>
+                <strong>${entry.actor} · ${entry.action}</strong>
+                <p>${entry.delta}</p>
+              </div>
+            </li>
+          `).join("")}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
 function updateCount() {
-  document.getElementById('filterCount').textContent = filtered.length + ' de ' + MOCK_RECORDS.length + ' registros';
+  document.getElementById("filterCount").textContent = filteredReservations.length + " de " + RESERVATIONS.length + " reservas visibles";
 }
 
-function handleExport() { showToast('Exportación simulada — usa /prototype para regenerar', 'success'); }
-function handleNew()    { showToast('Formulario "Nuevo" pendiente — usa /prototype para regenerar'); }
+function formatDate(value) {
+  return new Intl.DateTimeFormat("es-PE", {
+    day: "2-digit",
+    month: "short"
+  }).format(new Date(value + "T12:00:00"));
+}
+
+function toggleDemoError() {
+  demoError = true;
+  showErrorState();
+  showToast("Modo error activado para la agenda", "error");
+}
+
+function showErrorState() {
+  document.getElementById("loadingState").hidden = true;
+  document.getElementById("reservationsTable").hidden = true;
+  document.getElementById("emptyState").hidden = true;
+  document.getElementById("errorState").hidden = false;
+}
+
 function retryLoad() {
-  document.getElementById('errorState').classList.remove('visible');
-  document.getElementById('loadingState').classList.add('visible');
-  setTimeout(() => {
-    document.getElementById('loadingState').classList.remove('visible');
-    document.getElementById('caseTable').style.display = '';
-    renderTable();
-  }, 600);
+  demoError = false;
+  simulateLoading();
+  showToast("Agenda recuperada", "success");
 }
 
-function showToast(msg, kind) {
-  const t = document.createElement('div');
-  t.className = 'toast' + (kind ? ' ' + kind : '');
-  t.textContent = msg;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+function handleExport() {
+  showToast("Exportación lista para el pase de cierre", "success");
 }
 
-// Demo: doble-click en el avatar dispara error simulado para mostrar estado error
-document.querySelector('.user-avatar').addEventListener('dblclick', () => {
-  document.getElementById('caseTable').style.display = 'none';
-  document.getElementById('errorState').classList.add('visible');
-  showToast('Error simulado de conexión', 'error');
-});
+function handleNew() {
+  showToast("La captura de prereserva entra en el siguiente slice");
+}
+
+function stubAction(reservationId, action) {
+  const labels = {
+    assignment: "Preparando contexto de asignación para " + reservationId,
+    checkin: "Detalle listo para registrar movimiento en " + reservationId,
+    payment: "Caja puede revisar saldo de " + reservationId
+  };
+  showToast(labels[action] || "Acción preparada", action === "assignment" ? "success" : "");
+}
+
+function showToast(message, kind = "") {
+  const toast = document.createElement("div");
+  toast.className = "toast" + (kind ? " " + kind : "");
+  toast.textContent = message;
+  document.getElementById("toastContainer").appendChild(toast);
+  setTimeout(() => toast.remove(), 2800);
+}
 </script>
 </body>
 </html>
