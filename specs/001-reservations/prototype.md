@@ -13,13 +13,19 @@ No aplica en esta iteración.
 
 ## Pantallas cubiertas
 - Agenda operativa de reservas del día.
+
+## Regiones cubiertas dentro de la pantalla principal
 - Filtros rápidos y filtros secundarios.
 - Detalle lateral persistente.
-- Confirmación corta de asignación o cambio operativo.
 - Auditoría embebida en el detalle.
+
+## Estados cubiertos
 - Empty.
 - Error.
-- Acción bloqueada por conflicto.
+- Bloqueado por conflicto o regla.
+
+## Feedback cubierto
+- Confirmación corta de asignación o cambio operativo.
 
 ## Estado
-Listo para revisión visual humana una vez actualizado el HTML y rerun del quality checker.
+Pendiente de validación visual humana. `prototype-validation.md` mantiene `gate-spdd-approved` en estado `PENDIENTE` para este slice.
