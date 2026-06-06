@@ -369,6 +369,39 @@
   background: rgba(249, 247, 241, 0.9);
 }
 
+.emptyStateInline {
+  display: grid;
+  gap: 4px;
+  padding: 16px 12px;
+  color: #5c6a63;
+}
+
+.feedbackBanner {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  line-height: 1.5;
+}
+
+.feedbackSuccess {
+  border-color: rgba(33, 112, 73, 0.16);
+  background: rgba(220, 239, 226, 0.9);
+  color: #1f6440;
+}
+
+.feedbackBlocked {
+  border-color: rgba(141, 48, 48, 0.16);
+  background: rgba(246, 223, 223, 0.92);
+  color: #8d3030;
+}
+
+.feedbackError {
+  border-color: rgba(133, 95, 10, 0.16);
+  background: rgba(255, 243, 211, 0.92);
+  color: #8a5e10;
+}
+
 .auditMeta {
   display: flex;
   flex-wrap: wrap;

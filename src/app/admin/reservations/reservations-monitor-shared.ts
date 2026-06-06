@@ -9,6 +9,11 @@ export type MonitorFilterState = {
   endDate: string;
 };
 
+export type MonitorPermissions = {
+  canAssign: boolean;
+  canApprove: boolean;
+};
+
 export const STATUS_LABELS: Record<ReservationStatus, string> = {
   pending_review: "Pending review",
   ota_imported_confirmed: "OTA imported confirmed",

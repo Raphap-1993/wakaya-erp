@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { ReservationListItem } from "@/lib/reservations/store";
 import { buildReservationsMonitorHref, type ReservationsMonitorQuery } from "./reservations-query";
@@ -10,18 +9,20 @@ import { MonitorFilters } from "./reservations-monitor-filters";
 import { MonitorSelectionSummary } from "./reservations-monitor-selection-summary";
 import { MonitorStats } from "./reservations-monitor-stats";
 import { MonitorTable } from "./reservations-monitor-table";
-import type { MonitorFilterState } from "./reservations-monitor-shared";
+import type { MonitorFilterState, MonitorPermissions } from "./reservations-monitor-shared";
+import type { Bungalow } from "@/lib/reservations/types";
 import styles from "./reservations.module.css";
 
 type Props = {
   items: ReservationListItem[];
   selectedId: string | null;
   query: ReservationsMonitorQuery;
+  bungalows: Bungalow[];
+  permissions: MonitorPermissions;
 };
 
-export default function ReservationsMonitor({ items, selectedId, query }: Props) {
+export default function ReservationsMonitor({ items, selectedId, query, bungalows, permissions }: Props) {
   const router = useRouter();
-  const defaultSelectionSync = useRef(false);
   const [activeId, setActiveId] = useState(selectedId ?? items[0]?.id ?? null);
   const [filters, setFilters] = useState<MonitorFilterState>({
     status: query.status ?? "",
@@ -47,17 +48,6 @@ export default function ReservationsMonitor({ items, selectedId, query }: Props)
     });
   }, [query.channel, query.date, query.endDate, query.responsibleId, query.startDate, query.status]);
 
-  useEffect(() => {
-    if (!activeId) return;
-    if (query.selected === activeId) {
-      defaultSelectionSync.current = false;
-      return;
-    }
-    if (defaultSelectionSync.current) return;
-    router.replace(buildReservationsMonitorHref({ ...query, selected: activeId }) as never);
-    defaultSelectionSync.current = true;
-  }, [activeId, query, router]);
-
   const activeItem = useMemo(
     () => items.find((item) => item.id === activeId) ?? null,
     [activeId, items],
@@ -73,7 +63,6 @@ export default function ReservationsMonitor({ items, selectedId, query }: Props)
   );
 
   const selectReservation = (id: string) => {
-    defaultSelectionSync.current = true;
     setActiveId(id);
     router.replace(buildReservationsMonitorHref({ ...query, selected: id }) as never);
   };
@@ -123,7 +112,7 @@ export default function ReservationsMonitor({ items, selectedId, query }: Props)
           </div>
 
           <aside className={styles.actions}>
-            <MonitorDetailPanel activeItem={activeItem} />
+            <MonitorDetailPanel activeItem={activeItem} bungalows={bungalows} permissions={permissions} />
           </aside>
         </section>
       </div>

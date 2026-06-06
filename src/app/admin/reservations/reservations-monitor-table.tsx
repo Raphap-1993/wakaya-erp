@@ -16,8 +16,8 @@ export function MonitorTable({
   activeId: string | null;
   items: ReservationListItem[];
   onSelect: (id: string) => void;
-}) {
-  return (
+  }) {
+    return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
         <thead>
@@ -32,7 +32,17 @@ export function MonitorTable({
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => {
+          {items.length === 0 ? (
+            <tr>
+              <td colSpan={7}>
+                <div className={styles.emptyStateInline}>
+                  <strong>No hay reservas con estos filtros.</strong>
+                  <span>Prueba limpiar la búsqueda o ampliar el rango de fechas.</span>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            items.map((item) => {
             const isActive = item.id === activeId;
             return (
               <tr
@@ -76,7 +86,8 @@ export function MonitorTable({
                 </td>
               </tr>
             );
-          })}
+            })
+          )}
         </tbody>
       </table>
     </div>
