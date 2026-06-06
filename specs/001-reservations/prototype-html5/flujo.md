@@ -16,20 +16,20 @@ Agenda operativa del día
 
 | Vista | Cómo se llega | Estados cubiertos |
 |---|---|---|
-| Agenda operativa | URL inicial | success, loading, empty, error |
-| Detalle lateral | click en una reserva | success, blocked |
-| Confirmación de asignación | CTA principal del detalle | success, blocked |
-| Auditoría embebida | bloque inferior del detalle | success |
+| Agenda operativa | URL inicial | exito, carga, vacio, error |
+| Detalle lateral | click en una reserva | exito, bloqueo |
+| Confirmación de asignación | CTA principal del detalle | exito, bloqueo |
+| Auditoría embebida | bloque inferior del detalle | exito |
 
 ## Estados UI
 
 | Estado | Cómo se dispara |
 |---|---|
-| Loading | carga inicial de agenda |
-| Empty | filtros sin coincidencias |
+| Carga | carga inicial de agenda |
+| Vacio | filtros sin coincidencias |
 | Error | acción de demo para fallo de agenda |
-| Success | asignación o cambio operativo confirmado |
-| Blocked | conflicto de bungalow o regla operativa |
+| Exito | asignación o reasignación confirmada |
+| Bloqueo | conflicto de bungalow o regla operativa |
 
 ## Datos mock
 

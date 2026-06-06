@@ -7,7 +7,7 @@
 - Tarea principal navegable de inicio a fin: filtrar reservas críticas, abrir una reserva con llegada próxima, asignar o reasignar bungalow y validar la auditoría reciente en el mismo panel.
 - Patrón visual elegido: split view operativo con topbar, franja de KPIs del día, agenda central y detalle lateral persistente.
 - Por qué NO se usa una shell genérica sidenav+tabla: la asignación de bungalow necesita comparar lista y detalle sin cambiar de pantalla ni esconder la trazabilidad detrás de navegación secundaria.
-- Interacciones del prototipo: filtrar reservas del día, seleccionar reserva, asignar bungalow, reasignar bungalow, registrar check-in, registrar check-out, revisar auditoría reciente.
+- Interacciones del prototipo: filtrar reservas del día, seleccionar reserva, asignar bungalow, reasignar bungalow, revisar auditoría reciente.
 - Limitaciones conocidas: no hay integración real con OIDC, motor de ocupación productivo ni persistencia real.
 
 ## Golden de referencia
