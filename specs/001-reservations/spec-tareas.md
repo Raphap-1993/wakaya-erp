@@ -101,7 +101,7 @@ Evidencia:
 
 ## T-003 - Maquina de estados y auditoria de reservas
 
-Estado: pendiente
+Estado: completada
 
 Objetivo:
 Definir y aplicar las transiciones permitidas de una reserva y dejar auditoria completa de cada cambio.
@@ -135,6 +135,11 @@ Evidencia esperada:
 Trazabilidad:
 - RF-04, RF-05
 - Criterio de aceptacion: toda transicion valida deja evidencia.
+
+Evidencia:
+- `src/lib/reservations/state-machine.ts`
+- `src/lib/reservations/audit.ts`
+- `src/lib/reservations/store.ts`
 
 ## T-004 - API de monitor interno de reservas
 
