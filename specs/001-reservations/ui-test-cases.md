@@ -7,9 +7,11 @@
 | Carga inicial de agenda | carga breve y luego agenda visible con KPIs, encabezado de `Llegadas` y detalle lateral precargado con la primera reserva del foco activo |
 | Contexto de rol visible al abrir la agenda | la superficie identifica a Recepción como actor operativo del slice |
 | Vista `Pendientes` | cambia el foco superior a cobros y alertas sin fingir una vista separada de auditoría |
+| Volver a `Agenda` desde otra vista | el encabezado vuelve a `Agenda del día`, no queda chip activo y la tabla muestra la agenda sin quick filter residual |
 | Filtro `Sin bungalow` | lista reducida a reservas sin asignación y el detalle cambia a la primera coincidencia visible |
 | Selección de reserva | detalle lateral refleja huésped, resumen operativo, grid, acciones, estado inline y línea de auditoría |
 | Asignación válida desde `RES-240606-071` | el modal confirma B-07, la fila muestra bungalow asignado, aparece toast de éxito y la auditoría prepende `Bungalow asignado` |
+| Buscar después de asignar `RES-240606-071` | la primera actualización conserva el éxito en contexto, pero una búsqueda posterior que saque esa reserva de la lista cambia el detalle al nuevo foco o al placeholder sin dejar tabla y panel desincronizados |
 | Conflicto de bungalow desde `RES-240606-073` | el modal cierra con mensaje inline de bloqueo, la fila conserva `Sin asignar` y la auditoría no muta |
 | Reserva bloqueada `RES-240606-057` | la acción primaria queda deshabilitada y cualquier intento programático conserva el estado bloqueado sin mutar bungalow ni auditoría |
 | Contingencia de agenda | la tabla entra en error, el detalle deja de mostrar datos previos y ambos paneles quedan listos para `Reintentar` |

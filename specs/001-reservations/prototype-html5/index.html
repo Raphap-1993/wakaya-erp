@@ -1489,6 +1489,7 @@ let filteredReservations = [];
 let pendingAssignment = null;
 let detailFeedback = null;
 let syncIssue = false;
+let preserveSelectionOnce = false;
 
 window.addEventListener("DOMContentLoaded", () => {
   syncHeaderWithState();
@@ -1523,6 +1524,9 @@ function setView(view) {
   if (meta.quickFilter) {
     setQuickFilter(meta.quickFilter, false, true);
   } else {
+    detailFeedback = null;
+    currentQuickFilter = null;
+    syncQuickFilterUI();
     applyFilters();
   }
 }
@@ -1536,9 +1540,7 @@ function setQuickFilter(filterKey, announce = true, fromView = false) {
     currentView = FILTER_TO_VIEW[filterKey] || "agenda";
   }
   syncHeaderWithState();
-  document.querySelectorAll("[data-quick-filter]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.quickFilter === filterKey);
-  });
+  syncQuickFilterUI();
   applyFilters();
   if (announce) {
     const labels = {
@@ -1550,6 +1552,12 @@ function setQuickFilter(filterKey, announce = true, fromView = false) {
     };
     showToast("Filtro activo: " + labels[filterKey]);
   }
+}
+
+function syncQuickFilterUI() {
+  document.querySelectorAll("[data-quick-filter]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.quickFilter === currentQuickFilter);
+  });
 }
 
 function handleSearch(value) {
@@ -1567,6 +1575,7 @@ function clearFilters() {
 }
 
 function applyFilters() {
+  const preserveContext = shouldPreserveDetailContext();
   filteredReservations = RESERVATIONS.filter((reservation) => {
     if (currentQuickFilter && !reservation.quick.includes(currentQuickFilter)) {
       return false;
@@ -1587,13 +1596,14 @@ function applyFilters() {
     return haystack.includes(searchTerm);
   });
 
-  if (!filteredReservations.some((reservation) => reservation.id === selectedReservationId) && !shouldPreserveDetailContext()) {
+  if (!filteredReservations.some((reservation) => reservation.id === selectedReservationId) && !preserveContext) {
     selectedReservationId = filteredReservations[0] ? filteredReservations[0].id : null;
   }
 
   renderTable();
   renderDetail();
   updateCount();
+  preserveSelectionOnce = false;
 }
 
 function renderTable() {
@@ -1812,6 +1822,7 @@ function syncHeaderWithState() {
 
 function shouldPreserveDetailContext() {
   return Boolean(
+    preserveSelectionOnce &&
     detailFeedback &&
     detailFeedback.kind === "success" &&
     detailFeedback.reservationId === selectedReservationId
@@ -2026,6 +2037,7 @@ function confirmAssignment() {
     message: assignment.bungalow + " quedó visible en agenda y la auditoría ya refleja la confirmación del turno."
   };
 
+  preserveSelectionOnce = true;
   applyFilters();
   showToast("Bungalow " + assignment.bungalow + " asignado a " + reservation.guest, "success");
 }
