@@ -16,3 +16,6 @@ Validar reservations, flujos de negocio, seguridad y observabilidad de Wakaya ER
 - Resultados de tests.
 - Capturas o logs de smoke.
 - Defectos y resolucion.
+
+## Evidencia consolidada
+- [Reservations Monitor UI](reservations-monitor-ui-evidence.md)

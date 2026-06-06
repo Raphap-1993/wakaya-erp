@@ -143,7 +143,7 @@ Evidencia:
 
 ## T-004 - API de monitor interno de reservas
 
-Estado: pendiente
+Estado: completada
 
 Objetivo:
 Exponer el listado, detalle, filtros y acciones operativas del mini monitor interno.
@@ -180,9 +180,21 @@ Trazabilidad:
 - RF-01, RF-02, RF-05
 - Criterio de aceptacion: el monitor muestra la verdad operativa de la reserva.
 
+Evidencia:
+- `src/app/api/reservations/route.ts`
+- `src/app/api/reservations/[id]/route.ts`
+- `src/app/api/reservations/[id]/assign/route.ts`
+- `src/app/api/reservations/[id]/status/route.ts`
+- `src/app/api/reservations/[id]/audit/route.ts`
+- `src/app/api/reservations/route.test.ts`
+- `src/app/api/reservations/[id]/route.test.ts`
+- `src/app/api/reservations/[id]/assign/route.test.ts`
+- `src/app/api/reservations/[id]/status/route.test.ts`
+- `src/app/api/reservations/[id]/audit/route.test.ts`
+
 ## T-005 - UI del mini monitor de reservas
 
-Estado: pendiente
+Estado: completada
 
 Objetivo:
 Implementar la lista, detalle y acciones visibles del monitor interno en la app Next.js.
@@ -215,13 +227,23 @@ Evidencia esperada:
 - estados UX visibles,
 - coherencia con el prototipo.
 
+Evidencia:
+- `src/app/admin/reservations/page.tsx`
+- `src/app/admin/reservations/page.test.tsx`
+- `src/app/admin/reservations/reservations-monitor.tsx`
+- `src/app/admin/reservations/reservations-monitor-detail-panel.tsx`
+- `src/app/admin/reservations/reservations-monitor-table.tsx`
+- `e2e/admin-reservations.spec.ts`
+- `src/app/admin/reservations/[id]/page.tsx`
+- `src/app/admin/reservations/[id]/page.test.tsx`
+
 Trazabilidad:
 - RF-01, RF-02, RF-03, RF-04, RF-05
 - Criterio de aceptacion: recepcion puede operar reservas sin ambiguedad.
 
 ## T-006 - Validacion y evidencia de QA
 
-Estado: pendiente
+Estado: completada
 
 Objetivo:
 Consolidar evidencia de pruebas y dejar listo el gate `gate-4-6`.
@@ -252,18 +274,23 @@ Evidencia esperada:
 - riesgos residuales documentados,
 - estado del gate actualizado.
 
+Evidencia:
+- `qa/fase-6-qa/plan-pruebas.md`
+- `qa/fase-6-qa/reservations-monitor-ui-evidence.md`
+- `specs/001-reservations/prototype-validation.md`
+
 Trazabilidad:
 - RF-01 a RF-05
 - Criterio de aceptacion: no cerrar el feature sin evidencia.
 
 ## Checklist de cierre
-- [ ] Todas las tareas tienen estado.
-- [ ] Tareas criticas tienen evidencia TDD.
-- [ ] Cambios de datos, contrato o seguridad tienen review antes de QA.
-- [ ] La UI coincide con el prototipo validado.
-- [ ] La disponibilidad no permite solape.
-- [ ] La auditoria registra toda transicion.
-- [ ] Pruebas ejecutadas y registradas.
-- [ ] Preguntas abiertas o bloqueantes documentadas.
+- [x] Todas las tareas tienen estado.
+- [x] Tareas criticas tienen evidencia TDD.
+- [x] Cambios de datos, contrato o seguridad tienen review antes de QA.
+- [x] La UI coincide con el prototipo validado.
+- [x] La disponibilidad no permite solape.
+- [x] La auditoria registra toda transicion.
+- [x] Pruebas ejecutadas y registradas.
+- [x] Preguntas abiertas o bloqueantes documentadas.
 
 Referencia: `docs/transversal/90.33-flujo-delivery-ia-proveedores.md`
