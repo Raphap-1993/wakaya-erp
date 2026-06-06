@@ -4,9 +4,10 @@
 
 | Caso | Estado esperado |
 |---|---|
-| Carga inicial | loading y luego datos mock |
-| Filtros sin resultados | empty state y limpiar filtros |
-| Error simulado | mensaje seguro y reintento |
-| Accion permitida | confirmacion, progreso y success |
-| Accion sin permiso | permission denied |
-| Validacion incorrecta | mensaje junto al campo |
+| Carga inicial de agenda | loading breve y luego agenda visible con KPIs del día |
+| Filtro `Sin bungalow` | lista reducida a reservas sin asignación |
+| Selección de reserva | detalle lateral refleja huésped, fechas, pago y bungalow |
+| Asignación válida | confirmación corta, toast success y auditoría actualizada |
+| Conflicto de bungalow | estado blocked con mensaje inline y sin mutar la fila |
+| Error de agenda | mensaje seguro y botón de reintento |
+| Filtros sin coincidencias | empty state y acción para limpiar filtros |
