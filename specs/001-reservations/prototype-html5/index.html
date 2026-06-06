@@ -1084,15 +1084,15 @@
 <main class="main-shell">
   <div class="page-header">
     <div class="page-title">
-      <div class="breadcrumb">Recepción · <span id="breadcrumbCurrent">Agenda del día</span></div>
-      <h1 id="pageTitle">Agenda operativa de reservas</h1>
+      <div class="breadcrumb">Recepción · <span id="breadcrumbCurrent">Llegadas de hoy</span></div>
+      <h1 id="pageTitle">Llegadas priorizadas</h1>
       <p>Control diario de llegadas, salidas, asignaciones y alertas de bungalow.</p>
     </div>
 
     <div class="header-actions">
       <div class="view-switcher">
-        <button class="view-btn active" data-view="agenda" onclick="setView('agenda')">Agenda</button>
-        <button class="view-btn" data-view="arrivals" onclick="setView('arrivals')">Llegadas</button>
+        <button class="view-btn" data-view="agenda" onclick="setView('agenda')">Agenda</button>
+        <button class="view-btn active" data-view="arrivals" onclick="setView('arrivals')">Llegadas</button>
         <button class="view-btn" data-view="departures" onclick="setView('departures')">Salidas</button>
         <button class="view-btn" data-view="inhouse" onclick="setView('inhouse')">En casa</button>
         <button class="view-btn" data-view="followup" onclick="setView('followup')">Pendientes</button>
@@ -1450,6 +1450,14 @@ const VIEW_META = {
   followup: { title: "Pendientes operativos", breadcrumb: "Cobros y alertas", quickFilter: "payment" }
 };
 
+const FILTER_TO_VIEW = {
+  unassigned: "agenda",
+  arrivals: "arrivals",
+  departures: "departures",
+  payment: "followup",
+  inhouse: "inhouse"
+};
+
 const ASSIGNMENT_PLANS = {
   "RES-240606-071": {
     bungalow: "B-07",
@@ -1473,7 +1481,7 @@ const ASSIGNMENT_PLANS = {
   }
 };
 
-let currentView = "agenda";
+let currentView = "arrivals";
 let currentQuickFilter = "arrivals";
 let searchTerm = "";
 let selectedReservationId = null;
@@ -1483,6 +1491,7 @@ let detailFeedback = null;
 let syncIssue = false;
 
 window.addEventListener("DOMContentLoaded", () => {
+  syncHeaderWithState();
   simulateLoading();
 });
 
@@ -1508,23 +1517,25 @@ function simulateLoading() {
 
 function setView(view) {
   currentView = view;
-  document.querySelectorAll(".view-btn").forEach((button) => {
-    button.classList.toggle("active", button.dataset.view === view);
-  });
+  syncHeaderWithState();
 
   const meta = VIEW_META[view] || VIEW_META.agenda;
-  document.getElementById("pageTitle").textContent = meta.title;
-  document.getElementById("breadcrumbCurrent").textContent = meta.breadcrumb;
-
   if (meta.quickFilter) {
-    setQuickFilter(meta.quickFilter, false);
+    setQuickFilter(meta.quickFilter, false, true);
   } else {
     applyFilters();
   }
 }
 
-function setQuickFilter(filterKey, announce = true) {
+function setQuickFilter(filterKey, announce = true, fromView = false) {
+  if (filterKey !== currentQuickFilter) {
+    detailFeedback = null;
+  }
   currentQuickFilter = filterKey;
+  if (!fromView) {
+    currentView = FILTER_TO_VIEW[filterKey] || "agenda";
+  }
+  syncHeaderWithState();
   document.querySelectorAll("[data-quick-filter]").forEach((button) => {
     button.classList.toggle("active", button.dataset.quickFilter === filterKey);
   });
@@ -1549,12 +1560,8 @@ function handleSearch(value) {
 function clearFilters() {
   searchTerm = "";
   document.getElementById("searchInput").value = "";
-  currentView = "agenda";
-  document.querySelectorAll(".view-btn").forEach((button) => {
-    button.classList.toggle("active", button.dataset.view === "agenda");
-  });
-  document.getElementById("pageTitle").textContent = VIEW_META.agenda.title;
-  document.getElementById("breadcrumbCurrent").textContent = VIEW_META.agenda.breadcrumb;
+  currentView = "arrivals";
+  detailFeedback = null;
   setQuickFilter("arrivals", false);
   showToast("Agenda restablecida", "success");
 }
@@ -1580,7 +1587,7 @@ function applyFilters() {
     return haystack.includes(searchTerm);
   });
 
-  if (!filteredReservations.some((reservation) => reservation.id === selectedReservationId)) {
+  if (!filteredReservations.some((reservation) => reservation.id === selectedReservationId) && !shouldPreserveDetailContext()) {
     selectedReservationId = filteredReservations[0] ? filteredReservations[0].id : null;
   }
 
@@ -1751,7 +1758,7 @@ function renderDetail() {
       <div class="detail-section">
         <h3>Acciones del turno</h3>
         <div class="detail-actions">
-          <button class="btn btn-primary" onclick="openAssignModal()">${reservation.bungalow ? "Reconfirmar bungalow" : "Asignar bungalow"}</button>
+          <button class="btn btn-primary" onclick="openAssignModal()" ${reservation.status === "blocked" ? "disabled" : ""}>${reservation.status === "blocked" ? "Asignación bloqueada" : reservation.bungalow ? "Reconfirmar bungalow" : "Asignar bungalow"}</button>
           <button class="btn btn-secondary" onclick="showMovementHint('${reservation.id}')">Registrar movimiento</button>
           <button class="btn btn-secondary" onclick="showPaymentHint('${reservation.id}')">Revisar pago</button>
         </div>
@@ -1791,6 +1798,24 @@ function renderDetailPlaceholder(content) {
 
 function getSelectedReservation() {
   return RESERVATIONS.find((item) => item.id === selectedReservationId) || null;
+}
+
+function syncHeaderWithState() {
+  document.querySelectorAll(".view-btn").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === currentView);
+  });
+
+  const meta = VIEW_META[currentView] || VIEW_META.agenda;
+  document.getElementById("pageTitle").textContent = meta.title;
+  document.getElementById("breadcrumbCurrent").textContent = meta.breadcrumb;
+}
+
+function shouldPreserveDetailContext() {
+  return Boolean(
+    detailFeedback &&
+    detailFeedback.kind === "success" &&
+    detailFeedback.reservationId === selectedReservationId
+  );
 }
 
 function buildSummaryTitle(reservation) {
@@ -1919,6 +1944,18 @@ function openAssignModal() {
     return;
   }
 
+  if (reservation.status === "blocked") {
+    detailFeedback = {
+      reservationId: reservation.id,
+      kind: "blocked",
+      title: "Asignación bloqueada",
+      message: "La reserva sigue detenida por conflicto operativo. Recepción debe resolver inventario y tarifa antes de tocar el bungalow."
+    };
+    renderDetail();
+    showToast("La reserva permanece bloqueada para asignación.", "error");
+    return;
+  }
+
   const plan = getAssignmentPlan(reservation);
   pendingAssignment = {
     reservationId: reservation.id,
@@ -1955,12 +1992,14 @@ function confirmAssignment() {
     return;
   }
 
-  if (assignment.outcome === "conflict") {
+  if (reservation.status === "blocked" || assignment.outcome === "conflict") {
     detailFeedback = {
       reservationId: reservation.id,
       kind: "blocked",
       title: "Asignación bloqueada",
-      message: assignment.bungalow + " ya está comprometido para estas fechas. Mantén la reserva sin bungalow y coordina con administración."
+      message: reservation.status === "blocked"
+        ? "La reserva sigue detenida por conflicto operativo. Mantén la reserva sin bungalow y coordina con administración."
+        : assignment.bungalow + " ya está comprometido para estas fechas. Mantén la reserva sin bungalow y coordina con administración."
     };
     renderDetail();
     return;
