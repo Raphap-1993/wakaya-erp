@@ -756,6 +756,26 @@
     margin-bottom: 10px;
   }
 
+  .detail-summary {
+    padding: 14px;
+    border-radius: var(--radius-md);
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand) 0%, #2a6ca7 100%);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .detail-summary strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .detail-summary p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.86);
+  }
+
   .detail-copy {
     font-size: 13px;
     color: var(--neutral-600);
@@ -782,6 +802,40 @@
     font-size: 12px;
     color: var(--neutral-500);
     margin-top: 8px;
+  }
+
+  .inline-state {
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(31, 78, 121, 0.18);
+    background: rgba(231, 241, 251, 0.82);
+  }
+
+  .inline-state strong {
+    display: block;
+    font-size: 13px;
+    color: var(--neutral-900);
+    margin-bottom: 4px;
+  }
+
+  .inline-state p {
+    font-size: 12px;
+    color: var(--neutral-600);
+    line-height: 1.45;
+  }
+
+  .inline-state.success {
+    border-color: rgba(15, 118, 110, 0.2);
+    background: rgba(209, 250, 229, 0.85);
+  }
+
+  .inline-state.blocked {
+    border-color: rgba(185, 28, 28, 0.2);
+    background: rgba(254, 226, 226, 0.88);
+  }
+
+  .inline-state.blocked p {
+    color: var(--danger);
   }
 
   .audit-list {
@@ -820,6 +874,53 @@
   .audit-item p {
     font-size: 12px;
     color: var(--neutral-500);
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(10px);
+  }
+
+  .modal-card {
+    width: min(100%, 460px);
+    padding: 22px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(203, 213, 225, 0.92);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: var(--shadow-md);
+  }
+
+  .modal-card h3 {
+    font-size: 22px;
+    color: var(--neutral-900);
+    margin-bottom: 10px;
+  }
+
+  .modal-card p {
+    font-size: 14px;
+    color: var(--neutral-600);
+    line-height: 1.55;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
   }
 
   .toast-container {
@@ -943,6 +1044,10 @@
       flex-direction: column;
     }
 
+    .modal-actions .btn {
+      width: 100%;
+    }
+
     .audit-item {
       grid-template-columns: 1fr;
       gap: 4px;
@@ -990,13 +1095,13 @@
         <button class="view-btn" data-view="arrivals" onclick="setView('arrivals')">Llegadas</button>
         <button class="view-btn" data-view="departures" onclick="setView('departures')">Salidas</button>
         <button class="view-btn" data-view="inhouse" onclick="setView('inhouse')">En casa</button>
-        <button class="view-btn" data-view="audit" onclick="setView('audit')">Auditoría</button>
+        <button class="view-btn" data-view="followup" onclick="setView('followup')">Pendientes</button>
       </div>
 
       <div class="action-row">
-        <button class="btn btn-danger" onclick="toggleDemoError()">Fallo demo</button>
+        <button class="btn btn-secondary" onclick="simulateSyncIssue()">Contingencia</button>
         <button class="btn btn-secondary" onclick="handleExport()">Exportar agenda</button>
-        <button class="btn btn-primary" onclick="handleNew()">Nueva prereserva</button>
+        <button class="btn btn-primary" onclick="refreshAgenda()">Actualizar agenda</button>
       </div>
     </div>
   </div>
@@ -1022,8 +1127,8 @@
       </div>
 
       <div class="filter-bar">
-        <button class="chip active" data-quick-filter="unassigned" onclick="setQuickFilter('unassigned')">Sin bungalow</button>
-        <button class="chip" data-quick-filter="arrivals" onclick="setQuickFilter('arrivals')">Llegadas hoy</button>
+        <button class="chip" data-quick-filter="unassigned" onclick="setQuickFilter('unassigned')">Sin bungalow</button>
+        <button class="chip active" data-quick-filter="arrivals" onclick="setQuickFilter('arrivals')">Llegadas hoy</button>
         <button class="chip" data-quick-filter="departures" onclick="setQuickFilter('departures')">Salidas hoy</button>
         <button class="chip" data-quick-filter="payment" onclick="setQuickFilter('payment')">Pago pendiente</button>
         <button class="chip" data-quick-filter="inhouse" onclick="setQuickFilter('inhouse')">Alojados</button>
@@ -1072,6 +1177,17 @@
     </aside>
   </div>
 </main>
+
+<div class="modal-backdrop" id="assignModal" hidden>
+  <div class="modal-card">
+    <h3 id="assignTitle">Asignar bungalow</h3>
+    <p id="assignSummary">Confirma la asignación para la reserva seleccionada.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeAssignModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmAssignment()">Confirmar asignación</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1331,27 +1447,56 @@ const VIEW_META = {
   arrivals: { title: "Llegadas priorizadas", breadcrumb: "Llegadas de hoy", quickFilter: "arrivals" },
   departures: { title: "Salidas por cerrar", breadcrumb: "Salidas de hoy", quickFilter: "departures" },
   inhouse: { title: "Reservas en casa", breadcrumb: "Huéspedes alojados", quickFilter: "inhouse" },
-  audit: { title: "Auditoría visible en contexto", breadcrumb: "Auditoría reciente", quickFilter: "payment" }
+  followup: { title: "Pendientes operativos", breadcrumb: "Cobros y alertas", quickFilter: "payment" }
+};
+
+const ASSIGNMENT_PLANS = {
+  "RES-240606-071": {
+    bungalow: "B-07",
+    outcome: "success",
+    time: "09:18",
+    summary: "B-07 quedó liberado para su llegada tardía y mantiene cercanía con recepción.",
+    note: "Housekeeping liberó B-07 para el arribo nocturno."
+  },
+  "RES-240606-073": {
+    bungalow: "B-05",
+    outcome: "conflict",
+    summary: "B-05 ya está comprometido para el mismo rango de estadía.",
+    conflictWith: "RES-240606-066 · Carlos Hsu"
+  },
+  "RES-240606-059": {
+    bungalow: "B-11",
+    outcome: "success",
+    time: "09:36",
+    summary: "B-11 queda reservado antes del cierre del turno para agilizar mañana.",
+    note: "La unidad queda apartada para la llegada del día siguiente."
+  }
 };
 
 let currentView = "agenda";
-let currentQuickFilter = "unassigned";
+let currentQuickFilter = "arrivals";
 let searchTerm = "";
 let selectedReservationId = null;
 let filteredReservations = [];
-let demoError = false;
+let pendingAssignment = null;
+let detailFeedback = null;
+let syncIssue = false;
 
 window.addEventListener("DOMContentLoaded", () => {
   simulateLoading();
 });
 
 function simulateLoading() {
+  closeAssignModal();
   document.getElementById("loadingState").hidden = false;
   document.getElementById("reservationsTable").hidden = true;
   document.getElementById("emptyState").hidden = true;
   document.getElementById("errorState").hidden = true;
+  renderDetailPlaceholder(
+    '<div class="spinner"></div><h3>Sincronizando detalle</h3><p>Actualizando huésped, bungalow y línea de auditoría.</p>'
+  );
   setTimeout(() => {
-    if (demoError) {
+    if (syncIssue) {
       showErrorState();
       return;
     }
@@ -1410,7 +1555,7 @@ function clearFilters() {
   });
   document.getElementById("pageTitle").textContent = VIEW_META.agenda.title;
   document.getElementById("breadcrumbCurrent").textContent = VIEW_META.agenda.breadcrumb;
-  setQuickFilter("unassigned", false);
+  setQuickFilter("arrivals", false);
   showToast("Agenda restablecida", "success");
 }
 
@@ -1435,8 +1580,8 @@ function applyFilters() {
     return haystack.includes(searchTerm);
   });
 
-  if (selectedReservationId && !filteredReservations.some((reservation) => reservation.id === selectedReservationId)) {
-    selectedReservationId = null;
+  if (!filteredReservations.some((reservation) => reservation.id === selectedReservationId)) {
+    selectedReservationId = filteredReservations[0] ? filteredReservations[0].id : null;
   }
 
   renderTable();
@@ -1455,7 +1600,7 @@ function renderTable() {
   errorState.hidden = true;
   tbody.innerHTML = "";
 
-  if (demoError) {
+  if (syncIssue) {
     showErrorState();
     return;
   }
@@ -1517,30 +1662,37 @@ function renderBungalow(code) {
 
 function selectReservation(id) {
   selectedReservationId = id;
+  detailFeedback = detailFeedback && detailFeedback.reservationId === id ? detailFeedback : null;
   renderTable();
   renderDetail();
 }
 
 function renderDetail() {
-  const detailEmpty = document.getElementById("detailEmpty");
   const detailBody = document.getElementById("detailBody");
 
+  if (syncIssue) {
+    renderDetailPlaceholder(
+      '<h3>Detalle fuera de sincronía</h3><p>La agenda quedó en contingencia. Reintenta para volver a mostrar huésped, bungalow y auditoría.</p>'
+    );
+    return;
+  }
+
   if (!selectedReservationId) {
-    detailEmpty.hidden = false;
-    detailBody.hidden = true;
-    detailBody.innerHTML = "";
+    renderDetailPlaceholder(
+      filteredReservations.length === 0
+        ? '<h3>Sin reservas en este foco</h3><p>Ajusta filtros o búsqueda para volver a mostrar el panel operativo.</p>'
+        : '<h3>Selecciona una reserva</h3><p>El detalle lateral mostrará asignación, acciones y auditoría de la reserva elegida.</p>'
+    );
     return;
   }
 
   const reservation = RESERVATIONS.find((item) => item.id === selectedReservationId);
   if (!reservation) {
-    detailEmpty.hidden = false;
-    detailBody.hidden = true;
-    detailBody.innerHTML = "";
+    renderDetailPlaceholder('<h3>Reserva no disponible</h3><p>La selección salió del foco actual. Elige otra reserva para continuar.</p>');
     return;
   }
 
-  detailEmpty.hidden = true;
+  document.getElementById("detailEmpty").hidden = true;
   detailBody.hidden = false;
   detailBody.innerHTML = `
     <div class="detail-shell">
@@ -1553,6 +1705,11 @@ function renderDetail() {
           <span class="status-pill ${STATUS_META[reservation.status].cls}">${STATUS_META[reservation.status].label}</span>
           <span class="status-pill ${PAYMENT_META[reservation.payment].cls}">${PAYMENT_META[reservation.payment].label}</span>
         </div>
+      </div>
+
+      <div class="detail-summary">
+        <strong>${buildSummaryTitle(reservation)}</strong>
+        <p>${buildSummaryCopy(reservation)}</p>
       </div>
 
       <div class="detail-grid">
@@ -1574,6 +1731,8 @@ function renderDetail() {
         </div>
       </div>
 
+      ${renderInlineState(reservation)}
+
       <div class="detail-section">
         <h3>Contexto operativo</h3>
         <p class="detail-copy">${reservation.note}</p>
@@ -1590,17 +1749,17 @@ function renderDetail() {
       </div>
 
       <div class="detail-section">
-        <h3>Acciones listas para Task 4</h3>
+        <h3>Acciones del turno</h3>
         <div class="detail-actions">
-          <button class="btn btn-primary" onclick="stubAction('${reservation.id}', 'assignment')">Preparar asignación</button>
-          <button class="btn btn-secondary" onclick="stubAction('${reservation.id}', 'checkin')">Registrar movimiento</button>
-          <button class="btn btn-secondary" onclick="stubAction('${reservation.id}', 'payment')">Revisar pago</button>
+          <button class="btn btn-primary" onclick="openAssignModal()">${reservation.bungalow ? "Reconfirmar bungalow" : "Asignar bungalow"}</button>
+          <button class="btn btn-secondary" onclick="showMovementHint('${reservation.id}')">Registrar movimiento</button>
+          <button class="btn btn-secondary" onclick="showPaymentHint('${reservation.id}')">Revisar pago</button>
         </div>
-        <p class="action-note">Este slice deja la consola, el contexto y la auditoría en sitio. La lógica transaccional se implementa después.</p>
+        <p class="action-note">La agenda mantiene el detalle, la confirmación y la línea de auditoría dentro del mismo panel.</p>
       </div>
 
       <div class="detail-section">
-        <h3>Auditoría reciente</h3>
+        <h3>Línea de auditoría</h3>
         <ul class="audit-list">
           ${reservation.audit.map((entry) => `
             <li class="audit-item">
@@ -1621,6 +1780,101 @@ function updateCount() {
   document.getElementById("filterCount").textContent = filteredReservations.length + " de " + RESERVATIONS.length + " reservas visibles";
 }
 
+function renderDetailPlaceholder(content) {
+  const detailEmpty = document.getElementById("detailEmpty");
+  const detailBody = document.getElementById("detailBody");
+  detailEmpty.hidden = false;
+  detailEmpty.innerHTML = content;
+  detailBody.hidden = true;
+  detailBody.innerHTML = "";
+}
+
+function getSelectedReservation() {
+  return RESERVATIONS.find((item) => item.id === selectedReservationId) || null;
+}
+
+function buildSummaryTitle(reservation) {
+  if (reservation.status === "blocked") {
+    return "Reserva detenida por conflicto operativo";
+  }
+  if (reservation.bungalow) {
+    return "Bungalow listo para operar el turno";
+  }
+  return "Asignación pendiente antes del arribo";
+}
+
+function buildSummaryCopy(reservation) {
+  const plan = getAssignmentPlan(reservation);
+  if (reservation.status === "blocked") {
+    return "La reserva requiere validación manual antes de liberar inventario o confirmar una unidad.";
+  }
+  if (reservation.bungalow) {
+    return reservation.guest + " ya tiene " + reservation.bungalow + " confirmado y la auditoría queda visible en este panel.";
+  }
+  return reservation.guest + " aún no tiene bungalow. La sugerencia operativa propone " + plan.bungalow + ". " + plan.summary;
+}
+
+function renderInlineState(reservation) {
+  if (detailFeedback && detailFeedback.reservationId === reservation.id) {
+    return `
+      <div class="inline-state ${detailFeedback.kind}" role="status" aria-live="polite">
+        <strong>${detailFeedback.title}</strong>
+        <p>${detailFeedback.message}</p>
+      </div>
+    `;
+  }
+
+  if (reservation.status === "blocked") {
+    return `
+      <div class="inline-state blocked" role="status" aria-live="polite">
+        <strong>Bloqueo activo</strong>
+        <p>Recepción debe revisar inventario y tarifa antes de confirmar una unidad.</p>
+      </div>
+    `;
+  }
+
+  if (reservation.bungalow) {
+    return `
+      <div class="inline-state" role="status" aria-live="polite">
+        <strong>Asignación vigente</strong>
+        <p>${reservation.bungalow} se mantiene como unidad activa para esta estadía.</p>
+      </div>
+    `;
+  }
+
+  const plan = getAssignmentPlan(reservation);
+  return `
+    <div class="inline-state" role="status" aria-live="polite">
+      <strong>Unidad sugerida</strong>
+      <p>${plan.bungalow} es la propuesta actual para esta reserva. Confirma desde el panel para dejar evidencia visible.</p>
+    </div>
+  `;
+}
+
+function getAssignmentPlan(reservation) {
+  if (ASSIGNMENT_PLANS[reservation.id]) {
+    return ASSIGNMENT_PLANS[reservation.id];
+  }
+
+  if (reservation.bungalow) {
+    return {
+      bungalow: reservation.bungalow,
+      outcome: "success",
+      time: "09:42",
+      summary: "La unidad ya está visible para recepción.",
+      note: "No hubo cambio de inventario."
+    };
+  }
+
+  return {
+    bungalow: "B-16",
+    outcome: "success",
+    time: "09:42",
+    summary: "La disponibilidad permanece libre para el rango consultado.",
+    note: "Se confirmó una unidad libre del inventario base."
+  };
+}
+
 function formatDate(value) {
   return new Intl.DateTimeFormat("es-PE", {
     day: "2-digit",
@@ -1628,10 +1882,11 @@ function formatDate(value) {
   }).format(new Date(value + "T12:00:00"));
 }
 
-function toggleDemoError() {
-  demoError = true;
+function simulateSyncIssue() {
+  syncIssue = true;
+  closeAssignModal();
   showErrorState();
-  showToast("Modo error activado para la agenda", "error");
+  showToast("Contingencia activa: la agenda quedó fuera de sincronía.", "error");
 }
 
 function showErrorState() {
@@ -1639,29 +1894,109 @@ function showErrorState() {
   document.getElementById("reservationsTable").hidden = true;
   document.getElementById("emptyState").hidden = true;
   document.getElementById("errorState").hidden = false;
+  renderDetail();
 }
 
 function retryLoad() {
-  demoError = false;
+  syncIssue = false;
   simulateLoading();
   showToast("Agenda recuperada", "success");
+}
+
+function refreshAgenda() {
+  syncIssue = false;
+  simulateLoading();
+  showToast("Agenda actualizada", "success");
 }
 
 function handleExport() {
   showToast("Exportación lista para el pase de cierre", "success");
 }
 
-function handleNew() {
-  showToast("La captura de prereserva entra en el siguiente slice");
+function openAssignModal() {
+  const reservation = getSelectedReservation();
+  if (!reservation || syncIssue) {
+    return;
+  }
+
+  const plan = getAssignmentPlan(reservation);
+  pendingAssignment = {
+    reservationId: reservation.id,
+    bungalow: plan.bungalow,
+    outcome: plan.outcome,
+    time: plan.time || "09:42",
+    note: plan.note || "",
+    conflictWith: plan.conflictWith || ""
+  };
+
+  document.getElementById("assignTitle").textContent = reservation.bungalow ? "Reconfirmar bungalow" : "Asignar bungalow";
+  document.getElementById("assignSummary").textContent =
+    plan.outcome === "conflict"
+      ? reservation.guest + " intentará tomar " + plan.bungalow + ", pero existe un cruce con " + plan.conflictWith + "."
+      : reservation.guest + " quedará asignado a " + plan.bungalow + " del " + formatDate(reservation.arrival) + " al " + formatDate(reservation.departure) + ".";
+  document.getElementById("assignModal").hidden = false;
 }
 
-function stubAction(reservationId, action) {
-  const labels = {
-    assignment: "Preparando contexto de asignación para " + reservationId,
-    checkin: "Detalle listo para registrar movimiento en " + reservationId,
-    payment: "Caja puede revisar saldo de " + reservationId
+function closeAssignModal() {
+  pendingAssignment = null;
+  document.getElementById("assignModal").hidden = true;
+}
+
+function confirmAssignment() {
+  if (!pendingAssignment) {
+    return;
+  }
+
+  const assignment = pendingAssignment;
+  const reservation = RESERVATIONS.find((item) => item.id === assignment.reservationId);
+  closeAssignModal();
+
+  if (!reservation) {
+    return;
+  }
+
+  if (assignment.outcome === "conflict") {
+    detailFeedback = {
+      reservationId: reservation.id,
+      kind: "blocked",
+      title: "Asignación bloqueada",
+      message: assignment.bungalow + " ya está comprometido para estas fechas. Mantén la reserva sin bungalow y coordina con administración."
+    };
+    renderDetail();
+    return;
+  }
+
+  const previousBungalow = reservation.bungalow || "unassigned";
+  const hadBungalow = Boolean(reservation.bungalow);
+  reservation.bungalow = assignment.bungalow;
+  reservation.quick = reservation.quick.filter((item) => item !== "unassigned");
+  reservation.audit.unshift({
+    time: assignment.time,
+    actor: "Recepción",
+    action: hadBungalow ? "Bungalow reconfirmado" : "Bungalow asignado",
+    delta: previousBungalow + " -> " + assignment.bungalow
+  });
+  reservation.note = !hadBungalow && assignment.note
+    ? assignment.note + " " + reservation.note
+    : reservation.note;
+
+  detailFeedback = {
+    reservationId: reservation.id,
+    kind: "success",
+    title: "Asignación confirmada",
+    message: assignment.bungalow + " quedó visible en agenda y la auditoría ya refleja la confirmación del turno."
   };
-  showToast(labels[action] || "Acción preparada", action === "assignment" ? "success" : "");
+
+  applyFilters();
+  showToast("Bungalow " + assignment.bungalow + " asignado a " + reservation.guest, "success");
+}
+
+function showMovementHint(reservationId) {
+  showToast("Movimiento listo para revisión en " + reservationId);
+}
+
+function showPaymentHint(reservationId) {
+  showToast("Caja puede revisar saldo de " + reservationId);
 }
 
 function showToast(message, kind = "") {
