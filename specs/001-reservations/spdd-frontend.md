@@ -3,37 +3,36 @@
 [README principal](../../README.md) | [Specs](../README.md)
 
 ## Flujo UX
-SUPUESTO: Gestion de reservations con filtros, resumen, detalle, confirmacion y seguimiento.
+Recepción abre la agenda operativa, filtra reservas del día, selecciona una reserva crítica, revisa el detalle lateral, asigna o reasigna bungalow y confirma la acción viendo la auditoría en la misma superficie.
 
 ## Pantallas
-- Dashboard o lista principal.
-- Configuracion de filtros.
-- Confirmacion de accion.
-- Seguimiento o detalle.
-- Historial/auditoria.
+- Agenda operativa con filtros rápidos.
+- Detalle lateral persistente de la reserva seleccionada.
+- Confirmación corta de asignación o cambio operativo.
+- Timeline resumido de auditoría dentro del detalle.
 - Empty.
 - Error.
-- Permission denied.
+- Acción bloqueada por conflicto o regla.
 
 ## Estados UI
 - Loading.
 - Empty.
 - Error.
 - Success.
-- Permission denied.
+- Bloqueado.
 
 ## Componentes previstos
-- AppShell.
-- SearchInput.
-- FilterSelect.
-- DataTable.
-- StatusBadge.
-- DetailPanel.
-- ConfirmModal.
+- TopbarSearch.
+- OperationsKpiStrip.
+- QuickFilterBar.
+- ReservationsAgendaList.
+- ReservationRowBadge.
+- ReservationDetailPanel.
+- BungalowAssignmentModal.
+- AuditTimeline.
 - Toast.
-- ProgressIndicator.
 
 ## Validaciones visibles
-- Campos obligatorios.
-- Rangos invalidos.
-- Permisos insuficientes.
+- No permitir asignación si el bungalow entra en conflicto.
+- Mostrar acción bloqueada cuando la reserva no cumple la regla operativa.
+- Confirmar visualmente la asignación y reflejarla en la auditoría reciente.

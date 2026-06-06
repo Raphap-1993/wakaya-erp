@@ -3,23 +3,23 @@
 [README principal](../../README.md) | [Specs](../README.md)
 
 ## Problema
-SUPUESTO: Los usuarios necesitan gestionar reservations sin depender de procesos manuales o herramientas dispersas.
+Recepción necesita operar llegadas, salidas y asignaciones de bungalow desde una sola superficie. Hoy la validación del contexto de la reserva, la asignación y la trazabilidad todavía no están materializadas en una experiencia visible del producto.
 
 ## Objetivo
-SUPUESTO: Proveer acceso centralizado a reservations con filtros, estados y trazabilidad.
+Convertir el módulo de reservas en una consola diaria para Recepción que permita detectar reservas críticas, revisar el contexto de la estadía y asignar o reasignar bungalow con trazabilidad inmediata.
 
 ## Usuarios
-- Operador.
-- Aprobador.
-- Auditor.
+- Recepción como actor principal.
+- Supervisión como actor secundario para excepciones.
+- Auditor como consumidor de trazabilidad.
 
 ## Journey
-Ingresar -> abrir modulo -> filtrar -> revisar detalle -> confirmar accion -> revisar resultado.
+Ingresar a agenda del día -> filtrar reservas críticas -> seleccionar reserva -> revisar detalle lateral -> asignar o reasignar bungalow -> confirmar acción -> validar auditoría reciente.
 
-## Hipotesis
-Un modulo centralizado con estados visibles y prototipo validado reducira busqueda manual y errores operativos.
+## Hipótesis
+Una agenda operativa con detalle lateral persistente reduce la ambigüedad operativa y acelera la asignación de bungalow en reservas con llegada inmediata.
 
-## Metricas
-- tiempo para ubicar informacion,
-- consultas resueltas,
-- reduccion de solicitudes manuales.
+## Métricas
+- tiempo para asignar bungalow a reservas sin asignación,
+- reservas críticas resueltas sin salir de la pantalla principal,
+- reducción de consultas internas para confirmar el último cambio operativo.
