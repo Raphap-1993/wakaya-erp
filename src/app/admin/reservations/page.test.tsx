@@ -55,6 +55,13 @@ describe("ReservationsAdminPage", () => {
     expect(html).toContain("RESERVATION-2026-0001");
     expect(html).toContain("selected=reservation-demo-1");
     expect(html).toContain("Contexto seleccionado");
+    expect(html).toContain(
+      'href="/admin/reservations/occupancy?date=2026-06-12&amp;selected=reservation-demo-1"',
+    );
+    expect(html).toContain("Ver reporte financiero");
+    expect(html).toContain("Exportar CSV");
+    expect(html).toContain("Saldo total");
+    expect(html).toContain("Cobro y saldo");
     expect(html).toContain("Abrir detalle");
     expect(html).toContain("Acciones operativas");
     expect(html).toContain("Auditoría embebida");
