@@ -1,7 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authenticateMock, notFoundMock } = vi.hoisted(() => ({
+const { useRouterMock, authenticateMock, notFoundMock } = vi.hoisted(() => ({
+  useRouterMock: vi.fn(),
   authenticateMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
@@ -13,6 +14,7 @@ vi.mock("next/headers", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
+  useRouter: useRouterMock,
   notFound: notFoundMock,
 }));
 
@@ -33,6 +35,9 @@ function hrefParamsByText(html: string, linkText: string): URLSearchParams {
 
 describe("ReservationsOccupancyPage", () => {
   beforeEach(() => {
+    useRouterMock.mockReturnValue({
+      replace: vi.fn(),
+    });
     authenticateMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
@@ -52,20 +57,17 @@ describe("ReservationsOccupancyPage", () => {
     );
 
     expect(html).toContain("Ocupación semanal");
-    expect(html).toContain("Agenda");
     expect(html).toContain("Ocupación");
-    expect(html).toContain("Semana activa");
+    expect(html).toContain("Abrir agenda operativa");
+    expect(html).toContain("Grilla semanal de bungalows");
     expect(html).toContain("2026-W24");
-    const agendaHref = hrefParamsByText(html, "Agenda");
+    const agendaHref = hrefParamsByText(html, "Abrir agenda operativa");
     const occupancyHref = hrefParamsByText(html, "Ocupación");
     expect(agendaHref.get("date")).toBe("2026-06-15");
     expect(agendaHref.get("view")).toBe("agenda");
-    expect(agendaHref.get("week")).toBe("2026-W24");
-    expect(agendaHref.get("selected")).toBe("reservation-demo-2");
     expect(occupancyHref.get("date")).toBe("2026-06-15");
     expect(occupancyHref.get("view")).toBe("occupancy");
-    expect(occupancyHref.get("week")).toBe("2026-W24");
-    expect(occupancyHref.get("selected")).toBe("reservation-demo-2");
+    expect(html).toContain("Libre");
   });
 
   it("rejects unauthenticated requests before rendering occupancy", async () => {
