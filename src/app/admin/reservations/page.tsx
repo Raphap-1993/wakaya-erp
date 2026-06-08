@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { reservationStore } from "@/lib/reservations/store";
 import { authenticate } from "@/middleware/authn";
 import { hasPermission } from "@/lib/rbac";
@@ -9,19 +10,9 @@ import ReservationsMonitor from "./reservations-monitor";
 import {
   buildReservationsMonitorHref,
   buildReservationsOccupancyHref,
+  type ReservationsMonitorSearchParams,
   normalizeReservationsMonitorQuery,
 } from "./reservations-query";
-
-type SearchParams = {
-  status?: string | string[];
-  channel?: string | string[];
-  responsibleId?: string | string[];
-  date?: string | string[];
-  startDate?: string | string[];
-  endDate?: string | string[];
-  week?: string | string[];
-  selected?: string | string[];
-};
 
 const VALID_STATUSES = new Set<ReservationStatus>([
   "pending_review",
@@ -48,7 +39,7 @@ function toReservationChannel(value?: string): ReservationChannel | undefined {
 export default async function ReservationsAdminPage({
   searchParams,
 }: {
-  searchParams?: SearchParams | Promise<SearchParams>;
+  searchParams?: ReservationsMonitorSearchParams | Promise<ReservationsMonitorSearchParams>;
 }) {
   const query = normalizeReservationsMonitorQuery((await searchParams) ?? {});
   const requestHeaders = new Headers();
@@ -76,6 +67,7 @@ export default async function ReservationsAdminPage({
   const selectedId = items.some((item) => item.id === requestedSelectedId)
     ? requestedSelectedId
     : items[0]?.id ?? null;
+  type ReservationsRedirectHref = Parameters<typeof redirect>[0];
 
   if (
     query.status !== canonicalFilters.status ||
@@ -87,17 +79,34 @@ export default async function ReservationsAdminPage({
         ...canonicalFilters,
         week: query.week,
         selected: selectedId ?? undefined,
-      }) as never,
+      }) as ReservationsRedirectHref,
     );
   }
 
   const bungalows = reservationStore.listBungalows();
+  type ReservationsLinkHref = ComponentProps<typeof Link>["href"];
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "16px" }}>
         <Link
-          href={buildReservationsOccupancyHref(query) as never}
+          href={buildReservationsMonitorHref({ ...query, view: "agenda" }) as ReservationsLinkHref}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "999px",
+            padding: "11px 16px",
+            background: "#17362f",
+            color: "#ffffff",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          Agenda
+        </Link>
+        <Link
+          href={buildReservationsOccupancyHref({ ...query, view: "occupancy" }) as ReservationsLinkHref}
           style={{
             display: "inline-flex",
             alignItems: "center",

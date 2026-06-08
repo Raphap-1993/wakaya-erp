@@ -3,24 +3,26 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { authenticate } from "@/middleware/authn";
 import { hasPermission } from "@/lib/rbac";
-import { normalizeReservationsMonitorQuery, buildReservationsMonitorHref, buildReservationsOccupancyHref } from "../reservations-query";
+import type { ComponentProps } from "react";
+import {
+  buildReservationsMonitorHref,
+  buildReservationsOccupancyHref,
+  normalizeReservationsMonitorQuery,
+  type ReservationsMonitorSearchParams,
+} from "../reservations-query";
 import styles from "../reservations.module.css";
 
-type SearchParams = {
-  status?: string | string[];
-  channel?: string | string[];
-  responsibleId?: string | string[];
-  date?: string | string[];
-  startDate?: string | string[];
-  endDate?: string | string[];
-  week?: string | string[];
-  selected?: string | string[];
-};
+function getCurrentWeekAnchor(): string {
+  const today = new Date();
+  const day = today.getDay() || 7;
+  today.setDate(today.getDate() - day + 1);
+  return today.toISOString().slice(0, 10);
+}
 
 export default async function ReservationsOccupancyPage({
   searchParams,
 }: {
-  searchParams?: SearchParams | Promise<SearchParams>;
+  searchParams?: ReservationsMonitorSearchParams | Promise<ReservationsMonitorSearchParams>;
 }) {
   const query = normalizeReservationsMonitorQuery((await searchParams) ?? {});
   const requestHeaders = new Headers();
@@ -30,6 +32,9 @@ export default async function ReservationsOccupancyPage({
   if (!auth.authenticated || !hasPermission(auth.roles, "reservation:read")) {
     notFound();
   }
+
+  const selectedWeek = query.week ?? getCurrentWeekAnchor();
+  type ReservationsLinkHref = ComponentProps<typeof Link>["href"];
 
   return (
     <main className={styles.page}>
@@ -44,13 +49,13 @@ export default async function ReservationsOccupancyPage({
           <div className={styles.heroActions}>
             <Link
               className={`${styles.button} ${styles.buttonSecondary}`}
-              href={buildReservationsMonitorHref(query) as never}
+              href={buildReservationsMonitorHref({ ...query, view: "agenda" }) as ReservationsLinkHref}
             >
               Agenda
             </Link>
             <Link
               className={`${styles.button} ${styles.buttonSecondary}`}
-              href={buildReservationsOccupancyHref(query) as never}
+              href={buildReservationsOccupancyHref({ ...query, view: "occupancy" }) as ReservationsLinkHref}
             >
               Ocupación
             </Link>
@@ -59,7 +64,7 @@ export default async function ReservationsOccupancyPage({
           <div className={styles.stats}>
             <div className={styles.statCard}>
               <span className={styles.statLabel}>Semana activa</span>
-              <span className={styles.statValue}>{query.week ?? "actual"}</span>
+              <span className={styles.statValue}>{selectedWeek}</span>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statLabel}>Filtro fecha</span>
@@ -84,7 +89,7 @@ export default async function ReservationsOccupancyPage({
             </div>
 
             <p className={styles.helper}>
-              Semana: <strong>{query.week ?? "actual"}</strong>. Usa la navegación superior para volver a la agenda
+              Semana: <strong>{selectedWeek}</strong>. Usa la navegación superior para volver a la agenda
               o mantener la misma ocupación.
             </p>
           </div>

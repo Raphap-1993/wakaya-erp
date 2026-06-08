@@ -1,3 +1,20 @@
+export type ReservationsMonitorView = "agenda" | "occupancy";
+
+export type ReservationsMonitorSearchParams = Partial<
+  Record<
+    | "status"
+    | "channel"
+    | "responsibleId"
+    | "date"
+    | "startDate"
+    | "endDate"
+    | "view"
+    | "week"
+    | "selected",
+    string | string[] | undefined
+  >
+>;
+
 export type ReservationsMonitorQuery = {
   status?: string;
   channel?: string;
@@ -5,6 +22,7 @@ export type ReservationsMonitorQuery = {
   date?: string;
   startDate?: string;
   endDate?: string;
+  view?: ReservationsMonitorView;
   week?: string;
   selected?: string;
 };
@@ -16,6 +34,7 @@ const QUERY_KEYS = [
   "date",
   "startDate",
   "endDate",
+  "view",
   "week",
   "selected",
 ] as const;
@@ -27,15 +46,37 @@ function readQueryValue(value: string | string[] | undefined): string | undefine
   return value?.trim() || undefined;
 }
 
+function readViewValue(value: string | string[] | undefined): ReservationsMonitorView | undefined {
+  const raw = readQueryValue(value);
+  return raw === "agenda" || raw === "occupancy" ? raw : undefined;
+}
+
+function appendReservationsQueryParams(params: URLSearchParams, query: ReservationsMonitorQuery): void {
+  for (const key of QUERY_KEYS) {
+    const value = query[key];
+    if (value) {
+      params.set(key, value);
+    }
+  }
+}
+
 export function normalizeReservationsMonitorQuery(
-  query: Partial<Record<(typeof QUERY_KEYS)[number], string | string[] | undefined>>,
+  query: ReservationsMonitorSearchParams,
 ): ReservationsMonitorQuery {
   const normalized: ReservationsMonitorQuery = {};
 
   for (const key of QUERY_KEYS) {
+    if (key === "view") {
+      const view = readViewValue(query[key]);
+      if (view) {
+        normalized.view = view;
+      }
+      continue;
+    }
+
     const value = readQueryValue(query[key]);
     if (value) {
-      normalized[key] = value;
+      normalized[key] = value as ReservationsMonitorQuery[typeof key];
     }
   }
 
@@ -44,13 +85,7 @@ export function normalizeReservationsMonitorQuery(
 
 export function buildReservationsMonitorHref(query: ReservationsMonitorQuery): string {
   const params = new URLSearchParams();
-
-  for (const key of QUERY_KEYS) {
-    const value = query[key];
-    if (value) {
-      params.set(key, value);
-    }
-  }
+  appendReservationsQueryParams(params, query);
 
   const suffix = params.toString();
   return suffix ? `/admin/reservations?${suffix}` : "/admin/reservations";
@@ -58,13 +93,8 @@ export function buildReservationsMonitorHref(query: ReservationsMonitorQuery): s
 
 export function buildReservationsOccupancyHref(query: ReservationsMonitorQuery): string {
   const params = new URLSearchParams();
-
-  for (const key of QUERY_KEYS) {
-    const value = query[key];
-    if (value) {
-      params.set(key, value);
-    }
-  }
+  appendReservationsQueryParams(params, query);
+  params.set("view", "occupancy");
 
   const suffix = params.toString();
   return suffix ? `/admin/reservations/occupancy?${suffix}` : "/admin/reservations/occupancy";
@@ -75,14 +105,7 @@ export function buildReservationsFinancialReportHref(
   format: "json" | "csv" = "json",
 ): string {
   const params = new URLSearchParams();
-
-  for (const key of QUERY_KEYS) {
-    const value = query[key];
-    if (value) {
-      params.set(key, value);
-    }
-  }
-
+  appendReservationsQueryParams(params, query);
   params.set("format", format);
 
   const suffix = params.toString();

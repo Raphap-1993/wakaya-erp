@@ -22,6 +22,15 @@ vi.mock("@/middleware/authn", () => ({
 
 import ReservationsOccupancyPage from "./page";
 
+function hrefParamsByText(html: string, linkText: string): URLSearchParams {
+  const anchorIndex = html.indexOf(`>${linkText}</a>`);
+  expect(anchorIndex).toBeGreaterThanOrEqual(0);
+  const hrefStart = html.lastIndexOf('href="', anchorIndex);
+  expect(hrefStart).toBeGreaterThanOrEqual(0);
+  const hrefValue = html.slice(hrefStart + 6, html.indexOf('"', hrefStart + 6)).replaceAll("&amp;", "&");
+  return new URLSearchParams(hrefValue.split("?")[1] ?? "");
+}
+
 describe("ReservationsOccupancyPage", () => {
   beforeEach(() => {
     authenticateMock.mockResolvedValue({
@@ -47,12 +56,16 @@ describe("ReservationsOccupancyPage", () => {
     expect(html).toContain("Ocupación");
     expect(html).toContain("Semana activa");
     expect(html).toContain("2026-W24");
-    expect(html).toContain(
-      'href="/admin/reservations?date=2026-06-15&amp;week=2026-W24&amp;selected=reservation-demo-2"',
-    );
-    expect(html).toContain(
-      'href="/admin/reservations/occupancy?date=2026-06-15&amp;week=2026-W24&amp;selected=reservation-demo-2"',
-    );
+    const agendaHref = hrefParamsByText(html, "Agenda");
+    const occupancyHref = hrefParamsByText(html, "Ocupación");
+    expect(agendaHref.get("date")).toBe("2026-06-15");
+    expect(agendaHref.get("view")).toBe("agenda");
+    expect(agendaHref.get("week")).toBe("2026-W24");
+    expect(agendaHref.get("selected")).toBe("reservation-demo-2");
+    expect(occupancyHref.get("date")).toBe("2026-06-15");
+    expect(occupancyHref.get("view")).toBe("occupancy");
+    expect(occupancyHref.get("week")).toBe("2026-W24");
+    expect(occupancyHref.get("selected")).toBe("reservation-demo-2");
   });
 
   it("rejects unauthenticated requests before rendering occupancy", async () => {

@@ -28,6 +28,15 @@ vi.mock("@/middleware/authn", () => ({
 
 import ReservationsAdminPage from "./page";
 
+function hrefParamsByText(html: string, linkText: string): URLSearchParams {
+  const anchorIndex = html.indexOf(`>${linkText}</a>`);
+  expect(anchorIndex).toBeGreaterThanOrEqual(0);
+  const hrefStart = html.lastIndexOf('href="', anchorIndex);
+  expect(hrefStart).toBeGreaterThanOrEqual(0);
+  const hrefValue = html.slice(hrefStart + 6, html.indexOf('"', hrefStart + 6)).replaceAll("&amp;", "&");
+  return new URLSearchParams(hrefValue.split("?")[1] ?? "");
+}
+
 describe("ReservationsAdminPage", () => {
   beforeEach(() => {
     useRouterMock.mockReturnValue({
@@ -55,9 +64,14 @@ describe("ReservationsAdminPage", () => {
     expect(html).toContain("RESERVATION-2026-0001");
     expect(html).toContain("selected=reservation-demo-1");
     expect(html).toContain("Contexto seleccionado");
-    expect(html).toContain(
-      'href="/admin/reservations/occupancy?date=2026-06-12&amp;selected=reservation-demo-1"',
-    );
+    const agendaHref = hrefParamsByText(html, "Agenda");
+    const occupancyHref = hrefParamsByText(html, "Ocupación");
+    expect(agendaHref.get("date")).toBe("2026-06-12");
+    expect(agendaHref.get("view")).toBe("agenda");
+    expect(agendaHref.get("selected")).toBe("reservation-demo-1");
+    expect(occupancyHref.get("date")).toBe("2026-06-12");
+    expect(occupancyHref.get("view")).toBe("occupancy");
+    expect(occupancyHref.get("selected")).toBe("reservation-demo-1");
     expect(html).toContain("Ver reporte financiero");
     expect(html).toContain("Exportar CSV");
     expect(html).toContain("Saldo total");
