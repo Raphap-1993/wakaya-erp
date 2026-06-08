@@ -1,11 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { useRouterMock, authenticateMock, notFoundMock } = vi.hoisted(() => ({
+const { useRouterMock, authenticateMock, notFoundMock, redirectMock } = vi.hoisted(() => ({
   useRouterMock: vi.fn(),
   authenticateMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
+  }),
+  redirectMock: vi.fn(() => {
+    throw new Error("NEXT_REDIRECT");
   }),
 }));
 
@@ -16,6 +19,7 @@ vi.mock("next/headers", () => ({
 vi.mock("next/navigation", () => ({
   useRouter: useRouterMock,
   notFound: notFoundMock,
+  redirect: redirectMock,
 }));
 
 vi.mock("@/middleware/authn", () => ({
@@ -38,6 +42,7 @@ describe("ReservationsOccupancyPage", () => {
     useRouterMock.mockReturnValue({
       replace: vi.fn(),
     });
+    redirectMock.mockReset();
     authenticateMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
@@ -68,6 +73,26 @@ describe("ReservationsOccupancyPage", () => {
     expect(occupancyHref.get("date")).toBe("2026-06-15");
     expect(occupancyHref.get("view")).toBe("occupancy");
     expect(html).toContain("Libre");
+  });
+
+  it("redirects to the canonical occupancy selection when selection is missing", async () => {
+    await expect(
+      ReservationsOccupancyPage({
+        searchParams: {
+          week: "2026-W24",
+          date: "2026-06-15",
+        },
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith(
+      expect.stringContaining("/admin/reservations/occupancy?"),
+    );
+    const redirectCall = redirectMock.mock.calls[0] as unknown as [string] | undefined;
+    const redirectHref = redirectCall?.[0] ?? "";
+    expect(redirectHref).toContain("date=2026-06-12");
+    expect(redirectHref).toContain("selected=reservation-demo-1");
+    expect(redirectHref).toContain("view=occupancy");
   });
 
   it("rejects unauthenticated requests before rendering occupancy", async () => {

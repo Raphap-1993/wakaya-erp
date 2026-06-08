@@ -122,8 +122,54 @@ describe("OccupancyView", () => {
     expect(html).toContain("Bloqueado");
     expect(html).toContain("Ver reserva");
     expect(html).toContain("Abrir agenda operativa");
+    expect(html).toContain("Confirmar reserva");
+    expect(html).toContain("Registrar pago");
     expect(html).toContain("Pagado");
     expect(html).toContain("Auditoría reciente");
     expect(html).toContain("Ingreso inicial");
+  });
+
+  it("shows blocked cells as explicit conflicts instead of collapsing them into one reservation", () => {
+    const items = [
+      makeReservation({
+        id: "reservation-blocked-1",
+        number: "RESERVATION-BLOCK-1",
+        bungalowId: "bungalow-matrimonial",
+        status: "paid",
+        paymentStatus: "paid",
+        startDate: "2026-06-14",
+        endDate: "2026-06-14",
+      }),
+      makeReservation({
+        id: "reservation-blocked-2",
+        number: "RESERVATION-BLOCK-2",
+        bungalowId: "bungalow-matrimonial",
+        status: "confirmed",
+        paymentStatus: "paid",
+        startDate: "2026-06-14",
+        endDate: "2026-06-14",
+      }),
+    ];
+
+    const html = renderToStaticMarkup(
+      <OccupancyView
+        items={items}
+        bungalows={reservationStore.listBungalows()}
+        query={{
+          week: "2026-W24",
+          date: "2026-06-14",
+          selected: "reservation-blocked-1",
+          view: "occupancy",
+        }}
+        auditsByReservationId={{}}
+      />,
+    );
+
+    expect(html).toContain("Bloqueado");
+    expect(html).toContain("Reservas en conflicto");
+    expect(html).toContain("Conflicto de ocupación en esta celda.");
+    expect(html).toContain("RESERVATION-BLOCK-1");
+    expect(html).toContain("RESERVATION-BLOCK-2");
+    expect(html).not.toContain("Exportar reporte del bungalow");
   });
 });

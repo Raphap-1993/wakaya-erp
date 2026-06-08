@@ -224,15 +224,18 @@ export function buildOccupancyModel(
     return { bungalow, cells };
   });
 
-  const selectedReservation = query.selected ? items.find((item) => item.id === query.selected) ?? null : null;
-  const selectedDate = normalizeDateOnly(query.date) ?? selectedReservation?.startDate ?? null;
+  const selectedCellByKey =
+    query.selected ? rows.flatMap((row) => row.cells).find((cell) => cell.key === query.selected) ?? null : null;
+  const selectedReservation = selectedCellByKey ? null : query.selected ? items.find((item) => item.id === query.selected) ?? null : null;
+  const selectedDate = normalizeDateOnly(query.date) ?? selectedCellByKey?.date ?? selectedReservation?.startDate ?? null;
   const selectedCell =
-    selectedReservation && selectedReservation.bungalowId && selectedDate
+    selectedCellByKey ??
+    (selectedReservation && selectedReservation.bungalowId && selectedDate
       ? rows
           .find((row) => row.bungalow.id === selectedReservation.bungalowId)
           ?.cells.find((cell) => cell.date === selectedDate && cell.reservations.some((item) => item.id === selectedReservation.id)) ??
         null
-      : null;
+      : null);
 
   return {
     anchorDate,
@@ -255,6 +258,18 @@ export function buildOccupancyModel(
   };
 }
 
+export function getDefaultOccupancyCell(rows: OccupancyRow[]): OccupancyCell | null {
+  return rows.flatMap((row) => row.cells).find((cell) => cell.state !== "free") ?? rows[0]?.cells[0] ?? null;
+}
+
+export function getOccupancySelectionValue(cell: OccupancyCell | null): string | undefined {
+  if (!cell) {
+    return undefined;
+  }
+
+  return cell.reservations.length === 1 ? cell.primaryReservation?.id ?? cell.key : cell.key;
+}
+
 function getIsoWeek(date: string): number {
   const parsed = new Date(`${date}T00:00:00.000Z`);
   const target = new Date(parsed.valueOf());
@@ -265,8 +280,16 @@ function getIsoWeek(date: string): number {
   return 1 + Math.round(diff / 604800000);
 }
 
+function getIsoWeekYear(date: string): number {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  const target = new Date(parsed.valueOf());
+  const dayNumber = (parsed.getUTCDay() + 6) % 7;
+  target.setUTCDate(target.getUTCDate() - dayNumber + 3);
+  return target.getUTCFullYear();
+}
+
 export function formatIsoWeekLabel(anchorDate: string): string {
-  return `${anchorDate.slice(0, 4)}-W${String(getIsoWeek(anchorDate)).padStart(2, "0")}`;
+  return `${getIsoWeekYear(anchorDate)}-W${String(getIsoWeek(anchorDate)).padStart(2, "0")}`;
 }
 
 export function statusLabel(status: ReservationStatus): string {

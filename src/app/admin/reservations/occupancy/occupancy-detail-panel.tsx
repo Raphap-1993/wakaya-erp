@@ -20,6 +20,7 @@ function statusClass(status: ReservationListItem["status"]): string {
 
 export function OccupancyDetailPanel({
   reservation,
+  reservationsInCell,
   bungalow,
   audits,
   weekLabel,
@@ -27,6 +28,7 @@ export function OccupancyDetailPanel({
   selectedCellState,
 }: {
   reservation: ReservationListItem | null;
+  reservationsInCell: ReservationListItem[];
   bungalow: Bungalow | null;
   audits: ReservationAudit[];
   weekLabel: string;
@@ -46,6 +48,7 @@ export function OccupancyDetailPanel({
         selectedCellState === "attention-needed" ? "La celda requiere revisión operativa." : null,
         selectedCellState === "free" ? "La celda está libre." : null,
       ].filter((value): value is string => Boolean(value));
+  const hasConflict = reservationsInCell.length > 1;
   const agendaHref = buildReservationsMonitorHref({
     view: "agenda",
     selected: reservation?.id,
@@ -120,6 +123,23 @@ export function OccupancyDetailPanel({
           <p className={styles.helper}>{reservation ? statusLabel(reservation.status) : "Libre"}</p>
         </div>
 
+        {hasConflict ? (
+          <div className={styles.detailSummary}>
+            <span className={styles.fieldLabel}>Reservas en conflicto</span>
+            <ul className={styles.auditList}>
+              {reservationsInCell.map((item) => (
+                <li key={item.id} className={styles.auditItem}>
+                  <div className={styles.auditMeta}>
+                    <span>{item.number}</span>
+                    <span>{STATUS_LABELS[item.status]}</span>
+                  </div>
+                  <p className={styles.helper}>{paymentLabel(item.paymentStatus)}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         <div className={styles.buttonRow}>
           <Link
             className={`${styles.button} ${styles.buttonSecondary}`}
@@ -135,6 +155,9 @@ export function OccupancyDetailPanel({
         <div className={styles.detailActions}>
           <span className={styles.fieldLabel}>Acciones válidas</span>
           <div className={styles.detailActionList}>
+            <button className={styles.detailActionPill} type="button" disabled={!reservation || !actions.includes("confirm")}>
+              Confirmar reserva
+            </button>
             <button className={styles.detailActionPill} type="button" disabled={!reservation || !actions.includes("assign")}>
               Reasignar bungalow
             </button>
@@ -144,14 +167,14 @@ export function OccupancyDetailPanel({
             <button className={styles.detailActionPill} type="button" disabled={!reservation || !actions.includes("check_out")}>
               Registrar check-out
             </button>
+            <button className={styles.detailActionPill} type="button" disabled={!reservation || !actions.includes("mark_paid")}>
+              Registrar pago
+            </button>
             <button className={styles.detailActionPill} type="button" disabled={!reservation || !actions.includes("mark_no_show")}>
               Marcar no show
             </button>
             <button className={styles.detailActionPill} type="button" disabled={!reservation || !actions.includes("cancel")}>
               Cancelar estadía
-            </button>
-            <button className={styles.detailActionPill} type="button" disabled>
-              Exportar reporte del bungalow
             </button>
           </div>
         </div>

@@ -1,12 +1,16 @@
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { reservationStore } from "@/lib/reservations/store";
 import { authenticate } from "@/middleware/authn";
 import { hasPermission } from "@/lib/rbac";
 import { addDays } from "@/lib/reservations/date-utils";
-import { normalizeReservationsMonitorQuery, type ReservationsMonitorSearchParams } from "../reservations-query";
+import {
+  buildReservationsOccupancyHref,
+  normalizeReservationsMonitorQuery,
+  type ReservationsMonitorSearchParams,
+} from "../reservations-query";
 import OccupancyView from "./occupancy-view";
-import { resolveWeekAnchor } from "./occupancy-utils";
+import { buildOccupancyModel, getDefaultOccupancyCell, getOccupancySelectionValue, resolveWeekAnchor } from "./occupancy-utils";
 
 export default async function ReservationsOccupancyPage({
   searchParams,
@@ -30,5 +34,31 @@ export default async function ReservationsOccupancyPage({
   });
   const bungalows = reservationStore.listBungalows();
   const auditsByReservationId = Object.fromEntries(items.map((item) => [item.id, reservationStore.getAuditTrail(item.id)]));
-  return <OccupancyView items={items} bungalows={bungalows} query={{ ...query, date: query.date ?? anchorDate }} auditsByReservationId={auditsByReservationId} />;
+  const model = buildOccupancyModel(items, bungalows, {
+    week: query.week,
+    date: query.date ?? anchorDate,
+    selected: query.selected,
+  });
+  const defaultCell = getDefaultOccupancyCell(model.rows);
+
+  if (!query.selected && defaultCell) {
+    type ReservationsRedirectHref = Parameters<typeof redirect>[0];
+    redirect(
+      buildReservationsOccupancyHref({
+        ...query,
+        date: defaultCell.date,
+        selected: getOccupancySelectionValue(defaultCell),
+        view: "occupancy",
+      }) as ReservationsRedirectHref,
+    );
+  }
+
+  return (
+    <OccupancyView
+      items={items}
+      bungalows={bungalows}
+      query={{ ...query, date: query.date ?? anchorDate }}
+      auditsByReservationId={auditsByReservationId}
+    />
+  );
 }

@@ -9,7 +9,12 @@ import { buildReservationsMonitorHref, buildReservationsOccupancyHref, type Rese
 import styles from "../reservations.module.css";
 import { OccupancyDetailPanel } from "./occupancy-detail-panel";
 import { OccupancyGrid } from "./occupancy-grid";
-import { buildOccupancyModel } from "./occupancy-utils";
+import {
+  buildOccupancyModel,
+  getDefaultOccupancyCell,
+  getOccupancySelectionValue,
+  type OccupancyCell,
+} from "./occupancy-utils";
 
 type Props = {
   items: ReservationListItem[];
@@ -21,10 +26,7 @@ type Props = {
 export default function OccupancyView({ items, bungalows, query, auditsByReservationId }: Props) {
   const router = useRouter();
   const model = useMemo(() => buildOccupancyModel(items, bungalows, query), [items, bungalows, query]);
-  const firstSelectable = useMemo(
-    () => model.rows.flatMap((row) => row.cells).find((cell) => cell.state !== "free") ?? model.rows[0]?.cells[0] ?? null,
-    [model.rows],
-  );
+  const firstSelectable = useMemo(() => getDefaultOccupancyCell(model.rows), [model.rows]);
   const [selectedKey, setSelectedKey] = useState<string | null>(
     model.selected ? `${model.selected.bungalowId}:${model.selected.date}` : firstSelectable?.key ?? null,
   );
@@ -35,18 +37,19 @@ export default function OccupancyView({ items, bungalows, query, auditsByReserva
 
   const selectedCell =
     model.rows.flatMap((row) => row.cells).find((cell) => cell.key === selectedKey) ?? null;
-  const selectedReservation = selectedCell?.primaryReservation ?? null;
+  const selectedReservations = selectedCell?.reservations ?? [];
+  const selectedReservation = selectedReservations.length === 1 ? selectedReservations[0] : null;
   const selectedBungalow = selectedCell
     ? bungalows.find((bungalow) => bungalow.id === selectedCell.bungalowId) ?? null
     : null;
   const selectedAudits = selectedReservation ? auditsByReservationId[selectedReservation.id] ?? [] : [];
 
-  const handleSelect = (cell: { key: string; bungalowId: string; date: string; primaryReservation: ReservationListItem | null }) => {
+  const handleSelect = (cell: OccupancyCell) => {
     setSelectedKey(cell.key);
     const nextQuery = {
       ...query,
       date: cell.date,
-      selected: cell.primaryReservation?.id ?? undefined,
+      selected: getOccupancySelectionValue(cell),
       view: "occupancy" as const,
     };
     router.replace(buildReservationsOccupancyHref(nextQuery) as never);
@@ -112,6 +115,7 @@ export default function OccupancyView({ items, bungalows, query, auditsByReserva
         <section className={styles.detailGrid}>
           <OccupancyDetailPanel
             reservation={selectedReservation}
+            reservationsInCell={selectedReservations}
             bungalow={selectedBungalow}
             audits={selectedAudits}
             weekLabel={model.weekLabel}
