@@ -123,6 +123,8 @@
 }
 
 .content {
+  display: grid;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -136,6 +138,25 @@
     min-height: auto;
     border-right: 0;
     border-bottom: 1px solid rgba(21, 40, 34, 0.08);
+    padding: 16px 14px;
+    gap: 14px;
+  }
+
+  .nav {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navItem,
+  .navItemActive {
+    white-space: nowrap;
   }
 
   .surface {
@@ -144,5 +165,6 @@
 
   .header {
     padding: 18px;
+    border-radius: 22px;
   }
 }
