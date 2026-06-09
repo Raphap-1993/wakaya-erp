@@ -1,7 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import Link from "next/link";
-import type { ComponentProps } from "react";
 import { reservationStore } from "@/lib/reservations/store";
 import { authenticate } from "@/middleware/authn";
 import { hasPermission } from "@/lib/rbac";
@@ -9,7 +7,6 @@ import type { ReservationChannel, ReservationStatus } from "@/lib/reservations/t
 import ReservationsMonitor from "./reservations-monitor";
 import {
   buildReservationsMonitorHref,
-  buildReservationsOccupancyHref,
   type ReservationsMonitorSearchParams,
   normalizeReservationsMonitorQuery,
 } from "./reservations-query";
@@ -84,51 +81,6 @@ export default async function ReservationsAdminPage({
   }
 
   const bungalows = reservationStore.listBungalows();
-  type ReservationsLinkHref = ComponentProps<typeof Link>["href"];
 
-  return (
-    <>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "16px" }}>
-        <Link
-          href={buildReservationsMonitorHref({ ...query, view: "agenda" }) as ReservationsLinkHref}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "999px",
-            padding: "11px 16px",
-            background: "#17362f",
-            color: "#ffffff",
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Agenda
-        </Link>
-        <Link
-          href={buildReservationsOccupancyHref({ ...query, view: "occupancy" }) as ReservationsLinkHref}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "999px",
-            padding: "11px 16px",
-            background: "#e8ece7",
-            color: "#17362f",
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Ocupación
-        </Link>
-      </div>
-      <ReservationsMonitor
-        items={items}
-        selectedId={selectedId}
-        query={query}
-        bungalows={bungalows}
-        permissions={permissions}
-      />
-    </>
-  );
+  return <ReservationsMonitor items={items} selectedId={selectedId} query={query} bungalows={bungalows} permissions={permissions} />;
 }
