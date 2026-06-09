@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { ComponentProps } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,7 +15,28 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     ) ?? ADMIN_MODULES[0];
 
   return (
-    <div className={styles.shell}>
+    <div
+      className={styles.shell}
+      style={
+        {
+          ["--admin-brand" as never]: "#1f4e79",
+          ["--admin-brand-dark" as never]: "#163a5c",
+          ["--admin-brand-light" as never]: "#e7f1fb",
+          ["--admin-brand-soft" as never]: "#d4e7f6",
+          ["--admin-ink" as never]: "#102033",
+          ["--admin-surface" as never]: "rgba(255, 255, 255, 0.92)",
+          ["--admin-border" as never]: "rgba(203, 213, 225, 0.9)",
+          ["--admin-muted" as never]: "#64748b",
+          ["--admin-muted-2" as never]: "#475569",
+          ["--admin-success" as never]: "#0f766e",
+          ["--admin-success-soft" as never]: "#d1fae5",
+          ["--admin-warning" as never]: "#b45309",
+          ["--admin-warning-soft" as never]: "#fef3c7",
+          ["--admin-danger" as never]: "#b91c1c",
+          ["--admin-danger-soft" as never]: "#fee2e2",
+        } as CSSProperties
+      }
+    >
       <aside className={styles.sidebar} aria-label="Backoffice">
         <div className={styles.brandBlock}>
           <p className={styles.brandKicker}>Wakaya</p>

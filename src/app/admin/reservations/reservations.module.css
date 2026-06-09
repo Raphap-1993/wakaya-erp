@@ -1,10 +1,10 @@
 .page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(70, 96, 85, 0.14), transparent 28%),
-    radial-gradient(circle at top right, rgba(186, 128, 59, 0.08), transparent 30%),
-    linear-gradient(180deg, #f4f0e7 0%, #eef1eb 48%, #e7ebe5 100%);
-  color: #152822;
+    radial-gradient(circle at top left, rgba(31, 78, 121, 0.16), transparent 34%),
+    radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #eef4fa 54%, #f8fafc 100%);
+  color: var(--admin-ink, #102033);
 }
 
 .shell {
@@ -18,12 +18,12 @@
   display: grid;
   gap: 18px;
   padding: 28px 28px 24px;
-  border: 1px solid rgba(21, 40, 34, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 30px;
   background:
-    linear-gradient(180deg, rgba(255, 254, 251, 0.9), rgba(248, 244, 236, 0.92)),
-    linear-gradient(135deg, rgba(36, 63, 54, 0.05), transparent 42%);
-  box-shadow: 0 26px 64px rgba(27, 39, 34, 0.09);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(231, 241, 251, 0.92)),
+    linear-gradient(135deg, rgba(31, 78, 121, 0.07), transparent 42%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   overflow: hidden;
 }
 
@@ -32,12 +32,12 @@
   position: absolute;
   inset: auto 28px 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(37, 60, 52, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(31, 78, 121, 0.2), transparent);
 }
 
 .eyebrow {
   margin: 0;
-  color: #6b665c;
+  color: var(--admin-muted, #64748b);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -46,7 +46,7 @@
 
 .title {
   margin: 0;
-  color: #142721;
+  color: var(--admin-ink, #102033);
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 1;
   letter-spacing: -0.05em;
@@ -55,14 +55,14 @@
 .lead {
   max-width: 72ch;
   margin: 0;
-  color: #4e5d57;
+  color: var(--admin-muted-2, #475569);
   font-size: 1rem;
   line-height: 1.7;
 }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
 }
 
@@ -70,20 +70,20 @@
 .panel,
 .tableCard,
 .sectionCard {
-  border: 1px solid rgba(21, 40, 34, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 16px 40px rgba(26, 35, 31, 0.06);
+  background: var(--admin-surface, rgba(255, 255, 255, 0.92));
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
 .statCard {
   padding: 16px 18px 15px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 242, 232, 0.96));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(231, 241, 251, 0.96));
 }
 
 .statLabel {
   display: block;
-  color: #66756f;
+  color: var(--admin-muted, #64748b);
   font-size: 0.76rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -92,7 +92,7 @@
 .statValue {
   display: block;
   margin-top: 6px;
-  color: #182d26;
+  color: var(--admin-ink, #102033);
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -118,7 +118,7 @@
 .sectionTitle,
 .cardTitle {
   margin: 0;
-  color: #152822;
+  color: var(--admin-ink, #102033);
   font-size: 1.15rem;
   font-weight: 700;
 }
@@ -127,7 +127,7 @@
 .cardCopy {
   max-width: 72ch;
   margin: 6px 0 0;
-  color: #5c6a63;
+  color: var(--admin-muted-2, #475569);
   line-height: 1.6;
 }
 
@@ -138,9 +138,9 @@
   align-items: end;
   margin: 18px 0 10px;
   padding: 16px;
-  border: 1px solid rgba(21, 40, 34, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 22px;
-  background: rgba(248, 246, 240, 0.82);
+  background: rgba(231, 241, 251, 0.7);
 }
 
 .filterField {
@@ -174,7 +174,7 @@
 }
 
 .table th {
-  color: #67736c;
+  color: var(--admin-muted, #64748b);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -185,16 +185,16 @@
 }
 
 .selectedRow {
-  background: rgba(220, 239, 226, 0.7);
+  background: rgba(231, 241, 251, 0.8);
 }
 
 .rowMain {
-  color: #132620;
+  color: var(--admin-ink, #102033);
   font-weight: 700;
 }
 
 .muted {
-  color: #66736c;
+  color: var(--admin-muted, #64748b);
 }
 
 .badge {
@@ -202,37 +202,37 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border: 1px solid rgba(21, 40, 34, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 999px;
-  background: #edf0ea;
-  color: #152822;
+  background: rgba(241, 245, 249, 0.95);
+  color: var(--admin-ink, #102033);
   font-size: 0.84rem;
   font-weight: 600;
 }
 
 .statusPendingReview,
 .statusOtaImportedConfirmed {
-  background: #fff3d3;
-  color: #8a5e10;
+  background: var(--admin-warning-soft, #fef3c7);
+  color: var(--admin-warning, #b45309);
 }
 
 .statusConfirmed,
 .statusAssigned,
 .statusCheckedIn {
-  background: #dcefe2;
-  color: #1f6440;
+  background: var(--admin-success-soft, #d1fae5);
+  color: var(--admin-success, #0f766e);
 }
 
 .statusCheckedOut,
 .statusPaid {
-  background: #dae5f2;
-  color: #234d7a;
+  background: var(--admin-brand-light, #e7f1fb);
+  color: var(--admin-brand-dark, #163a5c);
 }
 
 .statusCancelled,
 .statusNoShow {
-  background: #f6dfdf;
-  color: #8d3030;
+  background: var(--admin-danger-soft, #fee2e2);
+  color: var(--admin-danger, #b91c1c);
 }
 
 .detailGrid {
@@ -255,14 +255,14 @@
 
 .kv {
   padding: 14px 16px;
-  border: 1px solid rgba(22, 39, 34, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(249, 246, 240, 0.94), rgba(241, 239, 230, 0.95));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(231, 241, 251, 0.84));
 }
 
 .kvLabel {
   display: block;
-  color: #6a766f;
+  color: var(--admin-muted, #64748b);
   font-size: 0.76rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -271,7 +271,7 @@
 .kvValue {
   display: block;
   margin-top: 6px;
-  color: #132620;
+  color: var(--admin-ink, #102033);
   font-weight: 700;
 }
 
@@ -291,7 +291,7 @@
 }
 
 .fieldLabel {
-  color: #6a766f;
+  color: var(--admin-muted, #64748b);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -301,10 +301,10 @@
 .select,
 .textarea {
   width: 100%;
-  border: 1px solid rgba(21, 40, 34, 0.14);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 14px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   color: inherit;
   font: inherit;
 }
@@ -337,7 +337,7 @@
   border: 0;
   border-radius: 999px;
   padding: 11px 16px;
-  background: linear-gradient(135deg, #17362f 0%, #23463c 100%);
+  background: linear-gradient(135deg, var(--admin-brand, #1f4e79) 0%, var(--admin-brand-dark, #163a5c) 100%);
   color: white;
   font-weight: 700;
   text-decoration: none;
@@ -345,8 +345,8 @@
 }
 
 .buttonSecondary {
-  background: #e8ece7;
-  color: #17362f;
+  background: var(--admin-brand-light, #e7f1fb);
+  color: var(--admin-brand-dark, #163a5c);
 }
 
 .button:disabled {
@@ -364,16 +364,16 @@
 
 .auditItem {
   padding: 14px 16px;
-  border: 1px solid rgba(21, 40, 34, 0.08);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 18px;
-  background: rgba(249, 247, 241, 0.9);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .emptyStateInline {
   display: grid;
   gap: 4px;
   padding: 16px 12px;
-  color: #5c6a63;
+  color: var(--admin-muted-2, #475569);
 }
 
 .feedbackBanner {
@@ -385,21 +385,21 @@
 }
 
 .feedbackSuccess {
-  border-color: rgba(33, 112, 73, 0.16);
-  background: rgba(220, 239, 226, 0.9);
-  color: #1f6440;
+  border-color: rgba(15, 118, 110, 0.16);
+  background: rgba(209, 250, 229, 0.92);
+  color: var(--admin-success, #0f766e);
 }
 
 .feedbackBlocked {
-  border-color: rgba(141, 48, 48, 0.16);
-  background: rgba(246, 223, 223, 0.92);
-  color: #8d3030;
+  border-color: rgba(185, 28, 28, 0.16);
+  background: rgba(254, 226, 226, 0.92);
+  color: var(--admin-danger, #b91c1c);
 }
 
 .feedbackError {
-  border-color: rgba(133, 95, 10, 0.16);
-  background: rgba(255, 243, 211, 0.92);
-  color: #8a5e10;
+  border-color: rgba(180, 83, 9, 0.16);
+  background: rgba(254, 243, 199, 0.92);
+  color: var(--admin-warning, #b45309);
 }
 
 .auditMeta {
@@ -407,12 +407,12 @@
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 8px;
-  color: #66736c;
+  color: var(--admin-muted, #64748b);
   font-size: 0.9rem;
 }
 
 .link {
-  color: #23463c;
+  color: var(--admin-brand-dark, #163a5c);
   font-weight: 700;
   text-decoration: none;
 }
@@ -423,8 +423,170 @@
 
 .helper {
   margin: 0;
-  color: #66736c;
+  color: var(--admin-muted, #64748b);
   line-height: 1.6;
+}
+
+.occupancyGridWrap {
+  overflow-x: auto;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.occupancyGridHeader,
+.occupancyRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.1fr) repeat(7, minmax(110px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.occupancyGridHeader {
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(231, 241, 251, 0.86);
+}
+
+.occupancyGridBody {
+  display: grid;
+}
+
+.occupancyStickyCorner,
+.occupancyDayHeader,
+.occupancyBungalowCell,
+.occupancyCell {
+  border-radius: 16px;
+}
+
+.occupancyStickyCorner,
+.occupancyDayHeader {
+  padding: 14px 12px;
+  color: var(--admin-ink, #102033);
+  font-weight: 700;
+}
+
+.occupancyDayHeader {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.occupancyDayLabel {
+  display: block;
+  color: var(--admin-muted, #64748b);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.occupancyDayValue {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+.occupancyRow + .occupancyRow {
+  border-top: 1px solid rgba(203, 213, 225, 0.6);
+}
+
+.occupancyBungalowCell {
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  padding: 14px 12px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(203, 213, 225, 0.6);
+}
+
+.occupancyCell {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  justify-items: start;
+  min-height: 88px;
+  padding: 14px 12px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(255, 255, 255, 0.96);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.occupancyCell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.occupancySelected {
+  outline: 2px solid rgba(31, 78, 121, 0.42);
+  outline-offset: -2px;
+}
+
+.occupancyFree {
+  background: rgba(231, 241, 251, 0.78);
+  color: var(--admin-brand-dark, #163a5c);
+}
+
+.occupancyOccupied {
+  background: rgba(220, 238, 251, 0.88);
+  color: var(--admin-success, #0f766e);
+}
+
+.occupancyBlocked {
+  background: rgba(254, 226, 226, 0.92);
+  color: var(--admin-danger, #b91c1c);
+}
+
+.occupancyAttention {
+  background: rgba(254, 243, 199, 0.92);
+  color: var(--admin-warning, #b45309);
+}
+
+.occupancyCellDate {
+  font-weight: 700;
+}
+
+.occupancyCellMeta {
+  color: rgba(16, 32, 51, 0.72);
+  font-size: 0.82rem;
+}
+
+.legendGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.detailSummary {
+  display: grid;
+  gap: 8px;
+}
+
+.detailActions {
+  display: grid;
+  gap: 10px;
+}
+
+.detailActionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detailActionPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--admin-brand-dark, #163a5c);
+  font: inherit;
+  font-weight: 700;
+}
+
+.detailActionPill:disabled {
+  opacity: 0.45;
 }
 
 @media (max-width: 960px) {
@@ -441,5 +603,10 @@
   .sectionHeader,
   .cardHeader {
     flex-direction: column;
+  }
+
+  .occupancyGridHeader,
+  .occupancyRow {
+    grid-template-columns: minmax(160px, 1fr) repeat(7, minmax(96px, 1fr));
   }
 }
