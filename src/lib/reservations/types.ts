@@ -1,0 +1,111 @@
+export type ReservationChannel = "web" | "ota";
+
+export type ReservationPaymentStatus = "pending" | "partial" | "paid";
+
+export type ReservationStatus =
+  | "pending_review"
+  | "ota_imported_confirmed"
+  | "confirmed"
+  | "assigned"
+  | "checked_in"
+  | "checked_out"
+  | "paid"
+  | "cancelled"
+  | "no_show";
+
+export type ReservationAction =
+  | "confirm"
+  | "assign"
+  | "check_in"
+  | "check_out"
+  | "mark_paid"
+  | "cancel"
+  | "mark_no_show";
+
+export interface Reservation {
+  id: string;
+  number: string;
+  channel: ReservationChannel;
+  status: ReservationStatus;
+  paymentStatus?: ReservationPaymentStatus;
+  amountTotalCents?: number;
+  amountPaidCents?: number;
+  currencyCode?: "PEN";
+  bungalowId: string | null;
+  responsibleId: string | null;
+  startDate: string;
+  endDate: string;
+  updatedAt: string;
+}
+
+export interface Bungalow {
+  id: string;
+  code: string;
+  name: string;
+  active: boolean;
+  capacity: number;
+}
+
+export interface ReservationOccupancy {
+  id: string;
+  reservationId: string;
+  bungalowId: string;
+  date: string;
+  source: ReservationChannel;
+  status: "provisional" | "confirmed" | "released";
+  createdAt: string;
+}
+
+export interface ReservationAudit {
+  id: string;
+  reservationId: string;
+  actorId: string;
+  action: string;
+  previousStatus: ReservationStatus;
+  nextStatus: ReservationStatus;
+  reason: string;
+  createdAt: string;
+}
+
+export interface ReservationListFilters {
+  status?: ReservationStatus;
+  responsibleId?: string;
+  channel?: ReservationChannel;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ReservationCreateInput {
+  number: string;
+  channel: ReservationChannel;
+  bungalowId: string;
+  responsibleId?: string | null;
+  startDate: string;
+  endDate: string;
+  amountTotalCents?: number;
+  amountPaidCents?: number;
+}
+
+export interface ReservationUpdateInput extends ReservationCreateInput {
+  actorId: string;
+  reason: string;
+}
+
+export interface ReservationAssignmentInput {
+  bungalowId: string;
+  actorId: string;
+  reason: string;
+}
+
+export interface ReservationStatusChangeInput {
+  action: ReservationAction;
+  actorId: string;
+  reason: string;
+}
+
+export interface ReservationPaymentInput {
+  amountPaidCents: number;
+  actorId: string;
+  reason: string;
+}

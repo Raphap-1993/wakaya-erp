@@ -1,6 +1,8 @@
+import "./globals.css";
+
 export const metadata = {
-  title: 'Wakaya ERP',
-  description: 'Scaffolding neutral del proyecto sobre Node + Next.js',
+  title: "Wakaya",
+  description: "Wakaya hospitality site and reservations monitor",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

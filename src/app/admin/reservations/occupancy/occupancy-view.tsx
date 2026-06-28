@@ -9,6 +9,8 @@ import { buildReservationsMonitorHref, buildReservationsOccupancyHref, type Rese
 import styles from "../reservations.module.css";
 import { OccupancyDetailPanel } from "./occupancy-detail-panel";
 import { OccupancyGrid } from "./occupancy-grid";
+import { OccupancyStateLegend } from "../occupancy-state-badge";
+import { ReservationMetricCards } from "../reservation-metric-cards";
 import {
   buildOccupancyModel,
   getDefaultOccupancyCell,
@@ -61,24 +63,18 @@ export default function OccupancyView({ items, bungalows, query, auditsByReserva
         <header className={styles.hero}>
           <p className={styles.eyebrow}>Wakaya · operaciones internas</p>
           <h1 className={styles.title}>Ocupación semanal</h1>
-          <p className={styles.lead}>
-            Mapa semanal por bungalow. Cada celda muestra el estado operativo del día y enlaza con el detalle diario.
-          </p>
 
-          <div className={styles.stats}>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Semana activa</span>
-              <span className={styles.statValue}>{model.weekLabel}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Fecha ancla</span>
-              <span className={styles.statValue}>{model.anchorDate}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Reserva seleccionada</span>
-              <span className={styles.statValue}>{selectedReservation?.number ?? "ninguna"}</span>
-            </div>
-          </div>
+          <ReservationMetricCards
+            items={[
+              { key: "week", label: "Semana activa", value: model.weekLabel },
+              { key: "anchor", label: "Fecha ancla", value: model.anchorDate },
+              {
+                key: "selected",
+                label: "Reserva seleccionada",
+                value: selectedReservation?.number ?? "ninguna",
+              },
+            ]}
+          />
 
           <div className={styles.heroActions}>
             <a
@@ -86,6 +82,9 @@ export default function OccupancyView({ items, bungalows, query, auditsByReserva
               href={buildReservationsOccupancyHref({ ...query, view: "occupancy" })}
             >
               Ocupación
+            </a>
+            <a className={`${styles.button} ${styles.buttonSecondary}`} href="/admin/reservations/flows">
+              Roster de flujos
             </a>
             <a
               className={`${styles.button} ${styles.buttonSecondary}`}
@@ -99,13 +98,7 @@ export default function OccupancyView({ items, bungalows, query, auditsByReserva
         <section className={styles.section}>
           <div className={styles.tableCard}>
             <div className={styles.cardHeader}>
-              <div>
-                <h2 className={styles.cardTitle}>Grilla semanal de bungalows</h2>
-                <p className={styles.cardCopy}>
-                  Libre, ocupado, conflicto y atención se diferencian por color y contenido. La celda seleccionada
-                  abre el detalle a la derecha.
-                </p>
-              </div>
+              <h2 className={styles.cardTitle}>Grilla semanal</h2>
             </div>
 
             <OccupancyGrid days={model.days} rows={model.rows} selectedKey={selectedKey} onSelect={handleSelect} />
@@ -124,18 +117,10 @@ export default function OccupancyView({ items, bungalows, query, auditsByReserva
           />
           <div className={styles.sectionCard}>
             <div className={styles.cardHeader}>
-              <div>
-                <h2 className={styles.cardTitle}>Leyenda</h2>
-                <p className={styles.cardCopy}>Estados explícitos de ocupación para lectura rápida del inventario.</p>
-              </div>
+              <h2 className={styles.cardTitle}>Leyenda</h2>
             </div>
 
-            <div className={styles.legendGrid}>
-              <span className={`${styles.badge} ${styles.occupancyFree}`}>Libre</span>
-              <span className={`${styles.badge} ${styles.occupancyOccupied}`}>Ocupado</span>
-              <span className={`${styles.badge} ${styles.occupancyBlocked}`}>Bloqueado</span>
-              <span className={`${styles.badge} ${styles.occupancyAttention}`}>Atención</span>
-            </div>
+            <OccupancyStateLegend />
           </div>
         </section>
       </div>

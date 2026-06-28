@@ -11,3 +11,4 @@
 
 ## ADR registrados
 - [ADR-001 - Stack Quarkus Angular y Keycloak](ADR-001-stack-quarkus-angular-keycloak.md)
+- [ADR-011 - Stack Next.js, PostgreSQL, Prisma y despliegue aislado con PM2 en VPS compartido](ADR-011-stack-nextjs-postgresql-prisma-pm2-vps-aislado.md)

@@ -3,25 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReservationListItem } from "@/lib/reservations/store";
-import { buildReservationsMonitorHref, type ReservationsMonitorQuery } from "./reservations-query";
-import { MonitorDetailPanel } from "./reservations-monitor-detail-panel";
+import {
+  buildReservationsFinancialReportHref,
+  type ReservationsMonitorQuery,
+} from "./reservations-query";
 import { MonitorFilters } from "./reservations-monitor-filters";
-import { MonitorSelectionSummary } from "./reservations-monitor-selection-summary";
 import { MonitorStats } from "./reservations-monitor-stats";
 import { MonitorTable } from "./reservations-monitor-table";
-import type { MonitorFilterState, MonitorPermissions } from "./reservations-monitor-shared";
-import type { Bungalow } from "@/lib/reservations/types";
+import type { MonitorFilterState } from "./reservations-monitor-shared";
 import styles from "./reservations.module.css";
 
 type Props = {
   items: ReservationListItem[];
   selectedId: string | null;
   query: ReservationsMonitorQuery;
-  bungalows: Bungalow[];
-  permissions: MonitorPermissions;
 };
 
-export default function ReservationsMonitor({ items, selectedId, query, bungalows, permissions }: Props) {
+export default function ReservationsMonitor({ items, selectedId, query }: Props) {
   const router = useRouter();
   const [activeId, setActiveId] = useState(selectedId ?? items[0]?.id ?? null);
   const [filters, setFilters] = useState<MonitorFilterState>({
@@ -48,23 +46,27 @@ export default function ReservationsMonitor({ items, selectedId, query, bungalow
     });
   }, [query.channel, query.date, query.endDate, query.responsibleId, query.startDate, query.status]);
 
-  const activeItem = useMemo(
-    () => items.find((item) => item.id === activeId) ?? null,
-    [activeId, items],
-  );
-
   const stats = useMemo(
     () => ({
       total: items.length,
       pending: items.filter((item) => item.status === "pending_review").length,
-      assigned: items.filter((item) => item.status === "assigned").length,
+      withBalance: items.filter((item) => (item.amountTotalCents ?? 0) > (item.amountPaidCents ?? 0)).length,
+      paid: items.filter(
+        (item) =>
+          item.paymentStatus === "paid" ||
+          ((item.amountTotalCents ?? 0) > 0 && (item.amountPaidCents ?? 0) >= (item.amountTotalCents ?? 0)),
+      ).length,
+      balanceDueCents: items.reduce(
+        (sum, item) => sum + Math.max((item.amountTotalCents ?? 0) - (item.amountPaidCents ?? 0), 0),
+        0,
+      ),
     }),
     [items],
   );
 
   const selectReservation = (id: string) => {
     setActiveId(id);
-    router.replace(buildReservationsMonitorHref({ ...query, selected: id }) as never);
+    router.push(`/admin/reservations/${id}` as never);
   };
 
   const updateFilters = (next: MonitorFilterState) => {
@@ -76,24 +78,46 @@ export default function ReservationsMonitor({ items, selectedId, query, bungalow
       <div className={styles.shell}>
         <header className={styles.hero}>
           <p className={styles.eyebrow}>Wakaya · operaciones internas</p>
-          <h1 className={styles.title}>Mini monitor de reservas</h1>
-          <p className={styles.lead}>
-            Vista operativa para recepción y administración. La lista, el detalle y la auditoría
-            hablan la misma verdad.
-          </p>
+          <h1 className={styles.title}>Agenda operativa de reservas</h1>
 
-          <MonitorStats total={stats.total} pending={stats.pending} assigned={stats.assigned} />
+          <div className={styles.heroActions}>
+            <a className={styles.button} href="/admin/reservations/new">
+              Nueva reserva manual
+            </a>
+            <a className={`${styles.button} ${styles.buttonSecondary}`} href="/admin/reservations/flows">
+              Roster de flujos
+            </a>
+            <a
+              className={`${styles.button} ${styles.buttonSecondary}`}
+              href={buildReservationsFinancialReportHref(query)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ver reporte financiero
+            </a>
+            <a
+              className={`${styles.button} ${styles.buttonSecondary}`}
+              href={buildReservationsFinancialReportHref(query, "csv")}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Exportar CSV
+            </a>
+          </div>
+
+          <MonitorStats
+            total={stats.total}
+            pending={stats.pending}
+            withBalance={stats.withBalance}
+            paid={stats.paid}
+            balanceDueCents={stats.balanceDueCents}
+          />
         </header>
 
         <section className={styles.section}>
           <div className={styles.tableCard}>
             <div className={styles.cardHeader}>
-              <div>
-                <h2 className={styles.cardTitle}>Reservas registradas</h2>
-                <p className={styles.cardCopy}>
-                  Una sola fuente de verdad para disponibilidad, asignación y trazabilidad.
-                </p>
-              </div>
+              <h2 className={styles.cardTitle}>Agenda operativa</h2>
             </div>
 
             <MonitorFilters activeId={activeId} filters={filters} onChange={updateFilters} />
@@ -104,16 +128,6 @@ export default function ReservationsMonitor({ items, selectedId, query, bungalow
 
             <MonitorTable activeId={activeId} items={items} onSelect={selectReservation} />
           </div>
-        </section>
-
-        <section className={styles.detailGrid}>
-          <div className={styles.stack}>
-            <MonitorSelectionSummary activeItem={activeItem} />
-          </div>
-
-          <aside className={styles.actions}>
-            <MonitorDetailPanel activeItem={activeItem} bungalows={bungalows} permissions={permissions} />
-          </aside>
         </section>
       </div>
     </main>

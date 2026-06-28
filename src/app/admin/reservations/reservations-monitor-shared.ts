@@ -1,4 +1,4 @@
-import type { ReservationStatus } from "@/lib/reservations/types";
+import type { ReservationPaymentStatus, ReservationStatus } from "@/lib/reservations/types";
 
 export type MonitorFilterState = {
   status: string;
@@ -25,6 +25,25 @@ export const STATUS_LABELS: Record<ReservationStatus, string> = {
   cancelled: "Cancelled",
   no_show: "No show",
 };
+
+export const PAYMENT_STATUS_LABELS: Record<ReservationPaymentStatus, string> = {
+  pending: "Pendiente",
+  partial: "Parcial",
+  paid: "Pagado",
+};
+
+export function paymentTone(paymentStatus: ReservationPaymentStatus): string {
+  switch (paymentStatus) {
+    case "pending":
+      return "paymentPending";
+    case "partial":
+      return "paymentPartial";
+    case "paid":
+      return "paymentPaid";
+    default:
+      return "paymentPending";
+  }
+}
 
 export const STATUS_FILTERS: Array<{ label: string; value: string }> = [
   { label: "Todas", value: "" },
@@ -61,4 +80,13 @@ export function statusTone(status: ReservationStatus): string {
     default:
       return "";
   }
+}
+
+export function formatMoneyCents(value: number, currency = "PEN"): string {
+  return new Intl.NumberFormat("es-PE", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value / 100);
 }

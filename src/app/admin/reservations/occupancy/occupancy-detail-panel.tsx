@@ -2,21 +2,13 @@
 
 import Link from "next/link";
 import styles from "../reservations.module.css";
-import { formatMoneyCents, PAYMENT_STATUS_LABELS, STATUS_LABELS, statusTone } from "../reservations-monitor-shared";
+import { formatMoneyCents, PAYMENT_STATUS_LABELS } from "../reservations-monitor-shared";
 import type { ReservationListItem } from "@/lib/reservations/store";
 import type { Bungalow, ReservationAudit } from "@/lib/reservations/types";
 import { buildReservationsMonitorHref } from "../reservations-query";
-import {
-  auditSummary,
-  paymentLabel,
-  statusLabel,
-  validOccupancyActions,
-} from "./occupancy-utils";
-
-function statusClass(status: ReservationListItem["status"]): string {
-  const tone = statusTone(status);
-  return tone ? `${styles.badge} ${styles[tone as keyof typeof styles]}` : styles.badge;
-}
+import { OccupancyStateBadge } from "../occupancy-state-badge";
+import { ReservationStatusBadge } from "../reservation-status-badge";
+import { validOccupancyActions } from "./occupancy-utils";
 
 export function OccupancyDetailPanel({
   reservation,
@@ -58,11 +50,7 @@ export function OccupancyDetailPanel({
   return (
     <aside className={styles.sectionCard}>
       <div className={styles.cardHeader}>
-        <div>
-          <h2 className={styles.cardTitle}>Detalle diario</h2>
-          <p className={styles.cardCopy}>La celda seleccionada resume ocupación, pago, auditoría y acciones válidas.</p>
-        </div>
-        {reservation ? <span className={statusClass(reservation.status)}>{STATUS_LABELS[reservation.status]}</span> : null}
+        <h2 className={styles.cardTitle}>Detalle diario</h2>
       </div>
 
       <div className={styles.stack}>
@@ -110,17 +98,9 @@ export function OccupancyDetailPanel({
           <span className={styles.fieldLabel}>Alertas</span>
           <div className={styles.detailActionList}>
             {alerts.map((alert) => (
-              <span key={alert} className={`${styles.badge} ${styles.occupancyAttention}`}>
-                {alert}
-              </span>
+              <OccupancyStateBadge key={alert} state="attention-needed" label={alert} />
             ))}
           </div>
-        </div>
-
-        <div className={styles.detailSummary}>
-          <p className={styles.helper}>{paymentLabel(reservation?.paymentStatus)}</p>
-          <p className={styles.helper}>{auditSummary(audits)}</p>
-          <p className={styles.helper}>{reservation ? statusLabel(reservation.status) : "Libre"}</p>
         </div>
 
         {hasConflict ? (
@@ -131,9 +111,9 @@ export function OccupancyDetailPanel({
                 <li key={item.id} className={styles.auditItem}>
                   <div className={styles.auditMeta}>
                     <span>{item.number}</span>
-                    <span>{STATUS_LABELS[item.status]}</span>
+                    <ReservationStatusBadge status={item.status} />
                   </div>
-                  <p className={styles.helper}>{paymentLabel(item.paymentStatus)}</p>
+                  <p className={styles.helper}>Cobro: {PAYMENT_STATUS_LABELS[item.paymentStatus ?? "pending"]}</p>
                 </li>
               ))}
             </ul>
@@ -177,11 +157,6 @@ export function OccupancyDetailPanel({
               Cancelar estadía
             </button>
           </div>
-        </div>
-
-        <div className={styles.detailSummary}>
-          <span className={styles.fieldLabel}>Estado visible</span>
-          <p className={styles.helper}>{reservation ? STATUS_LABELS[reservation.status] : selectedCellState === "blocked" ? "Bloqueado" : selectedCellState === "attention-needed" ? "Atención" : "Libre"}</p>
         </div>
 
         <div className={styles.detailSummary}>

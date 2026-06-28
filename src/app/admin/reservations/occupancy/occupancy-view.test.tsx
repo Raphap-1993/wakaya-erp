@@ -109,7 +109,7 @@ describe("OccupancyView", () => {
       />,
     );
 
-    expect(html).toContain("Grilla semanal de bungalows");
+    expect(html).toContain("Grilla semanal");
     expect(html).toContain("Ocupación semanal");
     expect(html).toContain("RESERVATION-PAID-1");
     expect(html).toContain("Bungalow Suite");

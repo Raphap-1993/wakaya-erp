@@ -7,6 +7,10 @@ El sitio publico debe conducir desde un hero slider dominante hacia booking,
 habitaciones destacadas y bloques comerciales amplios antes de pasar a
 prereserva manual, con hospedaje como ruta dominante.
 
+## Entrada canonica del flujo
+La referencia de arranque para revision visual y walkthrough funcional queda
+definida en `prototype-html5/index.html?view=home`.
+
 ## Paginas
 - Home
 - Habitaciones

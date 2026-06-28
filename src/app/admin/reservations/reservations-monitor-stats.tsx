@@ -1,28 +1,28 @@
-import styles from "./reservations.module.css";
+import { formatMoneyCents } from "./reservations-monitor-shared";
+import { ReservationMetricCards } from "./reservation-metric-cards";
 
 export function MonitorStats({
   total,
   pending,
-  assigned,
+  withBalance,
+  paid,
+  balanceDueCents,
 }: {
   total: number;
   pending: number;
-  assigned: number;
+  withBalance: number;
+  paid: number;
+  balanceDueCents: number;
 }) {
   return (
-    <div className={styles.stats}>
-      <div className={styles.statCard}>
-        <span className={styles.statLabel}>Reservas visibles</span>
-        <span className={styles.statValue}>{total}</span>
-      </div>
-      <div className={styles.statCard}>
-        <span className={styles.statLabel}>Pendientes</span>
-        <span className={styles.statValue}>{pending}</span>
-      </div>
-      <div className={styles.statCard}>
-        <span className={styles.statLabel}>Asignadas</span>
-        <span className={styles.statValue}>{assigned}</span>
-      </div>
-    </div>
+    <ReservationMetricCards
+      items={[
+        { key: "total", label: "Reservas visibles", value: total },
+        { key: "pending", label: "Pendientes", value: pending },
+        { key: "balance", label: "Con saldo", value: withBalance },
+        { key: "paid", label: "Pagadas", value: paid },
+        { key: "due", label: "Saldo total", value: formatMoneyCents(balanceDueCents) },
+      ]}
+    />
   );
 }

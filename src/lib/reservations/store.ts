@@ -12,7 +12,10 @@ import type {
   ReservationCreateInput,
   ReservationListFilters,
   ReservationOccupancy,
+  ReservationPaymentInput,
+  ReservationPaymentStatus,
   ReservationStatusChangeInput,
+  ReservationUpdateInput,
 } from "@/lib/reservations/types";
 
 export interface ReservationDetail extends Reservation {
@@ -48,6 +51,28 @@ function normalizeSource(channel: ReservationChannel): ReservationChannel {
 
 function defaultStatus(channel: ReservationChannel) {
   return channel === "ota" ? "ota_imported_confirmed" : "pending_review";
+}
+
+const DEFAULT_NIGHTLY_RATE_CENTS = 12_000;
+const DEFAULT_CURRENCY_CODE = "PEN";
+
+function normalizeAmount(value: number | undefined): number {
+  const normalized = value ?? 0;
+  return Number.isFinite(normalized) && normalized >= 0 ? Math.floor(normalized) : 0;
+}
+
+function derivePaymentStatus(totalCents: number, paidCents: number): ReservationPaymentStatus {
+  if (totalCents > 0 && paidCents >= totalCents) {
+    return "paid";
+  }
+  if (paidCents > 0) {
+    return "partial";
+  }
+  return "pending";
+}
+
+function occupancyStatusForReservation(status: Reservation["status"]): ReservationOccupancy["status"] {
+  return status === "pending_review" ? "provisional" : "confirmed";
 }
 
 export class ReservationStore {
@@ -92,11 +117,17 @@ export class ReservationStore {
   }
 
   list(filters: ReservationListFilters = {}): ReservationListItem[] {
+    this.refreshFromPersistence();
     const items = Array.from(this.reservations.values())
       .filter((reservation) => {
         if (filters.status && reservation.status !== filters.status) return false;
         if (filters.responsibleId && reservation.responsibleId !== filters.responsibleId) return false;
         if (filters.channel && reservation.channel !== filters.channel) return false;
+        if (filters.date) {
+          if (reservation.startDate > filters.date || reservation.endDate < filters.date) return false;
+        }
+        if (filters.startDate && reservation.endDate < filters.startDate) return false;
+        if (filters.endDate && reservation.startDate > filters.endDate) return false;
         return true;
       })
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
@@ -108,6 +139,7 @@ export class ReservationStore {
   }
 
   get(id: string): ReservationDetail | null {
+    this.refreshFromPersistence();
     const reservation = this.reservations.get(id);
     if (!reservation) return null;
     return {
@@ -118,14 +150,17 @@ export class ReservationStore {
   }
 
   getBungalow(id: string): Bungalow | null {
+    this.refreshFromPersistence();
     return this.bungalows.get(id) ?? null;
   }
 
   listBungalows(): Bungalow[] {
+    this.refreshFromPersistence();
     return Array.from(this.bungalows.values()).sort((left, right) => left.name.localeCompare(right.name));
   }
 
   getAuditTrail(reservationId: string): ReservationAudit[] {
+    this.refreshFromPersistence();
     return [...(this.audits.get(reservationId) ?? [])].sort((left, right) =>
       right.createdAt.localeCompare(left.createdAt),
     );
@@ -137,6 +172,8 @@ export class ReservationStore {
     const status = defaultStatus(input.channel);
     const updatedAt = isoNow();
     const nights = nightsForReservation(input.startDate, input.endDate);
+    const amountTotalCents = normalizeAmount(input.amountTotalCents ?? nights.length * DEFAULT_NIGHTLY_RATE_CENTS);
+    const amountPaidCents = Math.min(normalizeAmount(input.amountPaidCents), amountTotalCents);
     const existingOccupancies = Array.from(this.occupancies.values());
     const availability = canBlockOccupancy(existingOccupancies, {
       bungalowId: input.bungalowId,
@@ -156,6 +193,10 @@ export class ReservationStore {
       responsibleId: input.responsibleId ?? null,
       startDate: input.startDate,
       endDate: input.endDate,
+      amountTotalCents,
+      amountPaidCents,
+      paymentStatus: derivePaymentStatus(amountTotalCents, amountPaidCents),
+      currencyCode: DEFAULT_CURRENCY_CODE,
       updatedAt,
     };
 
@@ -165,7 +206,7 @@ export class ReservationStore {
       bungalowId: input.bungalowId,
       date,
       source: normalizeSource(input.channel),
-      status: (status === "pending_review" ? "provisional" : "confirmed") as ReservationOccupancy["status"],
+      status: occupancyStatusForReservation(status),
       createdAt: updatedAt,
     }));
 
@@ -184,6 +225,73 @@ export class ReservationStore {
     this.persistState();
 
     return { reservation, occupancy, audit };
+  }
+
+  update(reservationId: string, input: ReservationUpdateInput): ReservationDetail {
+    this.refreshFromPersistence();
+    const reservation = this.mustGetReservation(reservationId);
+    const bungalow = this.mustGetBungalow(input.bungalowId);
+    if (!bungalow.active) {
+      throw new Error("bungalow_inactive");
+    }
+
+    const nights = nightsForReservation(input.startDate, input.endDate);
+    const amountTotalCents = normalizeAmount(input.amountTotalCents ?? nights.length * DEFAULT_NIGHTLY_RATE_CENTS);
+    const amountPaidCents = Math.min(normalizeAmount(input.amountPaidCents), amountTotalCents);
+    const shouldOccupy = reservation.status !== "cancelled" && reservation.status !== "no_show";
+    const existingOccupancies = Array.from(this.occupancies.values()).filter(
+      (occupancy) => occupancy.reservationId !== reservationId,
+    );
+
+    if (shouldOccupy) {
+      const availability = canBlockOccupancy(existingOccupancies, {
+        bungalowId: input.bungalowId,
+        startDate: input.startDate,
+        endDate: input.endDate,
+      });
+      if (!availability.ok) {
+        throw new Error(availability.reason ?? "occupancy_conflict");
+      }
+    }
+
+    this.releaseReservationOccupancy(reservationId);
+    const updatedAt = isoNow();
+    const nextReservation: Reservation = {
+      ...reservation,
+      number: input.number,
+      channel: input.channel,
+      bungalowId: input.bungalowId,
+      responsibleId: input.responsibleId ?? null,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      amountTotalCents,
+      amountPaidCents,
+      paymentStatus: derivePaymentStatus(amountTotalCents, amountPaidCents),
+      updatedAt,
+    };
+
+    this.reservations.set(reservationId, nextReservation);
+    if (shouldOccupy) {
+      this.blockReservationOccupancy(nextReservation, input.bungalowId, occupancyStatusForReservation(nextReservation.status));
+    }
+
+    this.appendAudit(
+      createReservationAuditEntry({
+        reservationId,
+        actorId: input.actorId,
+        action: "update",
+        previousStatus: reservation.status,
+        nextStatus: nextReservation.status,
+        reason: input.reason,
+      }),
+    );
+    this.persistState();
+
+    const detail = this.get(reservationId);
+    if (!detail) {
+      throw new Error("reservation_not_found");
+    }
+    return detail;
   }
 
   assign(reservationId: string, input: ReservationAssignmentInput): ReservationDetail {
@@ -245,6 +353,15 @@ export class ReservationStore {
     const nextReservation: Reservation = {
       ...reservation,
       status: nextStatus,
+      bungalowId: nextStatus === "cancelled" || nextStatus === "no_show" ? null : reservation.bungalowId,
+      amountPaidCents:
+        nextStatus === "paid"
+          ? reservation.amountTotalCents ?? reservation.amountPaidCents ?? 0
+          : reservation.amountPaidCents,
+      paymentStatus:
+        nextStatus === "paid"
+          ? "paid"
+          : derivePaymentStatus(reservation.amountTotalCents ?? 0, reservation.amountPaidCents ?? 0),
       updatedAt,
     };
 
@@ -266,6 +383,51 @@ export class ReservationStore {
         action: input.action,
         previousStatus: reservation.status,
         nextStatus,
+        reason: input.reason,
+      }),
+    );
+    this.persistState();
+
+    const detail = this.get(reservationId);
+    if (!detail) {
+      throw new Error("reservation_not_found");
+    }
+    return detail;
+  }
+
+  recordPayment(reservationId: string, input: ReservationPaymentInput): ReservationDetail {
+    this.refreshFromPersistence();
+    const reservation = this.mustGetReservation(reservationId);
+    if (reservation.status === "cancelled" || reservation.status === "no_show") {
+      throw new Error("invalid_transition");
+    }
+
+    const totalCents = normalizeAmount(reservation.amountTotalCents);
+    if (totalCents <= 0) {
+      throw new Error("invalid_payload");
+    }
+
+    const paidBefore = normalizeAmount(reservation.amountPaidCents);
+    const paidAfter = Math.min(totalCents, paidBefore + normalizeAmount(input.amountPaidCents));
+    const paymentStatus = derivePaymentStatus(totalCents, paidAfter);
+    const shouldCloseAsPaid = paymentStatus === "paid" && reservation.status === "checked_out";
+    const updatedAt = isoNow();
+    const nextReservation: Reservation = {
+      ...reservation,
+      amountPaidCents: paidAfter,
+      paymentStatus,
+      status: shouldCloseAsPaid ? "paid" : reservation.status,
+      updatedAt,
+    };
+
+    this.reservations.set(reservationId, nextReservation);
+    this.appendAudit(
+      createReservationAuditEntry({
+        reservationId,
+        actorId: input.actorId,
+        action: shouldCloseAsPaid ? "mark_paid" : "register_payment",
+        previousStatus: reservation.status,
+        nextStatus: nextReservation.status,
         reason: input.reason,
       }),
     );
@@ -303,7 +465,7 @@ export class ReservationStore {
   private releaseReservationOccupancy(reservationId: string): void {
     for (const [id, occupancy] of this.occupancies.entries()) {
       if (occupancy.reservationId !== reservationId) continue;
-      this.occupancies.set(id, { ...occupancy, status: "released" });
+      this.occupancies.delete(id);
     }
   }
 
@@ -376,6 +538,9 @@ export const reservationStore = new ReservationStore({
       number: "RESERVATION-2026-0001",
       channel: "web",
       status: "pending_review",
+      amountTotalCents: 36000,
+      amountPaidCents: 0,
+      paymentStatus: "pending",
       bungalowId: "bungalow-suite",
       responsibleId: "user-reception-1",
       startDate: "2026-06-12",
@@ -387,10 +552,27 @@ export const reservationStore = new ReservationStore({
       number: "RESERVATION-2026-0002",
       channel: "ota",
       status: "ota_imported_confirmed",
+      amountTotalCents: 24000,
+      amountPaidCents: 24000,
+      paymentStatus: "paid",
       bungalowId: "bungalow-family",
       responsibleId: "user-reception-2",
       startDate: "2026-06-15",
       endDate: "2026-06-16",
+      updatedAt: "2026-05-29T00:00:00.000Z",
+    },
+    {
+      id: "reservation-demo-3",
+      number: "RESERVATION-2026-0003",
+      channel: "ota",
+      status: "checked_in",
+      amountTotalCents: 48000,
+      amountPaidCents: 12000,
+      paymentStatus: "partial",
+      bungalowId: "bungalow-matrimonial",
+      responsibleId: "user-reception-3",
+      startDate: "2026-06-17",
+      endDate: "2026-06-19",
       updatedAt: "2026-05-29T00:00:00.000Z",
     },
   ],
@@ -436,6 +618,33 @@ export const reservationStore = new ReservationStore({
       reservationId: "reservation-demo-2",
       bungalowId: "bungalow-family",
       date: "2026-06-16",
+      source: "ota",
+      status: "confirmed",
+      createdAt: "2026-05-29T00:00:00.000Z",
+    },
+    {
+      id: "occupancy-demo-6",
+      reservationId: "reservation-demo-3",
+      bungalowId: "bungalow-matrimonial",
+      date: "2026-06-17",
+      source: "ota",
+      status: "confirmed",
+      createdAt: "2026-05-29T00:00:00.000Z",
+    },
+    {
+      id: "occupancy-demo-7",
+      reservationId: "reservation-demo-3",
+      bungalowId: "bungalow-matrimonial",
+      date: "2026-06-18",
+      source: "ota",
+      status: "confirmed",
+      createdAt: "2026-05-29T00:00:00.000Z",
+    },
+    {
+      id: "occupancy-demo-8",
+      reservationId: "reservation-demo-3",
+      bungalowId: "bungalow-matrimonial",
+      date: "2026-06-19",
       source: "ota",
       status: "confirmed",
       createdAt: "2026-05-29T00:00:00.000Z",

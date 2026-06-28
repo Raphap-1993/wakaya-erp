@@ -28,4 +28,4 @@ No aplica en esta iteración.
 - Confirmación corta de asignación o cambio operativo.
 
 ## Estado
-Pendiente de validación visual humana. `prototype-validation.md` mantiene `gate-spdd-approved` en estado `PENDIENTE` para este slice.
+Validación visual humana aprobada. `prototype-validation.md` registra la revisión y el prototipo ya no depende de una validación pendiente para este slice.

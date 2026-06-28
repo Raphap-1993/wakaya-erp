@@ -69,6 +69,7 @@
     "check:runbook-binding": "node ci/scripts/check-runbook-binding.mjs",
     "check:feature-dependencies": "node ci/scripts/check-feature-dependencies.mjs",
     "check:phase-contract": "node ci/scripts/check-phase-contract.mjs",
+    "check:constitution": "node ci/scripts/check-constitution.mjs",
     "check:validation-coverage": "node ci/scripts/check-validation-coverage.mjs",
     "roadmap:next": "node scripts/roadmap-next.mjs",
     "roadmap:next:text": "node scripts/roadmap-next.mjs --format text",
@@ -84,7 +85,7 @@
     "generate:openapi:check": "node scripts/generate-openapi.mjs --check",
     "scaffold:project": "node scripts/scaffold-project.mjs",
     "check:template": "npm run check:docs && npm run check:prototype-hub && npm run check:ai-artifacts && npm run check:markdown-paths",
-    "check:project": "npm run check:trace-drift && npm run check:trace-coverage && npm run check:bd-documented && npm run check:api-documented && npm run check:test-documented && npm run check:runbook-documented && npm run check:evidence-exists && npm run check:gates-mentioned && npm run check:status-coherence && npm run check:orphan-evidence && npm run check:prototype-diversity -- --strict && npm run check:openapi-coverage && npm run check:prototype-cross-links && npm run check:prototype-bidirectional-links && npm run check:prototype-location && npm run check:prototype-domain-mismatch && npm run check:auto-zones && npm run check:prototype-portfolio && npm run check:gate-status-format && npm run check:release-binding && npm run check:runbook-binding && npm run check:feature-dependencies && npm run check:phase-contract && npm run check:prototype-contract && npm run check:prototype-coverage && npm run check:prototype-spa-coherence && npm run check:prototype-mock-data && npm run check:architecture-baseline && npm run check:phase-validator-sync && npm run check:plantillas && npm run check:validation-coverage && npm run check:instantiation",
+    "check:project": "npm run check:trace-drift && npm run check:trace-coverage && npm run check:bd-documented && npm run check:api-documented && npm run check:test-documented && npm run check:runbook-documented && npm run check:evidence-exists && npm run check:gates-mentioned && npm run check:status-coherence && npm run check:orphan-evidence && npm run check:prototype-diversity -- --strict && npm run check:openapi-coverage && npm run check:prototype-cross-links && npm run check:prototype-bidirectional-links && npm run check:prototype-location && npm run check:prototype-domain-mismatch && npm run check:auto-zones && npm run check:prototype-portfolio && npm run check:gate-status-format && npm run check:release-binding && npm run check:runbook-binding && npm run check:feature-dependencies && npm run check:phase-contract && npm run check:prototype-contract && npm run check:prototype-coverage && npm run check:prototype-spa-coherence && npm run check:prototype-mock-data && npm run check:architecture-baseline && npm run check:phase-validator-sync && npm run check:plantillas && npm run check:constitution && npm run check:validation-coverage && npm run check:instantiation",
     "check:all": "npm run check:template && npm run check:project",
     "validate": "node scripts/validate.mjs",
     "release:prep": "npm run roadmap:sync && npm run memory:sync && npm run check:all && node scripts/roadmap-sync.mjs --check --strict",
@@ -100,11 +101,12 @@
     "prototype:prompt": "node scripts/prototype-prompt.mjs"
   },
   "dependencies": {
+    "jose": "^6.2.3",
     "next": "16.2.6",
-    "react": "19.2.6",
-    "react-dom": "19.2.5",
     "pino": "10.3.1",
     "pino-http": "11.0.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "zod": "4.3.6"
   },
   "devDependencies": {

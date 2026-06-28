@@ -23,6 +23,16 @@ Este prototipo deja de presentarse como seed genérico y pasa a una iteración v
 - Promesa del slice: Recepción puede detectar reservas críticas, validar contexto y asignar bungalow sin salir de la agenda.
 - Señales obligatorias: lenguaje de reservas, bungalow visible, estado de pago, alertas operativas y auditoría reciente.
 
+## Contrato del prototipo
+
+- Estados: loading, empty, error, success, blocked
+- Roles: Recepción, Administración
+- Entidades: reserva, bungalow, auditoría, disponibilidad
+- RF representados: RF-01, RF-02, RF-03, RF-04, RF-05, RF-06
+- La agenda debe permitir operar sin cambiar de pantalla principal.
+- La auditoría debe permanecer visible dentro del mismo panel de detalle.
+- La asignación de bungalow debe mostrar el resultado sin borrar el contexto de la fila seleccionada.
+
 ## Verificación
 
 ```sh

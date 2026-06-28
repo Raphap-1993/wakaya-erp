@@ -11,5 +11,8 @@ test-results
 .env.local
 .env.*.local
 !.env.example
+.data/
+ai/memory/*.db
+*.tsbuildinfo
 *.log
 .DS_Store

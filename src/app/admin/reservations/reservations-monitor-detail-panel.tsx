@@ -3,19 +3,23 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { ReservationListItem } from "@/lib/reservations/store";
+import type { ReservationDetail, ReservationListItem } from "@/lib/reservations/store";
 import { canPerformAction } from "@/lib/reservations/state-machine";
-import type { Bungalow, ReservationAction, ReservationAudit, ReservationStatus } from "@/lib/reservations/types";
+import type { Bungalow, ReservationAction, ReservationAudit } from "@/lib/reservations/types";
 import styles from "./reservations.module.css";
-import { STATUS_LABELS, statusTone } from "./reservations-monitor-shared";
-import type { MonitorPermissions } from "./reservations-monitor-shared";
+import {
+  formatMoneyCents,
+  PAYMENT_STATUS_LABELS,
+  STATUS_LABELS,
+  type MonitorPermissions,
+} from "./reservations-monitor-shared";
 
 const ACTION_LABELS: Record<ReservationAction, string> = {
   confirm: "Confirmar",
   assign: "Asignar bungalow",
   check_in: "Registrar check-in",
   check_out: "Registrar check-out",
-  mark_paid: "Marcar pago",
+  mark_paid: "Marcar pago completo",
   cancel: "Cancelar",
   mark_no_show: "Marcar no show",
 };
@@ -25,11 +29,6 @@ type FeedbackState =
   | { kind: "blocked"; message: string }
   | { kind: "error"; message: string }
   | null;
-
-function statusClass(status: ReservationStatus): string {
-  const tone = statusTone(status);
-  return tone ? `${styles.badge} ${styles[tone as keyof typeof styles]}` : styles.badge;
-}
 
 function describeAudit(item: ReservationAudit): string {
   return `${STATUS_LABELS[item.previousStatus]} → ${STATUS_LABELS[item.nextStatus]}`;
@@ -70,7 +69,7 @@ export function MonitorDetailPanel({
   bungalows,
   permissions,
 }: {
-  activeItem: ReservationListItem | null;
+  activeItem: ReservationListItem | ReservationDetail | null;
   bungalows: Bungalow[];
   permissions: MonitorPermissions;
 }) {
@@ -80,9 +79,7 @@ export function MonitorDetailPanel({
   const [auditError, setAuditError] = useState<string | null>(null);
   const [auditReloadKey, setAuditReloadKey] = useState(0);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
-  const [assignBungalowId, setAssignBungalowId] = useState<string>(bungalows[0]?.id ?? "");
-  const [assignReason, setAssignReason] = useState("Asignación operativa desde recepción");
-  const [pendingAction, setPendingAction] = useState<"assign" | ReservationAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<"assign" | "payment" | ReservationAction | null>(null);
   const [isPending, startTransition] = useTransition();
   const refreshTimerRef = useRef<number | null>(null);
   const activeReservationIdRef = useRef<string | null>(activeItem?.id ?? null);
@@ -90,6 +87,12 @@ export function MonitorDetailPanel({
 
   const assignEligibleByStatus = activeItem ? canPerformAction(activeItem.status, "assign") : false;
   const assignEnabled = assignEligibleByStatus && permissions.canAssign;
+  const balanceCents = activeItem ? Math.max((activeItem.amountTotalCents ?? 0) - (activeItem.amountPaidCents ?? 0), 0) : 0;
+  const paymentEnabled = Boolean(activeItem && permissions.canApprove && balanceCents > 0);
+  const assignableBungalows = useMemo(
+    () => bungalows.filter((bungalow) => bungalow.active),
+    [bungalows],
+  );
   const quickActions = useMemo(
     () =>
       activeItem
@@ -106,15 +109,13 @@ export function MonitorDetailPanel({
   );
 
   useEffect(() => {
-    setAssignBungalowId(activeItem?.bungalowId ?? bungalows[0]?.id ?? "");
-    setAssignReason("Asignación operativa desde recepción");
     setFeedback(null);
     setPendingAction(null);
     if (refreshTimerRef.current !== null) {
       window.clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
     }
-  }, [activeItem?.bungalowId, activeItem?.id, bungalows]);
+  }, [activeItem?.id]);
 
   useEffect(() => {
     return () => {
@@ -198,8 +199,8 @@ export function MonitorDetailPanel({
     });
   };
 
-  const submitAssign = async () => {
-    if (!activeItem || !assignEnabled || !assignBungalowId || pendingAction) return;
+  const submitAssign = async (bungalowId: string) => {
+    if (!activeItem || !assignEnabled || !bungalowId || pendingAction) return;
 
     const reservationId = activeItem.id;
     setFeedback(null);
@@ -209,8 +210,8 @@ export function MonitorDetailPanel({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          bungalowId: assignBungalowId,
-          reason: assignReason,
+          bungalowId,
+          reason: "Asignación operativa desde recepción",
           actorId: "system",
         }),
       });
@@ -222,6 +223,45 @@ export function MonitorDetailPanel({
       }
       if (!stillSelected) return;
       reportResult(response, `Bungalow asignado a ${activeItem.number}.`, reservationId);
+    } catch {
+      if (activeReservationIdRef.current !== reservationId) return;
+      setFeedback({ kind: "error", message: "No se pudo conectar con el servidor." });
+    } finally {
+      if (activeReservationIdRef.current === reservationId) {
+        setPendingAction(null);
+      }
+    }
+  };
+
+  const submitPayment = async () => {
+    if (!activeItem || !paymentEnabled || pendingAction) return;
+
+    const reservationId = activeItem.id;
+    const amountPaidCents = balanceCents;
+    setFeedback(null);
+    setPendingAction("payment");
+    try {
+      const response = await fetch(`/api/reservations/${reservationId}/payments`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          amountPaidCents,
+          reason: "Registro de pago completo desde recepción",
+          actorId: "system",
+        }),
+      });
+
+      const stillSelected = activeReservationIdRef.current === reservationId;
+      if (!stillSelected && response.ok) {
+        router.refresh();
+        return;
+      }
+      if (!stillSelected) return;
+      reportResult(
+        response,
+        `Pago registrado por ${formatMoneyCents(amountPaidCents)} en ${activeItem.number}.`,
+        reservationId,
+      );
     } catch {
       if (activeReservationIdRef.current !== reservationId) return;
       setFeedback({ kind: "error", message: "No se pudo conectar con el servidor." });
@@ -271,19 +311,12 @@ export function MonitorDetailPanel({
     <>
       <article className={styles.sectionCard}>
         <div className={styles.cardHeader}>
-          <div>
-            <h2 className={styles.cardTitle}>Detalle operativo</h2>
-            <p className={styles.cardCopy}>
-              La selección de la tabla alimenta este panel sin salir del monitor.
-            </p>
-          </div>
-          {activeItem ? (
-            <span className={statusClass(activeItem.status)}>{STATUS_LABELS[activeItem.status]}</span>
-          ) : null}
+          <h2 className={styles.cardTitle}>Detalle operativo</h2>
         </div>
 
-        {activeItem ? (
-          <div className={styles.kvGrid}>
+      {activeItem ? (
+          <div className={styles.stack}>
+            <div className={styles.kvGrid}>
             <div className={styles.kv}>
               <span className={styles.kvLabel}>Reserva</span>
               <span className={styles.kvValue}>{activeItem.number}</span>
@@ -302,6 +335,7 @@ export function MonitorDetailPanel({
               <span className={styles.kvLabel}>Responsable</span>
               <span className={styles.kvValue}>{activeItem.responsibleId ?? "system"}</span>
             </div>
+            </div>
           </div>
         ) : (
           <p className={styles.helper}>Selecciona una reserva para ver su contexto operativo.</p>
@@ -310,12 +344,7 @@ export function MonitorDetailPanel({
 
       <article className={styles.sectionCard}>
         <div className={styles.cardHeader}>
-          <div>
-            <h2 className={styles.cardTitle}>Acciones operativas</h2>
-            <p className={styles.cardCopy}>
-              Las acciones se ejecutan aquí mismo y devuelven feedback sin abandonar la pantalla.
-            </p>
-          </div>
+          <h2 className={styles.cardTitle}>Cobro y saldo</h2>
         </div>
 
         {feedback ? (
@@ -334,61 +363,67 @@ export function MonitorDetailPanel({
         ) : null}
 
         {!activeItem ? (
+          <p className={styles.helper}>Selecciona una reserva para habilitar el cobro.</p>
+        ) : (
+          <div className={styles.stack}>
+            <div className={styles.kvGrid}>
+              <div className={styles.kv}>
+                <span className={styles.kvLabel}>Estado de cobro</span>
+                <span className={styles.kvValue}>{PAYMENT_STATUS_LABELS[activeItem.paymentStatus ?? "pending"]}</span>
+              </div>
+              <div className={styles.kv}>
+                <span className={styles.kvLabel}>Total</span>
+                <span className={styles.kvValue}>{formatMoneyCents(activeItem.amountTotalCents ?? 0)}</span>
+              </div>
+              <div className={styles.kv}>
+                <span className={styles.kvLabel}>Pagado</span>
+                <span className={styles.kvValue}>{formatMoneyCents(activeItem.amountPaidCents ?? 0)}</span>
+              </div>
+              <div className={styles.kv}>
+                <span className={styles.kvLabel}>Saldo</span>
+                <span className={styles.kvValue}>{formatMoneyCents(balanceCents)}</span>
+              </div>
+            </div>
+
+            <div className={styles.buttonRow}>
+              <button
+                className={styles.button}
+                type="button"
+                onClick={() => void submitPayment()}
+                disabled={!paymentEnabled || isPending || pendingAction !== null}
+              >
+                {paymentEnabled ? `Registrar ${formatMoneyCents(balanceCents)}` : "Sin saldo pendiente"}
+              </button>
+            </div>
+          </div>
+        )}
+      </article>
+
+      <article className={styles.sectionCard}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Acciones operativas</h2>
+        </div>
+
+        {!activeItem ? (
           <p className={styles.helper}>Selecciona una reserva para habilitar las acciones.</p>
         ) : (
           <div className={styles.stack}>
-            <div className={styles.form}>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel} htmlFor="monitor-bungalowId">
-                  Bungalow
-                </label>
-                <select
-                  className={styles.select}
-                  id="monitor-bungalowId"
-                  value={assignBungalowId}
-                  onChange={(event) => setAssignBungalowId(event.target.value)}
-                  disabled={!assignEnabled || isPending || pendingAction !== null}
-                >
-                  {bungalows.map((bungalow) => (
-                    <option key={bungalow.id} value={bungalow.id}>
+            <div className={styles.detailSummary}>
+              <span className={styles.fieldLabel}>Bungalows disponibles</span>
+              {assignEnabled ? (
+                <div className={styles.detailActionList}>
+                  {(assignableBungalows.length > 0 ? assignableBungalows : bungalows).map((bungalow) => (
+                    <button
+                      key={bungalow.id}
+                      className={styles.detailActionPill}
+                      type="button"
+                      onClick={() => void submitAssign(bungalow.id)}
+                      disabled={isPending || pendingAction !== null}
+                    >
                       {bungalow.name}
-                    </option>
+                    </button>
                   ))}
-                </select>
-              </div>
-
-              <div className={styles.field}>
-                <label className={styles.fieldLabel} htmlFor="monitor-assignReason">
-                  Motivo
-                </label>
-                <textarea
-                  className={styles.textarea}
-                  id="monitor-assignReason"
-                  value={assignReason}
-                  onChange={(event) => setAssignReason(event.target.value)}
-                  disabled={!assignEnabled || isPending || pendingAction !== null}
-                />
-              </div>
-
-              <div className={styles.buttonRow}>
-                <button
-                  className={styles.button}
-                  type="button"
-                  onClick={() => void submitAssign()}
-                  disabled={!assignEnabled || isPending || pendingAction !== null}
-                >
-                  {assignEnabled ? "Asignar bungalow" : "Asignación bloqueada"}
-                </button>
-              </div>
-
-              {!assignEnabled ? (
-                <p className={styles.helper}>
-                  {!assignEligibleByStatus && !permissions.canAssign
-                    ? "Disponible solo cuando la reserva ya está confirmada o importada desde OTA, y además no tienes permisos para asignar bungalows."
-                    : !assignEligibleByStatus
-                      ? "Disponible solo cuando la reserva ya está confirmada o importada desde OTA."
-                      : "No tienes permisos para asignar bungalows."}
-                </p>
+                </div>
               ) : null}
             </div>
 
@@ -399,7 +434,7 @@ export function MonitorDetailPanel({
                 quickActions.map((action) => (
                   <button
                     key={action}
-                    className={`${styles.button} ${styles.buttonSecondary}`}
+                    className={styles.detailActionPill}
                     type="button"
                     onClick={() => void submitStatus(action)}
                     disabled={isPending || pendingAction !== null}
@@ -417,12 +452,7 @@ export function MonitorDetailPanel({
 
       <article className={styles.sectionCard}>
         <div className={styles.cardHeader}>
-          <div>
-            <h2 className={styles.cardTitle}>Auditoría embebida</h2>
-            <p className={styles.cardCopy}>
-              El timeline ya no depende de la vista profunda para explicar qué pasó.
-            </p>
-          </div>
+          <h2 className={styles.cardTitle}>Auditoría</h2>
         </div>
 
         {!activeItem ? (
@@ -452,12 +482,7 @@ export function MonitorDetailPanel({
 
       <article className={styles.sectionCard}>
         <div className={styles.cardHeader}>
-          <div>
-            <h2 className={styles.cardTitle}>Acceso rápido</h2>
-            <p className={styles.cardCopy}>
-              La vista profunda queda disponible para soporte y depuración.
-            </p>
-          </div>
+          <h2 className={styles.cardTitle}>Acceso rápido</h2>
         </div>
 
         <div className={styles.buttonRow}>

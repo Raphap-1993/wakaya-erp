@@ -22,5 +22,5 @@ el prototipo HTML5 navegable con criterio humano.
 - Resultado: pending
 - Revisor: pendiente de asignar
 - Fecha: pendiente
-- Evidencia revisada: pendiente de revision manual del prototipo HTML5 en `specs/002-public-site/prototype-html5/index.html#view-home`
-- Observaciones: la experiencia ya esta documentada contra la direccion `Parador`, pero la aprobacion humana sigue siendo obligatoria antes de mover gates.
+- Evidencia revisada: pendiente de revision manual del prototipo HTML5 en `specs/002-public-site/prototype-html5/index.html?view=home`
+- Observaciones: la experiencia ya esta documentada contra la direccion `Parador`, pero la aprobacion humana sigue siendo obligatoria antes de mover gates. Smoke adicional del 2026-06-07: el enlace `← Volver a resultados` ya retorna al listado conservando el contexto de busqueda. Revisione tambien las paginas internas `Nosotros`, `Servicios`, `Eventos`, `Galeria`, `Publicaciones` y `Contacto`; comparten hero, breadcrumb y footer, sin rupturas de navegacion visibles.

@@ -270,6 +270,10 @@ export function getOccupancySelectionValue(cell: OccupancyCell | null): string |
   return cell.reservations.length === 1 ? cell.primaryReservation?.id ?? cell.key : cell.key;
 }
 
+export function isOccupancyCellState(value: string | null | undefined): value is OccupancyCellState {
+  return value === "free" || value === "occupied" || value === "blocked" || value === "attention-needed";
+}
+
 function getIsoWeek(date: string): number {
   const parsed = new Date(`${date}T00:00:00.000Z`);
   const target = new Date(parsed.valueOf());

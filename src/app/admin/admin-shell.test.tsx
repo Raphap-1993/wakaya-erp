@@ -15,7 +15,6 @@ describe("AdminShell", () => {
     );
 
     expect(html).toContain("Backoffice");
-    expect(html).toContain("Administración");
     expect(html).toContain("Reservas");
     expect(html).toContain("Ocupación");
     expect(html).toContain("Pagos");

@@ -46,10 +46,6 @@ export default async function ReservationsAdminPage({
   if (!auth.authenticated || !hasPermission(auth.roles, "reservation:read")) {
     notFound();
   }
-  const permissions = {
-    canAssign: hasPermission(auth.roles, "reservation:assign"),
-    canApprove: hasPermission(auth.roles, "reservation:approve"),
-  };
 
   const canonicalFilters = {
     status: toReservationStatus(query.status),
@@ -80,7 +76,5 @@ export default async function ReservationsAdminPage({
     );
   }
 
-  const bungalows = reservationStore.listBungalows();
-
-  return <ReservationsMonitor items={items} selectedId={selectedId} query={query} bungalows={bungalows} permissions={permissions} />;
+  return <ReservationsMonitor items={items} selectedId={selectedId} query={query} />;
 }

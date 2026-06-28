@@ -1,0 +1,115 @@
+:root {
+  color-scheme: light;
+  --wakaya-bg: #f7f1e7;
+  --wakaya-surface: rgba(255, 252, 247, 0.9);
+  --wakaya-text: #17362f;
+  --wakaya-muted: #6e6256;
+  --wakaya-line: rgba(69, 52, 35, 0.12);
+  --wakaya-accent: #efad1a;
+  --wakaya-forest: #28473e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  min-height: 100%;
+  background: var(--wakaya-bg);
+  color: var(--wakaya-text);
+  font-family: "Avenir Next", "Inter", "Segoe UI", sans-serif;
+}
+
+body > div {
+  min-height: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--wakaya-accent);
+  outline-offset: 3px;
+}
+
+.wakaya-launcher {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 72px 24px 88px;
+}
+
+.wakaya-launcher__hero {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding: 32px;
+  border: 1px solid var(--wakaya-line);
+  border-radius: 28px;
+  background: var(--wakaya-surface);
+  box-shadow: 0 24px 60px rgba(47, 33, 19, 0.08);
+}
+
+.wakaya-launcher__eyebrow {
+  margin: 0;
+  color: var(--wakaya-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.wakaya-launcher__hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.wakaya-launcher__lead {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--wakaya-muted);
+  line-height: 1.7;
+}
+
+.wakaya-launcher__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.wakaya-launcher__card {
+  display: grid;
+  gap: 8px;
+  padding: 24px;
+  border: 1px solid var(--wakaya-line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 16px 40px rgba(47, 33, 19, 0.06);
+  text-decoration: none;
+}
+
+.wakaya-launcher__card strong {
+  font-size: 1.1rem;
+}
+
+.wakaya-launcher__card span {
+  color: var(--wakaya-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .wakaya-launcher__cards {
+    grid-template-columns: 1fr;
+  }
+}

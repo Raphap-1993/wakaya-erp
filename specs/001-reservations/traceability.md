@@ -28,11 +28,11 @@ la parsea para poblar la memoria del agente IA.
 ## Gates
 | Gate | Estado | Evidencia |
 |---|---|---|
-| gate-prototype-ready | Pendiente | prototype-validation.md |
-| gate-spdd-approved | Pendiente | spdd-frontend.md |
+| gate-prototype-ready | Aprobado | prototype-validation.md |
+| gate-spdd-approved | Aprobado | prototype-validation.md |
 
 ## Decisiones
 - El prototipo aprobado alimenta campos, filtros, permisos y estados de error del API contract.
 
 ## Preguntas abiertas
-- Catalogo final de estados.
+- Ninguna. El catálogo final de estados quedó cerrado en `reglas-negocio-estados-criterios.md`.

@@ -1,13 +1,24 @@
 export default function HomePage() {
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui' }}>
-      <h1>Wakaya ERP (scaffolding)</h1>
-      <p>Este es el esqueleto ejecutable base sobre Node + Next.js.</p>
-      <ul>
-        <li>Adaptar dominio, vista y contratos antes de liberar.</li>
-        <li>El endpoint de salud vive en <code>/api/health</code>.</li>
-        <li>La referencia metodologica esta en <code>docs/</code>.</li>
-      </ul>
+    <main className="wakaya-launcher">
+      <section className="wakaya-launcher__hero">
+        <p className="wakaya-launcher__eyebrow">Wakaya</p>
+        <h1>Public hospitality site and internal reservations monitor.</h1>
+        <p className="wakaya-launcher__lead">
+          Split product surface for the public experience and the operational monitor.
+        </p>
+      </section>
+
+      <nav className="wakaya-launcher__cards" aria-label="Wakaya surfaces">
+        <a className="wakaya-launcher__card" href="/prototype/public-site">
+          <strong>Public site prototype</strong>
+          <span>Warm hospitality homepage, rooms, events, and full day.</span>
+        </a>
+        <a className="wakaya-launcher__card" href="/admin/reservations">
+          <strong>Reservations monitor</strong>
+          <span>Reception list, detail, assignment, state changes, and audit.</span>
+        </a>
+      </nav>
     </main>
   );
 }

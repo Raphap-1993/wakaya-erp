@@ -23,3 +23,10 @@ APROBADO para revisión en el hub del prototipo con agenda operativa, detalle la
 - Fecha: 2026-06-06
 - Evidencia revisada: `specs/001-reservations/prototype-html5/index.html`
 - Observaciones: la revisión humana confirmó agenda operativa, filtro, detalle lateral, bloqueo, asignación y auditoría visibles en el hub del prototipo.
+
+## Revision visual humana adicional
+- Resultado: approved
+- Revisor: usuario
+- Fecha: 2026-06-08
+- Evidencia revisada: `specs/001-reservations/prototype-html5/index.html`
+- Observaciones: se validaron el bloque `Cobro y saldo`, el KPI de saldo pendiente y la acción de exportación de reporte en el hub del prototipo, sin romper el flujo operativo existente.

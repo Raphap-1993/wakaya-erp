@@ -53,7 +53,7 @@ describe("ReservationsOccupancyPage", () => {
     );
 
     expect(html).toContain("Ocupación semanal");
-    expect(html).toContain("Grilla semanal de bungalows");
+    expect(html).toContain("Grilla semanal");
     expect(html).toContain("2026-W24");
     expect(html).not.toContain('href="/admin/reservations?view=agenda"');
     expect(html).not.toContain('href="/admin/reservations/occupancy?view=occupancy"');

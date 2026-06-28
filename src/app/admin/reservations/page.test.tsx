@@ -51,19 +51,16 @@ describe("ReservationsAdminPage", () => {
       }),
     );
 
-    expect(html).toContain("Mini monitor de reservas");
+    expect(html).toContain("Agenda operativa de reservas");
     expect(html).toContain("RESERVATION-2026-0001");
     expect(html).toContain("selected=reservation-demo-1");
-    expect(html).toContain("Contexto seleccionado");
+    expect(html).toContain("Nueva reserva manual");
+    expect(html).toContain("Roster de flujos");
     expect(html).not.toContain('href="/admin/reservations?view=agenda"');
     expect(html).not.toContain('href="/admin/reservations/occupancy?view=occupancy"');
     expect(html).toContain("Ver reporte financiero");
     expect(html).toContain("Exportar CSV");
     expect(html).toContain("Saldo total");
-    expect(html).toContain("Cobro y saldo");
-    expect(html).toContain("Abrir detalle");
-    expect(html).toContain("Acciones operativas");
-    expect(html).toContain("Auditoría embebida");
   });
 
   it("redirects to the canonical selected reservation when the requested selection is filtered out", async () => {
@@ -132,27 +129,7 @@ describe("ReservationsAdminPage", () => {
     );
 
     expect(html).toContain("No hay reservas con estos filtros");
-    expect(html).toContain("Selecciona una reserva para habilitar las acciones.");
-    expect(html).toContain("Selecciona una reserva para inspeccionar su historial.");
-  });
-
-  it("renders permission-aware helper text for read-only users", async () => {
-    authenticateMock.mockResolvedValueOnce({
-      authenticated: true,
-      roles: ["viewer"],
-      subject: "viewer-user",
-    });
-
-    const html = renderToStaticMarkup(
-      await ReservationsAdminPage({
-        searchParams: {
-          selected: "reservation-demo-2",
-        },
-      }),
-    );
-
-    expect(html).toContain("No tienes permisos para asignar bungalows.");
-    expect(html).toContain("No tienes permisos para cambiar el estado.");
+    expect(html).not.toContain("Abre la ficha de una reserva para ver detalle, auditoría y edición en una pantalla aparte.");
   });
 
   it("rejects unauthenticated requests before loading the monitor", async () => {

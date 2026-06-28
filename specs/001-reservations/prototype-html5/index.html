@@ -574,6 +574,11 @@
     background: rgba(226, 232, 240, 0.98);
   }
 
+  .status-cancelled {
+    color: var(--danger);
+    background: rgba(254, 226, 226, 0.98);
+  }
+
   .status-blocked {
     color: var(--danger);
     background: rgba(254, 226, 226, 0.98);
@@ -1100,7 +1105,7 @@
 
       <div class="action-row">
         <button class="btn btn-secondary" onclick="simulateSyncIssue()">Contingencia</button>
-        <button class="btn btn-secondary" onclick="handleExport()">Exportar agenda</button>
+        <button class="btn btn-secondary" onclick="handleExport()">Exportar reporte</button>
         <button class="btn btn-primary" onclick="refreshAgenda()">Actualizar agenda</button>
       </div>
     </div>
@@ -1110,7 +1115,7 @@
     <div class="kpi-card highlight"><div class="kpi-label">Llegadas hoy</div><div class="kpi-value">7</div><div class="kpi-delta up">2 sin bungalow</div></div>
     <div class="kpi-card"><div class="kpi-label">Salidas hoy</div><div class="kpi-value">4</div><div class="kpi-delta">1 late checkout</div></div>
     <div class="kpi-card"><div class="kpi-label">En casa</div><div class="kpi-value">18</div><div class="kpi-delta up">Ocupación 82%</div></div>
-    <div class="kpi-card"><div class="kpi-label">Alertas</div><div class="kpi-value">3</div><div class="kpi-delta">2 pagos pendientes</div></div>
+    <div class="kpi-card"><div class="kpi-label">Saldo pendiente</div><div class="kpi-value">S/ 1,260</div><div class="kpi-delta">2 pagos parciales</div></div>
   </div>
 
   <div class="workspace">
@@ -1433,6 +1438,8 @@ const STATUS_META = {
   in_house: { label: "En casa", cls: "status-in-house" },
   pending_review: { label: "En revisión", cls: "status-pending-review" },
   checked_out: { label: "Salida", cls: "status-checked-out" },
+  cancelled: { label: "Cancelada", cls: "status-cancelled" },
+  no_show: { label: "No show", cls: "status-blocked" },
   blocked: { label: "Bloqueada", cls: "status-blocked" }
 };
 
@@ -1756,6 +1763,28 @@ function renderDetail() {
       </div>
 
       <div class="detail-section">
+        <h3>Cobro y saldo</h3>
+        <div class="detail-grid">
+          <div class="detail-stat">
+            <span>Estado de cobro</span>
+            <strong>${PAYMENT_META[reservation.payment].label}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Total</span>
+            <strong>${formatMoney(getFinancialBreakdown(reservation).totalCents)}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Pagado</span>
+            <strong>${formatMoney(getFinancialBreakdown(reservation).paidCents)}</strong>
+          </div>
+          <div class="detail-stat">
+            <span>Saldo</span>
+            <strong>${formatMoney(getFinancialBreakdown(reservation).balanceCents)}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
         <h3>Alertas visibles</h3>
         <div class="detail-tags">${renderSignals(reservation.alerts)}</div>
       </div>
@@ -1769,8 +1798,12 @@ function renderDetail() {
         <h3>Acciones del turno</h3>
         <div class="detail-actions">
           <button class="btn btn-primary" onclick="openAssignModal()" ${reservation.status === "blocked" ? "disabled" : ""}>${reservation.status === "blocked" ? "Asignación bloqueada" : reservation.bungalow ? "Reconfirmar bungalow" : "Asignar bungalow"}</button>
+          ${canCheckIn(reservation) ? `<button class="btn btn-secondary" onclick="performCheckIn()">Registrar check-in</button>` : ""}
+          ${canCheckOut(reservation) ? `<button class="btn btn-secondary" onclick="performCheckOut()">Registrar check-out</button>` : ""}
+          ${canCancelStay(reservation) ? `<button class="btn btn-secondary" onclick="performCancelStay()">Cancelar estadía</button>` : ""}
+          ${canMarkNoShow(reservation) ? `<button class="btn btn-secondary" onclick="performNoShow()">Marcar no show</button>` : ""}
           <button class="btn btn-secondary" onclick="showMovementHint('${reservation.id}')">Registrar movimiento</button>
-          <button class="btn btn-secondary" onclick="showPaymentHint('${reservation.id}')">Revisar pago</button>
+          <button class="btn btn-secondary" onclick="showPaymentHint('${reservation.id}')">Cobro y saldo</button>
         </div>
         <p class="action-note">La agenda mantiene el detalle, la confirmación y la línea de auditoría dentro del mismo panel.</p>
       </div>
@@ -1833,6 +1866,12 @@ function buildSummaryTitle(reservation) {
   if (reservation.status === "blocked") {
     return "Reserva detenida por conflicto operativo";
   }
+  if (reservation.status === "checked_out") {
+    return "Salida cerrada y registrada";
+  }
+  if (reservation.status === "in_house") {
+    return "Estadía activa con trazabilidad visible";
+  }
   if (reservation.bungalow) {
     return "Bungalow listo para operar el turno";
   }
@@ -1844,10 +1883,42 @@ function buildSummaryCopy(reservation) {
   if (reservation.status === "blocked") {
     return "La reserva requiere validación manual antes de liberar inventario o confirmar una unidad.";
   }
+  if (reservation.status === "checked_out") {
+    return reservation.guest + " ya cerró su salida y la auditoría queda disponible para revisión.";
+  }
+  if (reservation.status === "in_house") {
+    return reservation.guest + " ya figura en casa y la salida se puede cerrar desde la misma agenda.";
+  }
   if (reservation.bungalow) {
-    return reservation.guest + " ya tiene " + reservation.bungalow + " confirmado y la auditoría queda visible en este panel.";
+    return reservation.guest + " ya tiene " + reservation.bungalow + " confirmado. Si cumple condiciones, puedes registrar check-in o preparar el cierre.";
   }
   return reservation.guest + " aún no tiene bungalow. La sugerencia operativa propone " + plan.bungalow + ". " + plan.summary;
+}
+
+function formatMoney(cents) {
+  return new Intl.NumberFormat("es-PE", {
+    style: "currency",
+    currency: "PEN",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(cents / 100);
+}
+
+function getFinancialBreakdown(reservation) {
+  const totalCents = reservation.nights * 12000;
+  let paidCents = 0;
+
+  if (reservation.payment === "paid") {
+    paidCents = totalCents;
+  } else if (reservation.payment === "partial") {
+    paidCents = Math.min(totalCents, Math.max(12000, Math.round(totalCents / 2)));
+  }
+
+  return {
+    totalCents,
+    paidCents,
+    balanceCents: Math.max(totalCents - paidCents, 0)
+  };
 }
 
 function renderInlineState(reservation) {
@@ -1865,6 +1936,33 @@ function renderInlineState(reservation) {
       <div class="inline-state blocked" role="status" aria-live="polite">
         <strong>Bloqueo activo</strong>
         <p>Recepción debe revisar inventario y tarifa antes de confirmar una unidad.</p>
+      </div>
+    `;
+  }
+
+  if (reservation.status === "checked_out") {
+    return `
+      <div class="inline-state" role="status" aria-live="polite">
+        <strong>Check-out cerrado</strong>
+        <p>La reserva ya quedó liberada y la auditoría conserva la transición final.</p>
+      </div>
+    `;
+  }
+
+  if (reservation.status === "in_house") {
+    return `
+      <div class="inline-state" role="status" aria-live="polite">
+        <strong>Estadía activa</strong>
+        <p>El huésped ya ingresó y la salida puede cerrarse desde este mismo panel.</p>
+      </div>
+    `;
+  }
+
+  if (canCheckIn(reservation)) {
+    return `
+      <div class="inline-state" role="status" aria-live="polite">
+        <strong>Listo para check-in</strong>
+        <p>La reserva ya tiene bungalow y puede pasar a estado en casa cuando recepción confirme el ingreso.</p>
       </div>
     `;
   }
@@ -1911,6 +2009,22 @@ function getAssignmentPlan(reservation) {
   };
 }
 
+function canCheckIn(reservation) {
+  return reservation.status === "confirmed" && Boolean(reservation.bungalow);
+}
+
+function canCheckOut(reservation) {
+  return reservation.status === "in_house";
+}
+
+function canCancelStay(reservation) {
+  return reservation.status === "in_house";
+}
+
+function canMarkNoShow(reservation) {
+  return reservation.status === "confirmed";
+}
+
 function formatDate(value) {
   return new Intl.DateTimeFormat("es-PE", {
     day: "2-digit",
@@ -1946,7 +2060,14 @@ function refreshAgenda() {
 }
 
 function handleExport() {
-  showToast("Exportación lista para el pase de cierre", "success");
+  const reservation = getSelectedReservation();
+  const breakdown = reservation ? getFinancialBreakdown(reservation) : { balanceCents: 0 };
+  showToast(
+    reservation
+      ? "Reporte listo para " + reservation.id + " · saldo " + formatMoney(breakdown.balanceCents)
+      : "Exportación lista para el pase de cierre",
+    "success"
+  );
 }
 
 function openAssignModal() {
@@ -2042,12 +2163,187 @@ function confirmAssignment() {
   showToast("Bungalow " + assignment.bungalow + " asignado a " + reservation.guest, "success");
 }
 
+function performCheckIn() {
+  const reservation = getSelectedReservation();
+  if (!reservation || syncIssue) {
+    return;
+  }
+
+  if (!canCheckIn(reservation)) {
+    detailFeedback = {
+      reservationId: reservation.id,
+      kind: "blocked",
+      title: "Check-in no disponible",
+      message: reservation.bungalow
+        ? "La transición todavía no cumple condiciones operativas."
+        : "Primero asigna un bungalow antes de registrar el ingreso."
+    };
+    renderDetail();
+    showToast("No se pudo registrar el check-in.", "error");
+    return;
+  }
+
+  const previousStatus = reservation.status;
+  reservation.status = "in_house";
+  reservation.quick = Array.from(new Set([...reservation.quick.filter((item) => item !== "arrivals"), "inhouse"]));
+  reservation.audit.unshift({
+    time: "14:05",
+    actor: "Recepción",
+    action: "Check-in registrado",
+    delta: previousStatus + " -> in_house"
+  });
+
+  detailFeedback = {
+    reservationId: reservation.id,
+    kind: "success",
+    title: "Check-in confirmado",
+    message: "El huésped ya figura en casa y la auditoría quedó actualizada en el mismo panel."
+  };
+
+  preserveSelectionOnce = true;
+  applyFilters();
+  showToast("Check-in registrado para " + reservation.guest, "success");
+}
+
+function performCheckOut() {
+  const reservation = getSelectedReservation();
+  if (!reservation || syncIssue) {
+    return;
+  }
+
+  if (!canCheckOut(reservation)) {
+    detailFeedback = {
+      reservationId: reservation.id,
+      kind: "blocked",
+      title: "Check-out no disponible",
+      message: "La reserva debe estar en casa para poder cerrar la salida."
+    };
+    renderDetail();
+    showToast("No se pudo registrar el check-out.", "error");
+    return;
+  }
+
+  const previousStatus = reservation.status;
+  reservation.status = "checked_out";
+  reservation.quick = Array.from(new Set([...reservation.quick.filter((item) => item !== "inhouse"), "departures"]));
+  reservation.audit.unshift({
+    time: "11:20",
+    actor: "Recepción",
+    action: "Check-out cerrado",
+    delta: previousStatus + " -> checked_out"
+  });
+
+  detailFeedback = {
+    reservationId: reservation.id,
+    kind: "success",
+    title: "Check-out confirmado",
+    message: "La salida quedó cerrada y la auditoría registró la liberación de la estadía."
+  };
+
+  preserveSelectionOnce = true;
+  applyFilters();
+  showToast("Check-out registrado para " + reservation.guest, "success");
+}
+
+function performCancelStay() {
+  const reservation = getSelectedReservation();
+  if (!reservation || syncIssue) {
+    return;
+  }
+
+  if (!canCancelStay(reservation)) {
+    detailFeedback = {
+      reservationId: reservation.id,
+      kind: "blocked",
+      title: "Cancelación no disponible",
+      message: "La reserva debe estar en casa para poder aplicar cancelación administrativa."
+    };
+    renderDetail();
+    showToast("No se pudo cancelar la estadía.", "error");
+    return;
+  }
+
+  const previousStatus = reservation.status;
+  reservation.status = "cancelled";
+  reservation.bungalow = null;
+  reservation.quick = Array.from(new Set([...reservation.quick.filter((item) => item !== "inhouse"), "departures"]));
+  reservation.audit.unshift({
+    time: "11:55",
+    actor: "Administración",
+    action: "Cancelación administrativa",
+    delta: previousStatus + " -> cancelled"
+  });
+
+  detailFeedback = {
+    reservationId: reservation.id,
+    kind: "success",
+    title: "Cancelación administrativa confirmada",
+    message: "La estadía quedó cancelada, el bungalow se liberó y la auditoría registró el override."
+  };
+
+  preserveSelectionOnce = true;
+  applyFilters();
+  showToast("Cancelación administrativa aplicada a " + reservation.guest, "success");
+}
+
+function performNoShow() {
+  const reservation = getSelectedReservation();
+  if (!reservation || syncIssue) {
+    return;
+  }
+
+  if (!canMarkNoShow(reservation)) {
+    detailFeedback = {
+      reservationId: reservation.id,
+      kind: "blocked",
+      title: "No show no disponible",
+      message: "La reserva debe estar confirmada y sin check-in para poder marcarla como no show."
+    };
+    renderDetail();
+    showToast("No se pudo marcar como no show.", "error");
+    return;
+  }
+
+  const previousStatus = reservation.status;
+  reservation.status = "no_show";
+  reservation.bungalow = null;
+  reservation.quick = Array.from(new Set([...reservation.quick.filter((item) => item !== "arrivals"), "departures"]));
+  reservation.audit.unshift({
+    time: "14:40",
+    actor: "Recepción",
+    action: "No show registrado",
+    delta: previousStatus + " -> no_show"
+  });
+
+  detailFeedback = {
+    reservationId: reservation.id,
+    kind: "success",
+    title: "No show confirmado",
+    message: "La reserva quedó cerrada como no show y el bungalow quedó liberado."
+  };
+
+  preserveSelectionOnce = true;
+  applyFilters();
+  showToast("No show registrado para " + reservation.guest, "success");
+}
+
 function showMovementHint(reservationId) {
   showToast("Movimiento listo para revisión en " + reservationId);
 }
 
 function showPaymentHint(reservationId) {
-  showToast("Caja puede revisar saldo de " + reservationId);
+  const reservation = RESERVATIONS.find((item) => item.id === reservationId);
+  if (!reservation) {
+    showToast("Caja puede revisar saldo de " + reservationId);
+    return;
+  }
+
+  const breakdown = getFinancialBreakdown(reservation);
+  const statusText = PAYMENT_META[reservation.payment].label.toLowerCase();
+  showToast(
+    reservation.guest + " · " + statusText + " · saldo " + formatMoney(breakdown.balanceCents),
+    reservation.payment === "pending" ? "warning" : "success"
+  );
 }
 
 function showToast(message, kind = "") {

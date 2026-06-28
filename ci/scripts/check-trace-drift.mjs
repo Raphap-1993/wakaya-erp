@@ -34,7 +34,7 @@ if (!existsSync(dbPath)) {
 }
 
 const db = new DatabaseSync(dbPath);
-const SOURCE_DIRS = ["src", "backend", "frontend", "tests"];
+const SOURCE_DIRS = ["src", "backend", "frontend", "tests", "e2e"];
 const SOURCE_EXTS = new Set([".ts", ".tsx", ".js", ".mjs", ".java", ".kt", ".py", ".go", ".rs", ".cs"]);
 
 const sourceFiles = collectFiles(root, SOURCE_DIRS, SOURCE_EXTS);

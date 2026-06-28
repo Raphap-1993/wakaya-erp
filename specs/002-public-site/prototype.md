@@ -9,6 +9,9 @@ pero la referencia navegable del proyecto debe vivir en HTML5 dentro del repo.
 ## Ruta HTML5
 `prototype-html5/index.html`
 
+## Entrada canonica definida
+`prototype-html5/index.html?view=home`
+
 ## Golden de referencia
 - Path: referencia visual externa `Parador`
 - Por que este golden: aporta hero slider, booking band protagonista, cards
@@ -20,11 +23,15 @@ pero la referencia navegable del proyecto debe vivir en HTML5 dentro del repo.
   - bloques promo y galeria en secuencia comercial
 
 ## Pantallas cubiertas
-- `prototype-html5/index.html#view-home`
-- `prototype-html5/index.html#view-habitaciones`
-- `prototype-html5/index.html#view-habitacion-detalle`
-- `prototype-html5/index.html#view-eventos`
-- `prototype-html5/index.html#view-full-day`
+- `prototype-html5/index.html?view=home`
+- `prototype-html5/index.html?view=about`
+- `prototype-html5/index.html?view=bungalows`
+- `prototype-html5/index.html?view=bungalow-detail`
+- `prototype-html5/index.html?view=services`
+- `prototype-html5/index.html?view=events`
+- `prototype-html5/index.html?view=gallery`
+- `prototype-html5/index.html?view=publications`
+- `prototype-html5/index.html?view=contact`
 
 ## Estado
 Direccion aprobada para redisenar la home y el entrypoint unico. La revision

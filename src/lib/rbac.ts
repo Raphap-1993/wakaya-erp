@@ -4,6 +4,7 @@
 export type Permission =
   | "reservation:read"
   | "reservation:write"
+  | "reservation:assign"
   | "reservation:approve"
   | "admin:users";
 
@@ -11,11 +12,17 @@ export type Role = "viewer" | "editor" | "approver" | "admin";
 
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   viewer: ["reservation:read"],
-  editor: ["reservation:read", "reservation:write"],
-  approver: ["reservation:read", "reservation:write", "reservation:approve"],
+  editor: ["reservation:read", "reservation:write", "reservation:assign"],
+  approver: [
+    "reservation:read",
+    "reservation:write",
+    "reservation:assign",
+    "reservation:approve",
+  ],
   admin: [
     "reservation:read",
     "reservation:write",
+    "reservation:assign",
     "reservation:approve",
     "admin:users",
   ],
