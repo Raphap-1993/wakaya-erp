@@ -15,4 +15,33 @@ describe("booking request schema", () => {
 
     expect(parsed.requestedBungalowType).toBe("bungalow-matrimonial");
   });
+
+  it("normalizes blank optional form fields", () => {
+    const parsed = bookingRequestCreateSchema.parse({
+      guestName: "Ada Lovelace",
+      guestEmail: "ada@example.com",
+      guestPhone: "",
+      requestedCheckIn: "2026-07-10",
+      requestedCheckOut: "2026-07-12",
+      requestedGuests: 2,
+      requestedBungalowType: "",
+      notes: "",
+    });
+
+    expect(parsed.guestPhone).toBeUndefined();
+    expect(parsed.requestedBungalowType).toBeNull();
+    expect(parsed.notes).toBeUndefined();
+  });
+
+  it("rejects a reversed stay range", () => {
+    expect(() =>
+      bookingRequestCreateSchema.parse({
+        guestName: "Ada Lovelace",
+        guestEmail: "ada@example.com",
+        requestedCheckIn: "2026-07-12",
+        requestedCheckOut: "2026-07-10",
+        requestedGuests: 2,
+      }),
+    ).toThrow("invalid_range");
+  });
 });

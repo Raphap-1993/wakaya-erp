@@ -5,16 +5,33 @@ const isoDate = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, "invalid_date")
   .refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00.000Z`)), "invalid_date");
 
-export const bookingRequestCreateSchema = z.object({
-  guestName: z.string().trim().min(1, "required"),
-  guestEmail: z.string().trim().email("invalid_email"),
-  guestPhone: z.string().trim().min(7, "required").optional(),
-  requestedCheckIn: isoDate,
-  requestedCheckOut: isoDate,
-  requestedGuests: z.coerce.number().int().positive(),
-  requestedBungalowType: z.string().trim().min(1, "required").nullable().optional(),
-  notes: z.string().trim().max(1000).optional(),
-});
+function blankToUndefined(value: unknown) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed === "" ? undefined : trimmed;
+}
+
+function blankToNull(value: unknown) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+export const bookingRequestCreateSchema = z
+  .object({
+    guestName: z.string().trim().min(1, "required"),
+    guestEmail: z.string().trim().email("invalid_email"),
+    guestPhone: z.preprocess(blankToUndefined, z.string().min(7, "required").optional()),
+    requestedCheckIn: isoDate,
+    requestedCheckOut: isoDate,
+    requestedGuests: z.coerce.number().int().positive(),
+    requestedBungalowType: z.preprocess(blankToNull, z.string().min(1, "required").nullable().optional()),
+    notes: z.preprocess(blankToUndefined, z.string().max(1000).optional()),
+  })
+  .refine((value) => value.requestedCheckIn <= value.requestedCheckOut, {
+    message: "invalid_range",
+    path: ["requestedCheckOut"],
+  });
 
 export const reservationCreateSchema = z
   .object({
