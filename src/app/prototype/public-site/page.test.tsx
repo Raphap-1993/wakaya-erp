@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { publicBungalows } from '@/components/public-site/public-site-data';
 
+import * as homePageModule from './page';
 import PublicSitePrototypePage from './page';
 
 function countOccurrences(source: string, fragment: string) {
@@ -10,6 +11,15 @@ function countOccurrences(source: string, fragment: string) {
 }
 
 describe('PublicSitePrototypePage', () => {
+  it('exports metadata for the home SEO baseline', () => {
+    expect(homePageModule.metadata).toMatchObject({
+      title: 'Wakaya Ecolodge | Estadia amazónica en Pucallpa',
+      alternates: {
+        canonical: '/prototype/public-site',
+      },
+    });
+  });
+
   it('renders the parador-style Wakaya home with all required sections', () => {
     const html = renderToStaticMarkup(<PublicSitePrototypePage />);
     const featuredRooms = publicBungalows.filter((room) => room.featuredOnHome).slice(0, 3);

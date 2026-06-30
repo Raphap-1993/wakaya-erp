@@ -12,8 +12,24 @@ vi.mock('next/navigation', () => ({
 }));
 
 import BungalowDetailPage from './page';
+import { generateMetadata } from './page';
 
 describe('BungalowDetailPage', () => {
+  it('exports metadata for each bungalow detail page', async () => {
+    const metadata = await generateMetadata({
+      params: Promise.resolve({
+        slug: 'bungalow-familiar',
+      }),
+    });
+
+    expect(metadata).toMatchObject({
+      title: 'Bungalow Familiar | Wakaya Ecolodge',
+      alternates: {
+        canonical: '/prototype/public-site/bungalows/bungalow-familiar',
+      },
+    });
+  });
+
   it('preserves search filters in the back link to results', async () => {
     const html = renderToStaticMarkup(
       await BungalowDetailPage({
@@ -33,6 +49,7 @@ describe('BungalowDetailPage', () => {
     expect(html).toContain(
       'href="/prototype/public-site/bungalows?category=bungalow-familiar&amp;checkIn=2026-07-10&amp;checkOut=2026-07-12&amp;guests=4"',
     );
+    expect(html).toContain('Cómo se coordina tu estadía');
   });
 
   it('delegates unknown slugs to notFound', async () => {

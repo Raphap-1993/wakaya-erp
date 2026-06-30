@@ -13,7 +13,7 @@ import PublicSitePublicationsPage from './publications/page';
 import PublicSiteContactPage from './contact/page';
 
 describe('PublicSiteInternalRoutes', () => {
-  it('renders the current public routes inside the shared shell', () => {
+  it('renders the current public routes inside the shared shell', async () => {
     const routes = [
       { heading: 'Un encuentro con lo mágico', page: <PublicSitePrototypePage /> },
       { heading: 'Acerca de Wakaya', page: <PublicSiteAboutPage /> },
@@ -22,7 +22,7 @@ describe('PublicSiteInternalRoutes', () => {
       { heading: 'Eventos', page: <PublicSiteEventsPage /> },
       { heading: 'Galería', page: <PublicSiteGalleryPage /> },
       { heading: 'Publicaciones', page: <PublicSitePublicationsPage /> },
-      { heading: 'Contacto', page: <PublicSiteContactPage /> },
+      { heading: 'Contacto', page: await PublicSiteContactPage({}) },
     ];
 
     for (const route of routes) {
@@ -82,7 +82,7 @@ describe('PublicSiteInternalRoutes', () => {
   });
 
   it('routes the public contact flow to booking requests language', async () => {
-    const html = renderToStaticMarkup(<PublicSiteContactPage />);
+    const html = renderToStaticMarkup(await PublicSiteContactPage({}));
 
     expect(html).toContain('solicitud');
     expect(html).toContain('transferencia');

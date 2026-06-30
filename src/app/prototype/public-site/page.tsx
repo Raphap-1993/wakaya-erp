@@ -2,6 +2,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { BookingBand } from '@/components/public-site/booking-band';
+import { buildPublicMetadata } from '@/components/public-site/public-site-metadata';
 import {
   homeSlides,
   publications,
@@ -11,6 +12,14 @@ import {
 import styles from '@/components/public-site/public-site-theme.module.css';
 
 const featuredRooms = publicBungalows.filter((room) => room.featuredOnHome).slice(0, 3);
+
+export const metadata = buildPublicMetadata({
+  title: 'Wakaya Ecolodge | Estadia amazónica en Pucallpa',
+  description:
+    'Descubre Wakaya Ecolodge en Pucallpa con bungalows, piscina, jardines y una solicitud de estadía acompañada por el equipo de reservas.',
+  path: '/prototype/public-site',
+  keywords: ['wakaya ecolodge', 'pucallpa', 'bungalows', 'reservas'],
+});
 
 export default function PublicSitePrototypePage() {
   const hero = homeSlides[0];

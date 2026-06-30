@@ -1,3 +1,4 @@
+import { buildPublicMetadata } from '@/components/public-site/public-site-metadata';
 import { notFound } from 'next/navigation';
 
 import { PageHero } from '@/components/public-site/page-hero';
@@ -31,6 +32,30 @@ async function resolveSearchParams(
 
 export function generateStaticParams() {
   return publicBungalows.map((bungalow) => ({ slug: bungalow.slug }));
+}
+
+export async function generateMetadata({ params }: Pick<PageProps, 'params'>) {
+  const { slug } = await params;
+  const room = publicBungalows.find((item) => item.slug === slug);
+
+  if (!room) {
+    return buildPublicMetadata({
+      title: 'Bungalows | Wakaya Ecolodge',
+      description:
+        'Explora las categorías de bungalows de Wakaya Ecolodge en Pucallpa.',
+      path: '/prototype/public-site/bungalows',
+    });
+  }
+
+  const roomName = getPublicBungalowLabel(room);
+
+  return buildPublicMetadata({
+    title: `${roomName} | Wakaya Ecolodge`,
+    description: `${room.description} ${room.capacity}. ${room.priceFrom}.`,
+    path: `/prototype/public-site/bungalows/${room.slug}`,
+    keywords: ['bungalows', roomName, 'wakaya ecolodge', 'pucallpa'],
+    image: room.image,
+  });
 }
 
 export default async function BungalowDetailPage({ params, searchParams }: PageProps) {
@@ -95,7 +120,7 @@ export default async function BungalowDetailPage({ params, searchParams }: PageP
 
           <div className={styles.eventCopyCard}>
             <div>
-              <strong>Experiencia de la categoría</strong>
+              <strong>Cómo se coordina tu estadía</strong>
               <p>{room.description}</p>
             </div>
 

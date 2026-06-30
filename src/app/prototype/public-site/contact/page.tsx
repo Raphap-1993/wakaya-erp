@@ -1,8 +1,43 @@
+import { buildPublicMetadata } from '@/components/public-site/public-site-metadata';
 import { PageHero } from '@/components/public-site/page-hero';
 import { footerContact, publicBungalows } from '@/components/public-site/public-site-data';
 import styles from '@/components/public-site/public-site-theme.module.css';
 
-export default function PublicSiteContactPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+type PageProps = {
+  searchParams?: Promise<SearchParams> | SearchParams;
+};
+
+function getSingleValue(value: string | string[] | undefined) {
+  return typeof value === 'string' ? value : '';
+}
+
+async function resolveSearchParams(
+  searchParams?: Promise<SearchParams> | SearchParams,
+): Promise<SearchParams> {
+  if (!searchParams) {
+    return {};
+  }
+
+  return searchParams instanceof Promise ? await searchParams : searchParams;
+}
+
+export const metadata = buildPublicMetadata({
+  title: 'Contacto y reservas | Wakaya Ecolodge',
+  description:
+    'Envía tu solicitud de estadía a Wakaya Ecolodge y continúa la coordinación por correo con el equipo de reservas.',
+  path: '/prototype/public-site/contact',
+  keywords: ['contacto wakaya', 'reservas wakaya', 'pucallpa', 'ecolodge'],
+});
+
+export default async function PublicSiteContactPage({ searchParams }: PageProps) {
+  const params = await resolveSearchParams(searchParams);
+  const requestedCheckIn = getSingleValue(params.requestedCheckIn) || '2026-07-10';
+  const requestedCheckOut = getSingleValue(params.requestedCheckOut) || '2026-07-12';
+  const requestedGuests = getSingleValue(params.requestedGuests) || '2';
+  const requestedBungalowType = getSingleValue(params.requestedBungalowType);
+
   return (
     <>
       <PageHero
@@ -47,15 +82,31 @@ export default function PublicSiteContactPage() {
               </div>
               <div className={styles.field}>
                 <label htmlFor="requestedCheckIn">Check in</label>
-                <input id="requestedCheckIn" name="requestedCheckIn" type="date" defaultValue="2026-07-10" required />
+                <input
+                  id="requestedCheckIn"
+                  name="requestedCheckIn"
+                  type="date"
+                  defaultValue={requestedCheckIn}
+                  required
+                />
               </div>
               <div className={styles.field}>
                 <label htmlFor="requestedCheckOut">Check out</label>
-                <input id="requestedCheckOut" name="requestedCheckOut" type="date" defaultValue="2026-07-12" required />
+                <input
+                  id="requestedCheckOut"
+                  name="requestedCheckOut"
+                  type="date"
+                  defaultValue={requestedCheckOut}
+                  required
+                />
               </div>
               <div className={styles.field}>
                 <label htmlFor="requestedGuests">Personas</label>
-                <select id="requestedGuests" name="requestedGuests" defaultValue="2">
+                <select
+                  id="requestedGuests"
+                  name="requestedGuests"
+                  defaultValue={requestedGuests}
+                >
                   <option value="2">2 huéspedes</option>
                   <option value="3">3 huéspedes</option>
                   <option value="4">4 huéspedes</option>
@@ -64,10 +115,17 @@ export default function PublicSiteContactPage() {
               </div>
               <div className={styles.field}>
                 <label htmlFor="requestedBungalowType">Categoría preferida</label>
-                <select id="requestedBungalowType" name="requestedBungalowType" defaultValue="">
+                <select
+                  id="requestedBungalowType"
+                  name="requestedBungalowType"
+                  defaultValue={requestedBungalowType}
+                >
                   <option value="">Sin preferencia</option>
                   {publicBungalows.map((bungalow) => (
-                    <option key={bungalow.slug} value={bungalow.bookingRequestBungalowId ?? ""}>
+                    <option
+                      key={bungalow.slug}
+                      value={bungalow.bookingRequestBungalowId ?? bungalow.slug}
+                    >
                       {bungalow.name}
                     </option>
                   ))}

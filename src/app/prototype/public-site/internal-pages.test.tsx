@@ -9,14 +9,14 @@ import PublicationsPage from './publications/page';
 import ServicesPage from './services/page';
 
 describe('internal public pages', () => {
-  it('render their own hero titles and keep Wakaya context', () => {
+  it('render their own hero titles and keep Wakaya context', async () => {
     const html = [
       renderToStaticMarkup(<AboutPage />),
       renderToStaticMarkup(<ServicesPage />),
       renderToStaticMarkup(<EventsPage />),
       renderToStaticMarkup(<GalleryPage />),
       renderToStaticMarkup(<PublicationsPage />),
-      renderToStaticMarkup(<ContactPage />),
+      renderToStaticMarkup(await ContactPage({})),
     ].join('');
 
     expect(html).toContain('Acerca de Wakaya');
