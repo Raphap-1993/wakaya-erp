@@ -39,6 +39,11 @@ export interface CreateBookingRequestResult {
   bookingRequest: BookingRequest;
 }
 
+export interface ConfirmBookingRequestTransferResult {
+  bookingRequest: BookingRequest;
+  reservation: ReservationDetail;
+}
+
 export interface ReservationStoreLike {
   list(filters?: ReservationListFilters): ReservationListItem[];
   get(id: string): ReservationDetail | null;
@@ -53,6 +58,8 @@ export interface ReservationStoreLike {
 }
 
 export interface ReservationServiceLike {
+  listBookingRequests(): Promise<BookingRequest[]>;
+  getBookingRequest(id: string): Promise<BookingRequest | null>;
   list(filters?: ReservationListFilters): Promise<ReservationListItem[]>;
   get(id: string): Promise<ReservationDetail | null>;
   getBungalow(id: string): Promise<Bungalow | null>;
@@ -60,6 +67,11 @@ export interface ReservationServiceLike {
   getAuditTrail(reservationId: string): Promise<ReservationAudit[]>;
   create(input: ReservationCreateInput): Promise<CreateReservationResult>;
   createBookingRequest(input: BookingRequestCreateInput): Promise<CreateBookingRequestResult>;
+  confirmBookingRequestTransfer(
+    id: string,
+    actorId: string,
+    reason: string,
+  ): Promise<ConfirmBookingRequestTransferResult>;
   update(reservationId: string, input: ReservationUpdateInput): Promise<ReservationDetail>;
   assign(reservationId: string, input: ReservationAssignmentInput): Promise<ReservationDetail>;
   transition(reservationId: string, input: ReservationStatusChangeInput): Promise<ReservationDetail>;

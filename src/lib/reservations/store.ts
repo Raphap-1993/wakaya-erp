@@ -3,14 +3,15 @@ import { canBlockOccupancy, nightsForReservation } from "@/lib/reservations/avai
 import { createReservationAuditEntry } from "@/lib/reservations/audit";
 import type { ReservationServiceLike } from "@/lib/reservations/repository";
 import type {
+  ConfirmBookingRequestTransferResult,
   CreateBookingRequestResult,
   CreateReservationResult,
   ReservationDetail,
   ReservationListItem,
 } from "@/lib/reservations/repository";
-import { nextBookingRequestPublicRef } from "@/lib/reservations/numbering";
+import { nextBookingRequestPublicRef, nextReservationNumber } from "@/lib/reservations/numbering";
 import { buildReservationService } from "@/lib/reservations/service";
-import { nextReservationStatus } from "@/lib/reservations/state-machine";
+import { nextBookingRequestStatus, nextReservationStatus } from "@/lib/reservations/state-machine";
 import type {
   BookingRequest,
   BookingRequestCreateInput,
@@ -179,14 +180,16 @@ export class ReservationStore {
     const nights = nightsForReservation(input.startDate, input.endDate);
     const amountTotalCents = normalizeAmount(input.amountTotalCents ?? nights.length * DEFAULT_NIGHTLY_RATE_CENTS);
     const amountPaidCents = Math.min(normalizeAmount(input.amountPaidCents), amountTotalCents);
-    const existingOccupancies = Array.from(this.occupancies.values());
-    const availability = canBlockOccupancy(existingOccupancies, {
-      bungalowId: input.bungalowId,
-      startDate: input.startDate,
-      endDate: input.endDate,
-    });
-    if (!availability.ok) {
-      throw new Error(availability.reason ?? "occupancy_conflict");
+    if (input.bungalowId) {
+      const existingOccupancies = Array.from(this.occupancies.values());
+      const availability = canBlockOccupancy(existingOccupancies, {
+        bungalowId: input.bungalowId,
+        startDate: input.startDate,
+        endDate: input.endDate,
+      });
+      if (!availability.ok) {
+        throw new Error(availability.reason ?? "occupancy_conflict");
+      }
     }
 
     const reservation: Reservation = {
@@ -195,6 +198,7 @@ export class ReservationStore {
       channel: input.channel,
       status,
       bungalowId: input.bungalowId,
+      sourceRequestId: input.sourceRequestId ?? null,
       responsibleId: input.responsibleId ?? null,
       startDate: input.startDate,
       endDate: input.endDate,
@@ -205,15 +209,17 @@ export class ReservationStore {
       updatedAt,
     };
 
-    const occupancy: ReservationOccupancy[] = nights.map((date) => ({
-      id: randomUUID(),
-      reservationId,
-      bungalowId: input.bungalowId,
-      date,
-      source: normalizeSource(input.channel),
-      status: occupancyStatusForReservation(status),
-      createdAt: updatedAt,
-    }));
+    const occupancy: ReservationOccupancy[] = input.bungalowId
+      ? nights.map((date) => ({
+          id: randomUUID(),
+          reservationId,
+          bungalowId: input.bungalowId!,
+          date,
+          source: normalizeSource(input.channel),
+          status: occupancyStatusForReservation(status),
+          createdAt: updatedAt,
+        }))
+      : [];
 
     const audit = createReservationAuditEntry({
       reservationId,
@@ -540,7 +546,12 @@ function hasOperationalDatabaseUrl(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
 }
 
-function wrapSyncStore(store: ReservationStore): Omit<ReservationServiceLike, "createBookingRequest"> {
+function wrapSyncStore(
+  store: ReservationStore,
+): Omit<
+  ReservationServiceLike,
+  "listBookingRequests" | "getBookingRequest" | "createBookingRequest" | "confirmBookingRequestTransfer"
+> {
   return {
     list: async (filters) => store.list(filters),
     get: async (id) => store.get(id),
@@ -715,8 +726,32 @@ function createTestFixtureSeed(): SeedData {
   };
 }
 
+function createTestBookingRequests(): BookingRequest[] {
+  return [
+    {
+      id: "request-1",
+      publicRef: "WR-2026-0001",
+      status: "proof_received",
+      guestName: "Ada Lovelace",
+      guestEmail: "ada@example.com",
+      guestPhone: "+51987654321",
+      requestedCheckIn: "2026-07-10",
+      requestedCheckOut: "2026-07-12",
+      requestedGuests: 2,
+      requestedBungalowType: null,
+      sourceChannel: "web_public",
+      threadId: null,
+      notes: null,
+      lastMessageAt: "2026-07-01T10:00:00.000Z",
+      syncStatus: "pending",
+      createdAt: "2026-07-01T09:00:00.000Z",
+      updatedAt: "2026-07-01T10:00:00.000Z",
+    },
+  ];
+}
+
 function createFallbackReservationService(): ReservationServiceLike {
-  const bookingRequests: BookingRequest[] = [];
+  const bookingRequests: BookingRequest[] = process.env.NODE_ENV === "test" ? createTestBookingRequests() : [];
   const seed = process.env.NODE_ENV === "test"
     ? createTestFixtureSeed()
     : {
@@ -733,6 +768,8 @@ function createFallbackReservationService(): ReservationServiceLike {
 
   return {
     ...wrapSyncStore(store),
+    listBookingRequests: async () => [...bookingRequests].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
+    getBookingRequest: async (id: string) => bookingRequests.find((item) => item.id === id) ?? null,
     createBookingRequest: async (input: BookingRequestCreateInput): Promise<CreateBookingRequestResult> => {
       const now = isoNow();
       const bookingRequest: BookingRequest = {
@@ -756,6 +793,39 @@ function createFallbackReservationService(): ReservationServiceLike {
       };
       bookingRequests.push(bookingRequest);
       return { bookingRequest };
+    },
+    confirmBookingRequestTransfer: async (
+      id: string,
+      actorId: string,
+      reason: string,
+    ): Promise<ConfirmBookingRequestTransferResult> => {
+      const current = bookingRequests.find((item) => item.id === id);
+      if (!current) {
+        throw new Error("booking_request_not_found");
+      }
+
+      current.status = nextBookingRequestStatus(current.status, "confirm_transfer");
+      current.updatedAt = isoNow();
+
+      const created = store.create({
+        number: nextReservationNumber(store.list()),
+        channel: "web",
+        bungalowId: null,
+        responsibleId: actorId,
+        startDate: current.requestedCheckIn,
+        endDate: current.requestedCheckOut,
+        sourceRequestId: current.id,
+      });
+      const reservation = store.transition(created.reservation.id, {
+        action: "confirm",
+        actorId,
+        reason,
+      });
+
+      return {
+        bookingRequest: current,
+        reservation,
+      };
     },
   };
 }

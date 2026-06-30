@@ -59,6 +59,8 @@ export function mapApiError(error: unknown): { body: ApiErrorDetails; status: nu
       return { body: { error: "bungalow_inactive" }, status: 409 };
     case "initial_email_failed":
       return { body: { error: "initial_email_failed" }, status: 502 };
+    case "zoho_sync_failed":
+      return { body: { error: "zoho_sync_failed" }, status: 502 };
     case "invalid_range":
       return { body: { error: "invalid_range" }, status: 422 };
     case "occupancy_conflict":

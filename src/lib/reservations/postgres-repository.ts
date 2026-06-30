@@ -3,7 +3,7 @@ import type { Pool, PoolClient } from "pg";
 
 import { canBlockOccupancy, nightsForReservation } from "@/lib/reservations/availability";
 import { createReservationAuditEntry } from "@/lib/reservations/audit";
-import { nextBookingRequestPublicRef } from "@/lib/reservations/numbering";
+import { nextBookingRequestPublicRef, nextReservationNumber } from "@/lib/reservations/numbering";
 import type {
   CreateBookingRequestResult,
   CreateReservationResult,
@@ -11,7 +11,7 @@ import type {
   ReservationListItem,
   ReservationServiceLike,
 } from "@/lib/reservations/repository";
-import { nextReservationStatus } from "@/lib/reservations/state-machine";
+import { nextBookingRequestStatus, nextReservationStatus } from "@/lib/reservations/state-machine";
 import type {
   BookingRequest,
   BookingRequestCreateInput,
@@ -179,6 +179,41 @@ export class PostgresReservationStore implements ReservationServiceLike {
     return result.rows.map((row) => this.toReservationListItem(row));
   }
 
+  async listBookingRequests(): Promise<BookingRequest[]> {
+    await this.ensureBootstrap();
+    const result = await this.pool.query<BookingRequestRow>(
+      `
+        select
+          id, public_ref, status, guest_name, guest_email, guest_phone,
+          requested_check_in, requested_check_out, requested_guests, requested_bungalow_type,
+          source_channel, thread_id, notes, last_message_at, sync_status, created_at, updated_at
+        from booking_request
+        order by updated_at desc
+      `,
+    );
+
+    return result.rows.map((row) => this.toBookingRequest(row));
+  }
+
+  async getBookingRequest(id: string): Promise<BookingRequest | null> {
+    await this.ensureBootstrap();
+    const result = await this.pool.query<BookingRequestRow>(
+      `
+        select
+          id, public_ref, status, guest_name, guest_email, guest_phone,
+          requested_check_in, requested_check_out, requested_guests, requested_bungalow_type,
+          source_channel, thread_id, notes, last_message_at, sync_status, created_at, updated_at
+        from booking_request
+        where id = $1
+        limit 1
+      `,
+      [id],
+    );
+
+    const row = result.rows[0];
+    return row ? this.toBookingRequest(row) : null;
+  }
+
   async get(id: string): Promise<ReservationDetail | null> {
     await this.ensureBootstrap();
     return this.getDetail(this.pool, id);
@@ -224,13 +259,15 @@ export class PostgresReservationStore implements ReservationServiceLike {
       const nights = nightsForReservation(input.startDate, input.endDate);
       const amountTotalCents = normalizeAmount(input.amountTotalCents ?? nights.length * DEFAULT_NIGHTLY_RATE_CENTS);
       const amountPaidCents = Math.min(normalizeAmount(input.amountPaidCents), amountTotalCents);
-      const availability = canBlockOccupancy(await this.loadExistingOccupancies(client), {
-        bungalowId: input.bungalowId,
-        startDate: input.startDate,
-        endDate: input.endDate,
-      });
-      if (!availability.ok) {
-        throw new Error(availability.reason ?? "occupancy_conflict");
+      if (input.bungalowId) {
+        const availability = canBlockOccupancy(await this.loadExistingOccupancies(client), {
+          bungalowId: input.bungalowId,
+          startDate: input.startDate,
+          endDate: input.endDate,
+        });
+        if (!availability.ok) {
+          throw new Error(availability.reason ?? "occupancy_conflict");
+        }
       }
 
       const reservation: Reservation = {
@@ -247,7 +284,7 @@ export class PostgresReservationStore implements ReservationServiceLike {
         paymentStatus: derivePaymentStatus(amountTotalCents, amountPaidCents),
         currencyCode: DEFAULT_CURRENCY_CODE,
         updatedAt,
-        sourceRequestId: null,
+        sourceRequestId: input.sourceRequestId ?? null,
       };
 
       await client.query(
@@ -366,6 +403,62 @@ export class PostgresReservationStore implements ReservationServiceLike {
       );
 
       return { bookingRequest };
+    });
+  }
+
+  async confirmBookingRequestTransfer(
+    id: string,
+    actorId: string,
+    reason: string,
+  ): Promise<{ bookingRequest: BookingRequest; reservation: ReservationDetail }> {
+    await this.ensureBootstrap();
+    return this.withTransaction(async (client) => {
+      await client.query("lock table booking_request in share row exclusive mode");
+
+      const row = await client.query<BookingRequestRow>(
+        `
+          select
+            id, public_ref, status, guest_name, guest_email, guest_phone,
+            requested_check_in, requested_check_out, requested_guests, requested_bungalow_type,
+            source_channel, thread_id, notes, last_message_at, sync_status, created_at, updated_at
+          from booking_request
+          where id = $1
+          limit 1
+        `,
+        [id],
+      );
+      const current = row.rows[0];
+      if (!current) {
+        throw new Error("booking_request_not_found");
+      }
+
+      const bookingRequest = this.toBookingRequest(current);
+      const nextStatus = nextBookingRequestStatus(bookingRequest.status, "confirm_transfer");
+      const updatedBookingRequest: BookingRequest = {
+        ...bookingRequest,
+        status: nextStatus,
+        updatedAt: isoNow(),
+      };
+
+      await client.query(
+        `
+          update booking_request
+          set status = $2, updated_at = $3
+          where id = $1
+        `,
+        [updatedBookingRequest.id, updatedBookingRequest.status, updatedBookingRequest.updatedAt],
+      );
+
+      const reservation = await this.createConfirmedReservationFromBookingRequest(client, {
+        bookingRequest: updatedBookingRequest,
+        actorId,
+        reason,
+      });
+
+      return {
+        bookingRequest: updatedBookingRequest,
+        reservation,
+      };
     });
   }
 
@@ -691,6 +784,110 @@ export class PostgresReservationStore implements ReservationServiceLike {
     };
   }
 
+  private toBookingRequest(row: BookingRequestRow): BookingRequest {
+    return {
+      id: row.id,
+      publicRef: row.public_ref,
+      status: row.status,
+      guestName: row.guest_name,
+      guestEmail: row.guest_email,
+      guestPhone: row.guest_phone,
+      requestedCheckIn: row.requested_check_in,
+      requestedCheckOut: row.requested_check_out,
+      requestedGuests: row.requested_guests,
+      requestedBungalowType: row.requested_bungalow_type,
+      sourceChannel: row.source_channel,
+      threadId: row.thread_id,
+      notes: row.notes,
+      lastMessageAt: row.last_message_at,
+      syncStatus: row.sync_status,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  private async createConfirmedReservationFromBookingRequest(
+    client: PoolClient,
+    input: {
+      bookingRequest: BookingRequest;
+      actorId: string;
+      reason: string;
+    },
+  ): Promise<ReservationDetail> {
+    const existingNumbers = await client.query<Pick<ReservationRow, "number">>(
+      `select number from reservation`,
+    );
+    const now = isoNow();
+    const reservation: Reservation = {
+      id: randomUUID(),
+      number: nextReservationNumber(existingNumbers.rows),
+      channel: "web",
+      status: "confirmed",
+      bungalowId: input.bookingRequest.requestedBungalowType ?? null,
+      sourceRequestId: input.bookingRequest.id,
+      responsibleId: input.actorId,
+      startDate: input.bookingRequest.requestedCheckIn,
+      endDate: input.bookingRequest.requestedCheckOut,
+      amountTotalCents: undefined,
+      amountPaidCents: 0,
+      paymentStatus: "pending",
+      currencyCode: DEFAULT_CURRENCY_CODE,
+      updatedAt: now,
+    };
+
+    await client.query(
+      `
+        insert into reservation (
+          id, number, channel, status, source_request_id, bungalow_id, responsible_id,
+          start_date, end_date, amount_total_cents, amount_paid_cents, payment_status,
+          currency_code, updated_at
+        ) values (
+          $1, $2, $3, $4, $5, $6, $7,
+          $8, $9, $10, $11, $12,
+          $13, $14
+        )
+      `,
+      [
+        reservation.id,
+        reservation.number,
+        reservation.channel,
+        reservation.status,
+        reservation.sourceRequestId,
+        reservation.bungalowId,
+        reservation.responsibleId,
+        reservation.startDate,
+        reservation.endDate,
+        reservation.amountTotalCents ?? null,
+        reservation.amountPaidCents ?? null,
+        reservation.paymentStatus ?? null,
+        reservation.currencyCode ?? null,
+        reservation.updatedAt,
+      ],
+    );
+
+    await this.insertOccupancyRows(
+      client,
+      reservation,
+      reservation.bungalowId,
+      occupancyStatusForReservation(reservation.status),
+    );
+    await this.insertAudit(
+      client,
+      createReservationAuditEntry({
+        reservationId: reservation.id,
+        actorId: input.actorId,
+        action: "confirm",
+        previousStatus: "pending_review",
+        nextStatus: "confirmed",
+        reason: input.reason,
+      }),
+    );
+
+    const detail = await this.getDetail(client, reservation.id);
+    if (!detail) throw new Error("reservation_not_found");
+    return detail;
+  }
+
   private async mustGetReservation(client: PoolClient, id: string): Promise<Reservation> {
     const result = await client.query<ReservationRow>(
       `select * from reservation where id = $1 limit 1`,
@@ -733,9 +930,13 @@ export class PostgresReservationStore implements ReservationServiceLike {
   private async insertOccupancyRows(
     client: PoolClient,
     reservation: Reservation,
-    bungalowId: string,
+    bungalowId: string | null,
     status: ReservationOccupancy["status"],
   ): Promise<ReservationOccupancy[]> {
+    if (!bungalowId) {
+      return [];
+    }
+
     const createdAt = isoNow();
     const rows: ReservationOccupancy[] = [];
     for (const date of nightsForReservation(reservation.startDate, reservation.endDate)) {

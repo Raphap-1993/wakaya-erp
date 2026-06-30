@@ -127,15 +127,17 @@ export interface ReservationListFilters {
 export interface ReservationCreateInput {
   number: string;
   channel: ReservationChannel;
-  bungalowId: string;
+  bungalowId: string | null;
   responsibleId?: string | null;
   startDate: string;
   endDate: string;
   amountTotalCents?: number;
   amountPaidCents?: number;
+  sourceRequestId?: string | null;
 }
 
 export interface ReservationUpdateInput extends ReservationCreateInput {
+  bungalowId: string;
   actorId: string;
   reason: string;
 }
