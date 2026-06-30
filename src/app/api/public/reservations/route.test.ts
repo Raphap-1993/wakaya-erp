@@ -3,24 +3,28 @@ import { describe, expect, it } from "vitest";
 import { POST } from "./route";
 
 describe("POST /api/public/reservations", () => {
-  it("creates a public web reservation with a server-generated number", async () => {
+  it("keeps the legacy route as a booking-request compatibility shim", async () => {
     const response = await POST(
       new Request("http://localhost/api/public/reservations", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          bungalowId: "bungalow-suite",
-          startDate: "2026-07-20",
-          endDate: "2026-07-21",
+          guestName: "Ada Lovelace",
+          guestEmail: "ada@example.com",
+          guestPhone: "+51987654321",
+          requestedCheckIn: "2026-07-20",
+          requestedCheckOut: "2026-07-21",
+          requestedGuests: 2,
+          requestedBungalowType: "bungalow-suite",
         }),
       }),
     );
     const body = await response.json();
 
     expect(response.status).toBe(201);
-    expect(body.reservation.status).toBe("pending_review");
-    expect(body.reservation.number).toMatch(/^RESERVATION-\d{4}-\d{4}$/);
-    expect(body.occupancy).toHaveLength(2);
+    expect(body.bookingRequest.status).toBe("awaiting_initial_email");
+    expect(body.bookingRequest.publicRef).toMatch(/^WR-\d{4}-\d{4}$/);
+    expect(body.email.status).toBe("queued");
   });
 
   it("rejects non-object JSON payloads", async () => {

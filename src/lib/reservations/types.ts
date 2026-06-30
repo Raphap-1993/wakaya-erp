@@ -58,6 +58,17 @@ export interface BookingRequest {
   updatedAt: string;
 }
 
+export interface BookingRequestCreateInput {
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  requestedCheckIn: string;
+  requestedCheckOut: string;
+  requestedGuests: number;
+  requestedBungalowType?: string | null;
+  notes?: string;
+}
+
 export interface Reservation {
   id: string;
   number: string;

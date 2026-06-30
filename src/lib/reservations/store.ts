@@ -3,13 +3,17 @@ import { canBlockOccupancy, nightsForReservation } from "@/lib/reservations/avai
 import { createReservationAuditEntry } from "@/lib/reservations/audit";
 import type { ReservationServiceLike } from "@/lib/reservations/repository";
 import type {
+  CreateBookingRequestResult,
   CreateReservationResult,
   ReservationDetail,
   ReservationListItem,
 } from "@/lib/reservations/repository";
+import { nextBookingRequestPublicRef } from "@/lib/reservations/numbering";
 import { buildReservationService } from "@/lib/reservations/service";
 import { nextReservationStatus } from "@/lib/reservations/state-machine";
 import type {
+  BookingRequest,
+  BookingRequestCreateInput,
   Bungalow,
   Reservation,
   ReservationAudit,
@@ -536,7 +540,7 @@ function hasOperationalDatabaseUrl(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
 }
 
-function wrapSyncStore(store: ReservationStore): ReservationServiceLike {
+function wrapSyncStore(store: ReservationStore): Omit<ReservationServiceLike, "createBookingRequest"> {
   return {
     list: async (filters) => store.list(filters),
     get: async (id) => store.get(id),
@@ -712,6 +716,7 @@ function createTestFixtureSeed(): SeedData {
 }
 
 function createFallbackReservationService(): ReservationServiceLike {
+  const bookingRequests: BookingRequest[] = [];
   const seed = process.env.NODE_ENV === "test"
     ? createTestFixtureSeed()
     : {
@@ -721,12 +726,38 @@ function createFallbackReservationService(): ReservationServiceLike {
         audits: [],
       };
 
-  return wrapSyncStore(
-    new ReservationStore({
-      storagePath: process.env.WAKAYA_RESERVATIONS_DB_PATH,
-      ...seed,
-    }),
-  );
+  const store = new ReservationStore({
+    storagePath: process.env.WAKAYA_RESERVATIONS_DB_PATH,
+    ...seed,
+  });
+
+  return {
+    ...wrapSyncStore(store),
+    createBookingRequest: async (input: BookingRequestCreateInput): Promise<CreateBookingRequestResult> => {
+      const now = isoNow();
+      const bookingRequest: BookingRequest = {
+        id: randomUUID(),
+        publicRef: nextBookingRequestPublicRef(bookingRequests),
+        status: "awaiting_initial_email",
+        guestName: input.guestName,
+        guestEmail: input.guestEmail,
+        guestPhone: input.guestPhone ?? null,
+        requestedCheckIn: input.requestedCheckIn,
+        requestedCheckOut: input.requestedCheckOut,
+        requestedGuests: input.requestedGuests,
+        requestedBungalowType: input.requestedBungalowType ?? null,
+        sourceChannel: "web_public",
+        threadId: null,
+        notes: input.notes ?? null,
+        lastMessageAt: null,
+        syncStatus: "pending",
+        createdAt: now,
+        updatedAt: now,
+      };
+      bookingRequests.push(bookingRequest);
+      return { bookingRequest };
+    },
+  };
 }
 
 export const reservationStore: ReservationServiceLike = hasOperationalDatabaseUrl()

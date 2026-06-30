@@ -1,4 +1,6 @@
 import type {
+  BookingRequest,
+  BookingRequestCreateInput,
   Bungalow,
   Reservation,
   ReservationAssignmentInput,
@@ -33,6 +35,10 @@ export interface CreateReservationResult {
   audit: ReservationAudit;
 }
 
+export interface CreateBookingRequestResult {
+  bookingRequest: BookingRequest;
+}
+
 export interface ReservationStoreLike {
   list(filters?: ReservationListFilters): ReservationListItem[];
   get(id: string): ReservationDetail | null;
@@ -53,6 +59,7 @@ export interface ReservationServiceLike {
   listBungalows(): Promise<Bungalow[]>;
   getAuditTrail(reservationId: string): Promise<ReservationAudit[]>;
   create(input: ReservationCreateInput): Promise<CreateReservationResult>;
+  createBookingRequest(input: BookingRequestCreateInput): Promise<CreateBookingRequestResult>;
   update(reservationId: string, input: ReservationUpdateInput): Promise<ReservationDetail>;
   assign(reservationId: string, input: ReservationAssignmentInput): Promise<ReservationDetail>;
   transition(reservationId: string, input: ReservationStatusChangeInput): Promise<ReservationDetail>;

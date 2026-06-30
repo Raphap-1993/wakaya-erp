@@ -3,7 +3,9 @@ import type { Pool, PoolClient } from "pg";
 
 import { canBlockOccupancy, nightsForReservation } from "@/lib/reservations/availability";
 import { createReservationAuditEntry } from "@/lib/reservations/audit";
+import { nextBookingRequestPublicRef } from "@/lib/reservations/numbering";
 import type {
+  CreateBookingRequestResult,
   CreateReservationResult,
   ReservationDetail,
   ReservationListItem,
@@ -11,6 +13,8 @@ import type {
 } from "@/lib/reservations/repository";
 import { nextReservationStatus } from "@/lib/reservations/state-machine";
 import type {
+  BookingRequest,
+  BookingRequestCreateInput,
   Bungalow,
   Reservation,
   ReservationAssignmentInput,
@@ -96,6 +100,26 @@ type AuditRow = {
   next_status: Reservation["status"];
   reason: string;
   created_at: string;
+};
+
+type BookingRequestRow = {
+  id: string;
+  public_ref: string;
+  status: BookingRequest["status"];
+  guest_name: string;
+  guest_email: string;
+  guest_phone: string | null;
+  requested_check_in: string;
+  requested_check_out: string;
+  requested_guests: number;
+  requested_bungalow_type: string | null;
+  source_channel: BookingRequest["sourceChannel"];
+  thread_id: string | null;
+  notes: string | null;
+  last_message_at: string | null;
+  sync_status: BookingRequest["syncStatus"];
+  created_at: string;
+  updated_at: string;
 };
 
 export class PostgresReservationStore implements ReservationServiceLike {
@@ -274,6 +298,74 @@ export class PostgresReservationStore implements ReservationServiceLike {
       await this.insertAudit(client, audit);
 
       return { reservation, occupancy, audit };
+    });
+  }
+
+  async createBookingRequest(input: BookingRequestCreateInput): Promise<CreateBookingRequestResult> {
+    await this.ensureBootstrap();
+    return this.withTransaction(async (client) => {
+      await client.query("lock table booking_request in share row exclusive mode");
+
+      const existingRefs = await client.query<Pick<BookingRequestRow, "public_ref">>(
+        `select public_ref from booking_request`,
+      );
+      const now = isoNow();
+      const bookingRequest: BookingRequest = {
+        id: randomUUID(),
+        publicRef: nextBookingRequestPublicRef(
+          existingRefs.rows.map((row) => ({ publicRef: row.public_ref })),
+        ),
+        status: "awaiting_initial_email",
+        guestName: input.guestName,
+        guestEmail: input.guestEmail,
+        guestPhone: input.guestPhone ?? null,
+        requestedCheckIn: input.requestedCheckIn,
+        requestedCheckOut: input.requestedCheckOut,
+        requestedGuests: input.requestedGuests,
+        requestedBungalowType: input.requestedBungalowType ?? null,
+        sourceChannel: "web_public",
+        threadId: null,
+        notes: input.notes ?? null,
+        lastMessageAt: null,
+        syncStatus: "pending",
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      await client.query(
+        `
+          insert into booking_request(
+            id, public_ref, status, guest_name, guest_email, guest_phone,
+            requested_check_in, requested_check_out, requested_guests, requested_bungalow_type,
+            source_channel, thread_id, notes, last_message_at, sync_status, created_at, updated_at
+          ) values (
+            $1, $2, $3, $4, $5, $6,
+            $7, $8, $9, $10,
+            $11, $12, $13, $14, $15, $16, $17
+          )
+        `,
+        [
+          bookingRequest.id,
+          bookingRequest.publicRef,
+          bookingRequest.status,
+          bookingRequest.guestName,
+          bookingRequest.guestEmail,
+          bookingRequest.guestPhone,
+          bookingRequest.requestedCheckIn,
+          bookingRequest.requestedCheckOut,
+          bookingRequest.requestedGuests,
+          bookingRequest.requestedBungalowType,
+          bookingRequest.sourceChannel,
+          bookingRequest.threadId,
+          bookingRequest.notes,
+          bookingRequest.lastMessageAt,
+          bookingRequest.syncStatus,
+          bookingRequest.createdAt,
+          bookingRequest.updatedAt,
+        ],
+      );
+
+      return { bookingRequest };
     });
   }
 
