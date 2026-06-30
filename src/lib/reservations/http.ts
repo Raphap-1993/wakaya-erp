@@ -49,12 +49,16 @@ export function mapApiError(error: unknown): { body: ApiErrorDetails; status: nu
   switch (message) {
     case "invalid_json":
       return { body: { error: "invalid_json" }, status: 400 };
+    case "booking_request_not_found":
+      return { body: { error: "booking_request_not_found" }, status: 404 };
     case "reservation_not_found":
       return { body: { error: "reservation_not_found" }, status: 404 };
     case "bungalow_not_found":
       return { body: { error: "bungalow_not_found" }, status: 404 };
     case "bungalow_inactive":
       return { body: { error: "bungalow_inactive" }, status: 409 };
+    case "initial_email_failed":
+      return { body: { error: "initial_email_failed" }, status: 502 };
     case "invalid_range":
       return { body: { error: "invalid_range" }, status: 422 };
     case "occupancy_conflict":

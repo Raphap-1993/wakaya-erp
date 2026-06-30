@@ -1,5 +1,21 @@
 export type ReservationChannel = "web" | "ota";
 
+export type BookingRequestStatus =
+  | "request_received"
+  | "awaiting_initial_email"
+  | "awaiting_transfer"
+  | "proof_received"
+  | "needs_attention"
+  | "converted_to_reservation"
+  | "cancelled";
+
+export type BookingRequestAction =
+  | "mark_initial_email_sent"
+  | "mark_proof_received"
+  | "confirm_transfer"
+  | "mark_needs_attention"
+  | "cancel";
+
 export type ReservationPaymentStatus = "pending" | "partial" | "paid";
 
 export type ReservationStatus =
@@ -22,6 +38,26 @@ export type ReservationAction =
   | "cancel"
   | "mark_no_show";
 
+export interface BookingRequest {
+  id: string;
+  publicRef: string;
+  status: BookingRequestStatus;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string | null;
+  requestedCheckIn: string;
+  requestedCheckOut: string;
+  requestedGuests: number;
+  requestedBungalowType: string | null;
+  sourceChannel: "web_public";
+  threadId: string | null;
+  notes: string | null;
+  lastMessageAt: string | null;
+  syncStatus: "pending" | "synced" | "degraded";
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Reservation {
   id: string;
   number: string;
@@ -36,6 +72,7 @@ export interface Reservation {
   startDate: string;
   endDate: string;
   updatedAt: string;
+  sourceRequestId?: string | null;
 }
 
 export interface Bungalow {
