@@ -64,6 +64,18 @@ export default async function BungalowDetailPage({ params, searchParams }: PageP
   }
 
   const backHref = `/prototype/public-site/bungalows?${backSearchParams.toString()}`;
+  const bookingRequestSearchParams = new URLSearchParams();
+  bookingRequestSearchParams.set('requestedBungalowType', room.bookingRequestBungalowId ?? '');
+  if (checkIn) {
+    bookingRequestSearchParams.set('requestedCheckIn', checkIn);
+  }
+  if (checkOut) {
+    bookingRequestSearchParams.set('requestedCheckOut', checkOut);
+  }
+  if (guests) {
+    bookingRequestSearchParams.set('requestedGuests', guests);
+  }
+  const contactHref = `/prototype/public-site/contact?${bookingRequestSearchParams.toString()}`;
 
   return (
     <>
@@ -100,8 +112,8 @@ export default async function BungalowDetailPage({ params, searchParams }: PageP
             </ul>
 
             <div className={styles.actions}>
-              <a className={styles.primaryButton} href="/prototype/public-site/contact">
-                Coordinar reserva
+              <a className={styles.primaryButton} href={contactHref}>
+                Enviar solicitud
               </a>
               <a className={styles.ghostButton} href={backHref}>
                 Volver a resultados

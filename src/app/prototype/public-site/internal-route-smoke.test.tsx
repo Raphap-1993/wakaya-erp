@@ -80,4 +80,11 @@ describe('PublicSiteInternalRoutes', () => {
     expect(html).toContain('href="/prototype/public-site/bungalows?category=bungalow-familiar');
     expect(html).toContain('<footer');
   });
+
+  it('routes the public contact flow to booking requests language', async () => {
+    const html = renderToStaticMarkup(<PublicSiteContactPage />);
+
+    expect(html).toContain('solicitud');
+    expect(html).toContain('transferencia');
+  });
 });

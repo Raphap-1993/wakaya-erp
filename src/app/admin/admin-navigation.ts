@@ -1,5 +1,6 @@
 export const ADMIN_MODULES = [
   { href: "/admin/reservations", label: "Reservas", icon: "reservations" },
+  { href: "/admin/reservations/requests", label: "Solicitudes web", icon: "reservations" },
   { href: "/admin/reservations/occupancy", label: "Ocupación", icon: "occupancy" },
   { href: "/admin/payments", label: "Pagos", icon: "payments" },
   { href: "/admin/reports", label: "Reportes", icon: "reports" },

@@ -14,22 +14,22 @@ export function BookingBand() {
 
       <form
         className={styles.bookingForm}
-        action="/prototype/public-site/bungalows"
+        action="/prototype/public-site/contact"
         method="get"
       >
         <div className={styles.field}>
           <label htmlFor="checkIn">Check in</label>
-          <input id="checkIn" name="checkIn" type="date" defaultValue="2026-07-10" />
+          <input id="checkIn" name="requestedCheckIn" type="date" defaultValue="2026-07-10" />
         </div>
 
         <div className={styles.field}>
           <label htmlFor="checkOut">Check out</label>
-          <input id="checkOut" name="checkOut" type="date" defaultValue="2026-07-12" />
+          <input id="checkOut" name="requestedCheckOut" type="date" defaultValue="2026-07-12" />
         </div>
 
         <div className={styles.field}>
           <label htmlFor="guests">Personas</label>
-          <select id="guests" name="guests" defaultValue="2">
+          <select id="guests" name="requestedGuests" defaultValue="2">
             <option value="2">2 huéspedes</option>
             <option value="3">3 huéspedes</option>
             <option value="4">4 huéspedes</option>
@@ -39,10 +39,10 @@ export function BookingBand() {
 
         <div className={styles.field}>
           <label htmlFor="category">Habitación</label>
-          <select id="category" name="category" defaultValue="">
+          <select id="category" name="requestedBungalowType" defaultValue="">
             <option value="">Todas las categorías</option>
             {publicBungalows.map((bungalow) => (
-              <option key={bungalow.slug} value={bungalow.slug}>
+              <option key={bungalow.slug} value={bungalow.bookingRequestBungalowId ?? ""}>
                 {bungalow.homeName ?? bungalow.name}
               </option>
             ))}
@@ -50,7 +50,7 @@ export function BookingBand() {
         </div>
 
         <button className={styles.primaryButton} type="submit">
-          Consultar disponibilidad
+          Solicitar disponibilidad
         </button>
       </form>
     </section>
