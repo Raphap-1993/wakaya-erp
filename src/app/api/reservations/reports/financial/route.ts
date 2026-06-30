@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     const startDate = readString(url.searchParams.get("startDate"));
     const endDate = readString(url.searchParams.get("endDate"));
 
-    const items = reservationStore.list({
+    const items = await reservationStore.list({
       status: status ? (status as ReservationStatus) : undefined,
       channel: channel ? (channel as ReservationChannel) : undefined,
       responsibleId,

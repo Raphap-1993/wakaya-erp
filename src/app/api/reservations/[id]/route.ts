@@ -21,7 +21,7 @@ export async function GET(
 
   try {
     const id = await readId(context);
-    const detail = reservationStore.get(id);
+    const detail = await reservationStore.get(id);
     if (!detail) {
       return jsonResponse({ error: "reservation_not_found" }, 404);
     }
@@ -43,7 +43,7 @@ export async function PUT(
     const id = await readId(context);
     const rawBody = await readJsonBody<unknown>(request);
     const parsed = reservationCreateSchema.parse(rawBody);
-    const reservation = reservationStore.update(id, {
+    const reservation = await reservationStore.update(id, {
       ...parsed,
       responsibleId: parsed.responsibleId ?? auth.subject ?? null,
       actorId: auth.subject ?? "system",

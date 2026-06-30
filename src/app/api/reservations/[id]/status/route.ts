@@ -24,7 +24,7 @@ export async function POST(
     const id = await readId(context);
     const body = reservationStatusSchema.parse(await readJsonBody<unknown>(request));
 
-    const reservation = reservationStore.transition(id, {
+    const reservation = await reservationStore.transition(id, {
       action: body.action,
       actorId: auth.subject ?? body.actorId ?? "system",
       reason: body.reason,

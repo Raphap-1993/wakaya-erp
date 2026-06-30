@@ -16,8 +16,7 @@ type FlowThread = {
   links: Array<{ label: string; href: string; primary?: boolean }>;
 };
 
-function getSampleReservationId(preferredStatus?: string): string | null {
-  const items = reservationStore.list();
+function getSampleReservationId(items: Awaited<ReturnType<typeof reservationStore.list>>, preferredStatus?: string): string | null {
   if (preferredStatus) {
     const match = items.find((item) => item.status === preferredStatus);
     if (match) return match.id;
@@ -38,10 +37,11 @@ export default async function ReservationFlowsPage() {
     notFound();
   }
 
-  const pendingId = getSampleReservationId("pending_review");
-  const confirmedId = getSampleReservationId("confirmed") ?? getSampleReservationId("ota_imported_confirmed");
-  const assignedId = getSampleReservationId("assigned");
-  const checkedInId = getSampleReservationId("checked_in");
+  const items = await reservationStore.list();
+  const pendingId = getSampleReservationId(items, "pending_review");
+  const confirmedId = getSampleReservationId(items, "confirmed") ?? getSampleReservationId(items, "ota_imported_confirmed");
+  const assignedId = getSampleReservationId(items, "assigned");
+  const checkedInId = getSampleReservationId(items, "checked_in");
 
   const threads: FlowThread[] = [
     {
@@ -150,8 +150,8 @@ export default async function ReservationFlowsPage() {
               <span className={styles.statValue}>{threads.length}</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>Reservas demo</span>
-              <span className={styles.statValue}>{reservationStore.list().length}</span>
+              <span className={styles.statLabel}>Reservas activas</span>
+              <span className={styles.statValue}>{items.length}</span>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statLabel}>Cobertura</span>

@@ -55,7 +55,7 @@ export default async function ReservationsAdminPage({
     startDate: query.startDate,
     endDate: query.endDate,
   };
-  const items = reservationStore.list(canonicalFilters);
+  const items = await reservationStore.list(canonicalFilters);
   const requestedSelectedId = query.selected ?? null;
   const selectedId = items.some((item) => item.id === requestedSelectedId)
     ? requestedSelectedId

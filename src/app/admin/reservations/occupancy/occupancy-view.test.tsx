@@ -40,7 +40,7 @@ describe("OccupancyView", () => {
     });
   });
 
-  it("renders the weekly grid and the selected detail with distinct occupancy states", () => {
+  it("renders the weekly grid and the selected detail with distinct occupancy states", async () => {
     const items = [
       makeReservation({
         id: "reservation-paid-1",
@@ -98,7 +98,7 @@ describe("OccupancyView", () => {
     const html = renderToStaticMarkup(
       <OccupancyView
         items={items}
-        bungalows={reservationStore.listBungalows()}
+        bungalows={await reservationStore.listBungalows()}
         query={{
           week: "2026-W24",
           date: "2026-06-11",
@@ -129,7 +129,7 @@ describe("OccupancyView", () => {
     expect(html).toContain("Ingreso inicial");
   });
 
-  it("shows blocked cells as explicit conflicts instead of collapsing them into one reservation", () => {
+  it("shows blocked cells as explicit conflicts instead of collapsing them into one reservation", async () => {
     const items = [
       makeReservation({
         id: "reservation-blocked-1",
@@ -154,7 +154,7 @@ describe("OccupancyView", () => {
     const html = renderToStaticMarkup(
       <OccupancyView
         items={items}
-        bungalows={reservationStore.listBungalows()}
+        bungalows={await reservationStore.listBungalows()}
         query={{
           week: "2026-W24",
           date: "2026-06-14",

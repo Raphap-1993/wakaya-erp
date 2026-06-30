@@ -23,7 +23,7 @@ export async function POST(
     const id = await readId(context);
     const body = reservationAssignSchema.parse(await readJsonBody<unknown>(request));
 
-    const reservation = reservationStore.assign(id, {
+    const reservation = await reservationStore.assign(id, {
       bungalowId: body.bungalowId,
       actorId: auth.subject ?? body.actorId ?? "system",
       reason: body.reason,

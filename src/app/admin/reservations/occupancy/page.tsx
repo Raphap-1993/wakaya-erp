@@ -28,12 +28,17 @@ export default async function ReservationsOccupancyPage({
 
   const anchorDate = resolveWeekAnchor(query.week, query.date);
   const weekEndDate = addDays(anchorDate, 6);
-  const items = reservationStore.list({
-    startDate: anchorDate,
-    endDate: weekEndDate,
-  });
-  const bungalows = reservationStore.listBungalows();
-  const auditsByReservationId = Object.fromEntries(items.map((item) => [item.id, reservationStore.getAuditTrail(item.id)]));
+  const [items, bungalows] = await Promise.all([
+    reservationStore.list({
+      startDate: anchorDate,
+      endDate: weekEndDate,
+    }),
+    reservationStore.listBungalows(),
+  ]);
+  const auditEntries = await Promise.all(
+    items.map(async (item) => [item.id, await reservationStore.getAuditTrail(item.id)] as const),
+  );
+  const auditsByReservationId = Object.fromEntries(auditEntries);
   const model = buildOccupancyModel(items, bungalows, {
     week: query.week,
     date: query.date ?? anchorDate,

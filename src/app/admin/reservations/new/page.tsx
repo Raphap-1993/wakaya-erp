@@ -16,10 +16,13 @@ export default async function NewReservationPage() {
     notFound();
   }
 
-  const bungalows = reservationStore.listBungalows();
+  const [bungalows, reservations] = await Promise.all([
+    reservationStore.listBungalows(),
+    reservationStore.list(),
+  ]);
   const initialValues = {
     ...createReservationEditorValues(),
-    number: nextReservationNumber(reservationStore.list()),
+    number: nextReservationNumber(reservations),
   };
 
   return (

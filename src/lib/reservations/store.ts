@@ -1,8 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { canBlockOccupancy, nightsForReservation } from "@/lib/reservations/availability";
 import { createReservationAuditEntry } from "@/lib/reservations/audit";
+import type { ReservationServiceLike } from "@/lib/reservations/repository";
+import type {
+  CreateReservationResult,
+  ReservationDetail,
+  ReservationListItem,
+} from "@/lib/reservations/repository";
+import { buildReservationService } from "@/lib/reservations/service";
 import { nextReservationStatus } from "@/lib/reservations/state-machine";
-import { ReservationSqlitePersistence } from "@/lib/reservations/sqlite-persistence";
 import type {
   Bungalow,
   Reservation,
@@ -17,21 +23,7 @@ import type {
   ReservationStatusChangeInput,
   ReservationUpdateInput,
 } from "@/lib/reservations/types";
-
-export interface ReservationDetail extends Reservation {
-  bungalow: Bungalow | null;
-  auditCount: number;
-}
-
-export interface ReservationListItem extends Reservation {
-  bungalow: Bungalow | null;
-}
-
-export interface CreateReservationResult {
-  reservation: Reservation;
-  occupancy: ReservationOccupancy[];
-  audit: ReservationAudit;
-}
+export type { CreateReservationResult, ReservationDetail, ReservationListItem } from "@/lib/reservations/repository";
 
 interface SeedData {
   storagePath?: string;
@@ -40,6 +32,16 @@ interface SeedData {
   occupancies?: ReservationOccupancy[];
   audits?: ReservationAudit[];
 }
+
+const MEMORY_SNAPSHOTS = new Map<
+  string,
+  {
+    bungalows: Bungalow[];
+    reservations: Reservation[];
+    occupancies: ReservationOccupancy[];
+    audits: ReservationAudit[];
+  }
+>();
 
 function isoNow(): string {
   return new Date().toISOString();
@@ -80,7 +82,7 @@ export class ReservationStore {
   private readonly reservations = new Map<string, Reservation>();
   private readonly occupancies = new Map<string, ReservationOccupancy>();
   private readonly audits = new Map<string, ReservationAudit[]>();
-  private readonly persistence: ReservationSqlitePersistence | null;
+  private readonly storagePath: string | null;
 
   constructor(seed: SeedData = {}) {
     const bungalowSeeds: Bungalow[] =
@@ -99,11 +101,10 @@ export class ReservationStore {
       audits: auditSeeds,
     };
 
-    this.persistence = seed.storagePath ? new ReservationSqlitePersistence(seed.storagePath) : null;
-    const persistedSnapshot = this.persistence
-      ? this.persistence.isEmpty()
-        ? (this.persistence.replaceSnapshot(snapshot), this.persistence.loadSnapshot())
-        : this.persistence.loadSnapshot()
+    this.storagePath = seed.storagePath ?? null;
+    const persistedSnapshot = this.storagePath
+      ? MEMORY_SNAPSHOTS.get(this.storagePath) ??
+        (MEMORY_SNAPSHOTS.set(this.storagePath, snapshot), MEMORY_SNAPSHOTS.get(this.storagePath)!)
       : snapshot;
 
     persistedSnapshot.bungalows.forEach((bungalow) => this.bungalows.set(bungalow.id, bungalow));
@@ -477,9 +478,9 @@ export class ReservationStore {
   }
 
   private persistState(): void {
-    if (!this.persistence) return;
+    if (!this.storagePath) return;
 
-    this.persistence.replaceSnapshot({
+    MEMORY_SNAPSHOTS.set(this.storagePath, {
       bungalows: Array.from(this.bungalows.values()),
       reservations: Array.from(this.reservations.values()),
       occupancies: Array.from(this.occupancies.values()),
@@ -490,9 +491,10 @@ export class ReservationStore {
   }
 
   private refreshFromPersistence(): void {
-    if (!this.persistence) return;
+    if (!this.storagePath) return;
 
-    const snapshot = this.persistence.loadSnapshot();
+    const snapshot = MEMORY_SNAPSHOTS.get(this.storagePath);
+    if (!snapshot) return;
     this.bungalows.clear();
     this.reservations.clear();
     this.occupancies.clear();
@@ -530,124 +532,203 @@ export class ReservationStore {
   }
 }
 
-export const reservationStore = new ReservationStore({
-  storagePath: process.env.WAKAYA_RESERVATIONS_DB_PATH,
-  reservations: [
-    {
-      id: "reservation-demo-1",
-      number: "RESERVATION-2026-0001",
-      channel: "web",
-      status: "pending_review",
-      amountTotalCents: 36000,
-      amountPaidCents: 0,
-      paymentStatus: "pending",
-      bungalowId: "bungalow-suite",
-      responsibleId: "user-reception-1",
-      startDate: "2026-06-12",
-      endDate: "2026-06-14",
-      updatedAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "reservation-demo-2",
-      number: "RESERVATION-2026-0002",
-      channel: "ota",
-      status: "ota_imported_confirmed",
-      amountTotalCents: 24000,
-      amountPaidCents: 24000,
-      paymentStatus: "paid",
-      bungalowId: "bungalow-family",
-      responsibleId: "user-reception-2",
-      startDate: "2026-06-15",
-      endDate: "2026-06-16",
-      updatedAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "reservation-demo-3",
-      number: "RESERVATION-2026-0003",
-      channel: "ota",
-      status: "checked_in",
-      amountTotalCents: 48000,
-      amountPaidCents: 12000,
-      paymentStatus: "partial",
-      bungalowId: "bungalow-matrimonial",
-      responsibleId: "user-reception-3",
-      startDate: "2026-06-17",
-      endDate: "2026-06-19",
-      updatedAt: "2026-05-29T00:00:00.000Z",
-    },
-  ],
-  occupancies: [
-    {
-      id: "occupancy-demo-1",
-      reservationId: "reservation-demo-1",
-      bungalowId: "bungalow-suite",
-      date: "2026-06-12",
-      source: "web",
-      status: "provisional",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-2",
-      reservationId: "reservation-demo-1",
-      bungalowId: "bungalow-suite",
-      date: "2026-06-13",
-      source: "web",
-      status: "provisional",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-3",
-      reservationId: "reservation-demo-1",
-      bungalowId: "bungalow-suite",
-      date: "2026-06-14",
-      source: "web",
-      status: "provisional",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-4",
-      reservationId: "reservation-demo-2",
-      bungalowId: "bungalow-family",
-      date: "2026-06-15",
-      source: "ota",
-      status: "confirmed",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-5",
-      reservationId: "reservation-demo-2",
-      bungalowId: "bungalow-family",
-      date: "2026-06-16",
-      source: "ota",
-      status: "confirmed",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-6",
-      reservationId: "reservation-demo-3",
-      bungalowId: "bungalow-matrimonial",
-      date: "2026-06-17",
-      source: "ota",
-      status: "confirmed",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-7",
-      reservationId: "reservation-demo-3",
-      bungalowId: "bungalow-matrimonial",
-      date: "2026-06-18",
-      source: "ota",
-      status: "confirmed",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-    {
-      id: "occupancy-demo-8",
-      reservationId: "reservation-demo-3",
-      bungalowId: "bungalow-matrimonial",
-      date: "2026-06-19",
-      source: "ota",
-      status: "confirmed",
-      createdAt: "2026-05-29T00:00:00.000Z",
-    },
-  ],
-});
+function hasOperationalDatabaseUrl(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+function wrapSyncStore(store: ReservationStore): ReservationServiceLike {
+  return {
+    list: async (filters) => store.list(filters),
+    get: async (id) => store.get(id),
+    getBungalow: async (id) => store.getBungalow(id),
+    listBungalows: async () => store.listBungalows(),
+    getAuditTrail: async (reservationId) => store.getAuditTrail(reservationId),
+    create: async (input) => store.create(input),
+    update: async (reservationId, input) => store.update(reservationId, input),
+    assign: async (reservationId, input) => store.assign(reservationId, input),
+    transition: async (reservationId, input) => store.transition(reservationId, input),
+    recordPayment: async (reservationId, input) => store.recordPayment(reservationId, input),
+  };
+}
+
+function createTestFixtureSeed(): SeedData {
+  return {
+    bungalows: [
+      { id: "bungalow-suite", code: "SUITE", name: "Bungalow Suite", active: true, capacity: 2 },
+      { id: "bungalow-family", code: "FAMILY", name: "Bungalow Familiar", active: true, capacity: 4 },
+      { id: "bungalow-matrimonial", code: "MATRIMONIAL", name: "Bungalow Matrimonial", active: true, capacity: 2 },
+    ],
+    reservations: [
+      {
+        id: "reservation-demo-1",
+        number: "RESERVATION-2026-0001",
+        channel: "web",
+        status: "pending_review",
+        amountTotalCents: 36000,
+        amountPaidCents: 0,
+        paymentStatus: "pending",
+        bungalowId: "bungalow-suite",
+        responsibleId: "user-reception-1",
+        startDate: "2026-06-12",
+        endDate: "2026-06-14",
+        updatedAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "reservation-demo-2",
+        number: "RESERVATION-2026-0002",
+        channel: "ota",
+        status: "ota_imported_confirmed",
+        amountTotalCents: 24000,
+        amountPaidCents: 24000,
+        paymentStatus: "paid",
+        bungalowId: "bungalow-family",
+        responsibleId: "user-reception-2",
+        startDate: "2026-06-15",
+        endDate: "2026-06-16",
+        updatedAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "reservation-demo-3",
+        number: "RESERVATION-2026-0003",
+        channel: "ota",
+        status: "checked_in",
+        amountTotalCents: 48000,
+        amountPaidCents: 12000,
+        paymentStatus: "partial",
+        bungalowId: "bungalow-matrimonial",
+        responsibleId: "user-reception-3",
+        startDate: "2026-06-17",
+        endDate: "2026-06-19",
+        updatedAt: "2026-05-29T00:00:00.000Z",
+      },
+    ],
+    occupancies: [
+      {
+        id: "occupancy-demo-1",
+        reservationId: "reservation-demo-1",
+        bungalowId: "bungalow-suite",
+        date: "2026-06-12",
+        source: "web",
+        status: "provisional",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-2",
+        reservationId: "reservation-demo-1",
+        bungalowId: "bungalow-suite",
+        date: "2026-06-13",
+        source: "web",
+        status: "provisional",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-3",
+        reservationId: "reservation-demo-1",
+        bungalowId: "bungalow-suite",
+        date: "2026-06-14",
+        source: "web",
+        status: "provisional",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-4",
+        reservationId: "reservation-demo-2",
+        bungalowId: "bungalow-family",
+        date: "2026-06-15",
+        source: "ota",
+        status: "confirmed",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-5",
+        reservationId: "reservation-demo-2",
+        bungalowId: "bungalow-family",
+        date: "2026-06-16",
+        source: "ota",
+        status: "confirmed",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-6",
+        reservationId: "reservation-demo-3",
+        bungalowId: "bungalow-matrimonial",
+        date: "2026-06-17",
+        source: "ota",
+        status: "confirmed",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-7",
+        reservationId: "reservation-demo-3",
+        bungalowId: "bungalow-matrimonial",
+        date: "2026-06-18",
+        source: "ota",
+        status: "confirmed",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "occupancy-demo-8",
+        reservationId: "reservation-demo-3",
+        bungalowId: "bungalow-matrimonial",
+        date: "2026-06-19",
+        source: "ota",
+        status: "confirmed",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    ],
+    audits: [
+      {
+        id: "audit-demo-1",
+        reservationId: "reservation-demo-1",
+        actorId: "system",
+        action: "create",
+        previousStatus: "pending_review",
+        nextStatus: "pending_review",
+        reason: "initial reservation creation",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "audit-demo-2",
+        reservationId: "reservation-demo-2",
+        actorId: "system",
+        action: "create",
+        previousStatus: "ota_imported_confirmed",
+        nextStatus: "ota_imported_confirmed",
+        reason: "initial reservation creation",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+      {
+        id: "audit-demo-3",
+        reservationId: "reservation-demo-3",
+        actorId: "system",
+        action: "check_in",
+        previousStatus: "assigned",
+        nextStatus: "checked_in",
+        reason: "guest checked in",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    ],
+  };
+}
+
+function createFallbackReservationService(): ReservationServiceLike {
+  const seed = process.env.NODE_ENV === "test"
+    ? createTestFixtureSeed()
+    : {
+        bungalows: [],
+        reservations: [],
+        occupancies: [],
+        audits: [],
+      };
+
+  return wrapSyncStore(
+    new ReservationStore({
+      storagePath: process.env.WAKAYA_RESERVATIONS_DB_PATH,
+      ...seed,
+    }),
+  );
+}
+
+export const reservationStore: ReservationServiceLike = hasOperationalDatabaseUrl()
+  ? buildReservationService()
+  : createFallbackReservationService();

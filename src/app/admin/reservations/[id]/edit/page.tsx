@@ -27,12 +27,12 @@ export default async function EditReservationPage({
   }
 
   const id = await readReservationId(params);
-  const reservation = reservationStore.get(id);
+  const reservation = await reservationStore.get(id);
   if (!reservation) {
     notFound();
   }
 
-  const bungalows = reservationStore.listBungalows();
+  const bungalows = await reservationStore.listBungalows();
 
   return (
     <ReservationEditorForm

@@ -20,7 +20,7 @@ export async function GET(
 
   try {
     const id = await readId(context);
-    const items = reservationStore.getAuditTrail(id);
+    const items = await reservationStore.getAuditTrail(id);
     return jsonResponse({ items, total: items.length });
   } catch (error) {
     return failureResponse(error);

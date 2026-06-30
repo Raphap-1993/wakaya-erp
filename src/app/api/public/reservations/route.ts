@@ -16,14 +16,15 @@ function asObjectRecord(value: unknown): Record<string, unknown> {
 export async function POST(request: Request) {
   try {
     const rawBody = await readJsonBody<unknown>(request);
-    const number = nextReservationNumber(reservationStore.list());
+    const existingReservations = await reservationStore.list();
+    const number = nextReservationNumber(existingReservations);
     const parsed = reservationCreateSchema.parse({
       ...asObjectRecord(rawBody),
       number,
       channel: "web",
     });
 
-    const result = reservationStore.create({
+    const result = await reservationStore.create({
       ...parsed,
       channel: "web",
       responsibleId: null,

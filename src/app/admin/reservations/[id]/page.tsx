@@ -16,12 +16,12 @@ export default async function ReservationDetailPage({
 }: {
   params: { id: string } | Promise<{ id: string }>;
 }) {
-  const detail = reservationStore.get(await readReservationId(params));
+  const detail = await reservationStore.get(await readReservationId(params));
   if (!detail) {
     notFound();
   }
 
-  const activeBungalows = reservationStore.listBungalows().filter((bungalow) => bungalow.active);
+  const activeBungalows = (await reservationStore.listBungalows()).filter((bungalow) => bungalow.active);
   const paymentStatus = detail.paymentStatus ?? "pending";
 
   return (

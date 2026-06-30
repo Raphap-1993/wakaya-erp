@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   const startDate = url.searchParams.get("startDate") ?? undefined;
   const endDate = url.searchParams.get("endDate") ?? undefined;
 
-  const items = reservationStore.list({
+  const items = await reservationStore.list({
     status: status ? (status as ReservationStatus) : undefined,
     channel: channel ? (channel as ReservationChannel) : undefined,
     responsibleId,
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const rawBody = await readJsonBody<unknown>(request);
     const parsed = reservationCreateSchema.parse(rawBody);
 
-    const result = reservationStore.create({
+    const result = await reservationStore.create({
       ...parsed,
       responsibleId: parsed.responsibleId ?? auth.subject ?? null,
     });

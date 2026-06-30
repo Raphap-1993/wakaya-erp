@@ -23,7 +23,7 @@ export async function POST(
     const id = await readId(context);
     const body = reservationPaymentSchema.parse(await readJsonBody<unknown>(request));
 
-    const reservation = reservationStore.recordPayment(id, {
+    const reservation = await reservationStore.recordPayment(id, {
       amountPaidCents: body.amountPaidCents,
       actorId: auth.subject ?? body.actorId ?? "system",
       reason: body.reason,
