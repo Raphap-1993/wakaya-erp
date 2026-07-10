@@ -1,5 +1,11 @@
 # Wakaya Home Content Management Design
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Wakaya Guest Trust Layer Design](2026-07-02-wakaya-guest-trust-layer-design.md)
+- Siguiente: [Wakaya Editable Public Home Implementation Plan](../plans/2026-07-09-wakaya-home-content-management.md)
+<!-- nav-guided:end -->
+
 Date: 2026-07-09
 Status: Approved in conversation, pending written-spec review
 Topic: Administración completa y segura del home público de producción
