@@ -1,8 +1,8 @@
 import { getPublicCompanyContent } from "@/components/public-site/public-company-content";
-import legacyAbout from "../../../output/wakaya-corporate-legacy/extracted/aboutus.json";
-import legacyFaq from "../../../output/wakaya-corporate-legacy/extracted/faq.json";
-import legacyTerms from "../../../output/wakaya-corporate-legacy/extracted/terms.json";
-import legacyTestimonials from "../../../output/wakaya-corporate-legacy/extracted/testimonial.json";
+import legacyAbout from "./legacy-sources/aboutus.json";
+import legacyFaq from "./legacy-sources/faq.json";
+import legacyTerms from "./legacy-sources/terms.json";
+import legacyTestimonials from "./legacy-sources/testimonial.json";
 
 import type { CorporateContentDocument } from "./types";
 

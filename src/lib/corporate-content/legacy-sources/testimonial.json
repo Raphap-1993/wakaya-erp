@@ -1,0 +1,21 @@
+{
+  "slug": "testimonial",
+  "url": "https://wakayaecolodge.com/es/testimonial.php",
+  "title": "Testimoniales",
+  "headings": [
+    "Micheal Clordy",
+    "Ketty Perry",
+    "Micheal Clordy"
+  ],
+  "paragraphs": [
+    "Un placentero escape de la ciudad. Excelente atención y amabilidad.",
+    "Fantástico. El trato y la cordialidad de las personas que trabajan ahí.",
+    "Un lugar muy acogedor y familiar, la comida muy rica y la atención muy buena"
+  ],
+  "assetUrls": [
+    "https://wakayaecolodge.com/es/images/wakaya/review/review1.jpg",
+    "https://wakayaecolodge.com/es/images/icons/quote.png",
+    "https://wakayaecolodge.com/es/images/wakaya/review/review2.jpg",
+    "https://wakayaecolodge.com/es/images/wakaya/review/review3.jpg"
+  ]
+}
