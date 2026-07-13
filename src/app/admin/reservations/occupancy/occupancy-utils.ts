@@ -18,6 +18,12 @@ export interface OccupancyDay {
   weekday: string;
 }
 
+export interface OccupancyMonthWeek {
+  anchorDate: string;
+  weekLabel: string;
+  rangeLabel: string;
+}
+
 export interface OccupancyCell {
   key: string;
   bungalowId: string;
@@ -49,6 +55,21 @@ export interface OccupancyModel {
 export type OccupancyGroup = Record<string, Record<string, OccupancyCell>>;
 
 const WEEKDAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const MONTH_LABELS = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+const MONTH_SHORT_LABELS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
 function isDateOnly(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -107,6 +128,60 @@ export function getMondayForDate(date: string): string | null {
   const day = parsed.getUTCDay() || 7;
   parsed.setUTCDate(parsed.getUTCDate() - day + 1);
   return parsed.toISOString().slice(0, 10);
+}
+
+function getMonthStart(date: string): string {
+  if (!isDateOnly(date)) {
+    return getCurrentWeekAnchor();
+  }
+
+  return `${date.slice(0, 7)}-01`;
+}
+
+function getMonthEnd(date: string): string {
+  if (!isDateOnly(date)) {
+    return getCurrentWeekAnchor();
+  }
+
+  const parsed = new Date(`${date.slice(0, 7)}-01T00:00:00.000Z`);
+  parsed.setUTCMonth(parsed.getUTCMonth() + 1, 0);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function formatDateShortLabel(date: string): string {
+  if (!isDateOnly(date)) {
+    return date;
+  }
+
+  const monthIndex = Number(date.slice(5, 7)) - 1;
+  return `${date.slice(8, 10)} ${MONTH_SHORT_LABELS[monthIndex] ?? date.slice(5, 7)}`;
+}
+
+export function formatMonthYearLabel(date: string): string {
+  if (!isDateOnly(date)) {
+    return date;
+  }
+
+  const monthIndex = Number(date.slice(5, 7)) - 1;
+  return `${MONTH_LABELS[monthIndex] ?? date.slice(5, 7)} de ${date.slice(0, 4)}`;
+}
+
+export function buildMonthWeekOptions(anchorDate: string): OccupancyMonthWeek[] {
+  const monthStart = getMonthStart(anchorDate);
+  const monthEnd = getMonthEnd(anchorDate);
+  const firstAnchor = getMondayForDate(monthStart) ?? monthStart;
+  const lastAnchor = getMondayForDate(monthEnd) ?? monthEnd;
+  const options: OccupancyMonthWeek[] = [];
+
+  for (let current = firstAnchor; compareDateOnly(current, lastAnchor) <= 0; current = addDays(current, 7)) {
+    options.push({
+      anchorDate: current,
+      weekLabel: formatIsoWeekLabel(current),
+      rangeLabel: `${formatDateShortLabel(current)} - ${formatDateShortLabel(addDays(current, 6))}`,
+    });
+  }
+
+  return options;
 }
 
 export function resolveWeekAnchor(week?: string, date?: string): string {
@@ -258,8 +333,31 @@ export function buildOccupancyModel(
   };
 }
 
-export function getDefaultOccupancyCell(rows: OccupancyRow[]): OccupancyCell | null {
-  return rows.flatMap((row) => row.cells).find((cell) => cell.state !== "free") ?? rows[0]?.cells[0] ?? null;
+function statePriority(state: OccupancyCellState): number {
+  switch (state) {
+    case "blocked":
+      return 0;
+    case "attention-needed":
+      return 1;
+    case "occupied":
+      return 2;
+    default:
+      return 3;
+  }
+}
+
+export function getDefaultOccupancyCell(rows: OccupancyRow[], preferredDate?: string): OccupancyCell | null {
+  const cells = rows.flatMap((row) => row.cells);
+  if (preferredDate) {
+    const matchingDate = cells
+      .filter((cell) => cell.date === preferredDate)
+      .sort((left, right) => statePriority(left.state) - statePriority(right.state));
+    if (matchingDate.length > 0) {
+      return matchingDate[0] ?? null;
+    }
+  }
+
+  return cells.find((cell) => cell.state !== "free") ?? cells[0] ?? null;
 }
 
 export function getOccupancySelectionValue(cell: OccupancyCell | null): string | undefined {

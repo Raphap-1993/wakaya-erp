@@ -22,6 +22,12 @@ Este repositorio contiene el proyecto real Wakaya ERP. Los agentes deben trabaja
 - No cerrar deploy sin rollback y monitoreo.
 - Toda salida debe terminar en ruta canonica del proyecto.
 
+## Microcopy de backoffice
+- En superficies operativas usar labels, estados, datos y acciones directas; evitar parrafos explicativos por defecto.
+- Si un bloque ya se entiende por titulo, campos y CTA, no agregar texto de apoyo adicional.
+- La ayuda contextual debe ir en tooltip breve, ayuda bajo demanda o checklist corta solo cuando reduzca riesgo operativo real.
+- Evitar tono de marketing, narrativa UX o texto ornamental en modulos de uso diario del backoffice.
+
 ## Dominio del proyecto
 - El dominio es Wakaya ERP (recurso: reservations).
 - NO usar como base el caso de ejemplo del template (expedientes, bandeja, gestion documental).

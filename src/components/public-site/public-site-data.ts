@@ -1,122 +1,178 @@
-export const publicNav = [
-  { label: 'Inicio', href: '/prototype/public-site' },
-  { label: 'Nosotros', href: '/prototype/public-site/about' },
-  { label: 'Bungalows', href: '/prototype/public-site/bungalows' },
-  { label: 'Servicios', href: '/prototype/public-site/services' },
-  { label: 'Eventos', href: '/prototype/public-site/events' },
-  { label: 'Galería', href: '/prototype/public-site/gallery' },
-  { label: 'Publicaciones', href: '/prototype/public-site/publications' },
-  { label: 'Contacto', href: '/prototype/public-site/contact' },
-] as const;
+import {
+  defaultPublicSiteLocale,
+  getPublicSiteCopy as getLocalizedPublicSiteCopy,
+  publicSitePaths,
+  type PublicBungalowSlug,
+  type PublicSiteLocale,
+  type PublicSitePathKey,
+} from './public-site-copy';
+import { WAKAYA_PUBLIC_BUNGALOW_CATALOG } from '@/lib/reservations/wakaya-bungalows';
 
-export const publicFooterNav = [
-  { label: 'Inicio', href: '/prototype/public-site' },
-  { label: 'Nosotros', href: '/prototype/public-site/about' },
-  { label: 'Bungalows', href: '/prototype/public-site/bungalows' },
-  { label: 'Servicios', href: '/prototype/public-site/services' },
-] as const;
+export {
+  defaultPublicSiteLocale,
+  publicSiteLocaleMetadata,
+  publicSiteLocales,
+  publicSitePaths,
+  resolvePublicSiteLocale,
+} from './public-site-copy';
 
-export const publicBungalows = [
-  {
-    slug: 'bungalow-familiar',
-    bookingRequestBungalowId: 'bungalow-family',
-    name: 'Bungalow Familiar',
-    homeName: undefined,
-    featuredOnHome: true,
-    eyebrow: 'Para familias y grupos pequeños',
-    description:
-      'Más amplitud para compartir jardines, piscina y descanso con una lectura clara de capacidad y tarifa base.',
-    priceFrom: 'Desde S/ 350',
-    capacity: '4 huéspedes',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg',
-  },
-  {
-    slug: 'bungalow-matrimonial',
-    bookingRequestBungalowId: 'bungalow-matrimonial',
-    name: 'Bungalow Matrimonial',
-    homeName: undefined,
-    featuredOnHome: true,
-    eyebrow: 'Para una estadía más íntima',
-    description:
-      'Una forma más directa de conocer Wakaya sin perder el tono premium ni la experiencia de naturaleza del lodge.',
-    priceFrom: 'Desde S/ 250',
-    capacity: '2 huéspedes',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/BM_1.jpg',
-  },
-  {
-    slug: 'bungalow-doble',
-    bookingRequestBungalowId: 'bungalow-suite',
-    name: 'Bungalow Suite',
-    homeName: undefined,
-    featuredOnHome: true,
-    eyebrow: 'Para descanso cálido y flexible',
-    description:
-      'La categoría más privada para una escapada amazónica más silenciosa, más cálida y con mejor sensación de retiro.',
-    priceFrom: 'Desde S/ 420',
-    capacity: '2 huéspedes',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/0BT_1.jpg',
-  },
-  {
-    slug: 'bungalow-triple',
-    bookingRequestBungalowId: null,
-    name: 'Bungalow Triple',
-    homeName: undefined,
-    featuredOnHome: false,
-    eyebrow: 'Para grupos pequeños con más amplitud',
-    description:
-      'Una categoría amplia para grupos pequeños que necesitan más flexibilidad sin perder la atmósfera del lodge.',
-    priceFrom: 'Desde S/ 380',
-    capacity: '3 huéspedes',
-    image: 'https://wakayaecolodge.com/es/images/wakaya/habitaciones/BF_1.jpg',
-  },
-] as const;
+export type {
+  PublicBungalowSlug,
+  PublicSiteLocale,
+  PublicSitePageKey,
+  PublicSitePathKey,
+} from './public-site-copy';
 
-export const homeSlides = [
-  {
-    eyebrow: 'Hotel Wakaya Ecolodge',
-    title: 'Un encuentro con lo mágico',
-    copy:
-      'Laguna, jardines, piscina y bungalows cálidos en una experiencia tropical premium.',
-    image:
-      'https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya1.png',
-  },
-  {
-    eyebrow: 'Hospitalidad tropical',
-    title: 'Lo mejor de la selva del Perú',
-    copy:
-      'Una llegada más emocional, más visual y más clara para reservar.',
-    image:
-      'https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya2.png',
-  },
-] as const;
+const publicNavOrder = [
+  'home',
+  'about',
+  'bungalows',
+  'services',
+  'events',
+  'gallery',
+  'publications',
+  'contact',
+] as const satisfies readonly PublicSitePathKey[];
 
-export const testimonials = [
-  {
-    name: 'Familias',
-    quote: 'Un entorno natural para descansar del ruido de la ciudad.',
-  },
-  {
-    name: 'Parejas',
-    quote: 'Bungalows cálidos, agua, jardines y mejor sensación de retiro.',
-  },
-] as const;
+const publicBungalowCatalog = WAKAYA_PUBLIC_BUNGALOW_CATALOG.map((bungalow) => ({
+  slug: bungalow.publicSlug,
+  bookingRequestBungalowId: bungalow.id,
+  featuredOnHome: bungalow.featuredOnHome,
+  image: bungalow.image,
+})) as readonly {
+  slug: PublicBungalowSlug;
+  bookingRequestBungalowId: string | null;
+  featuredOnHome: boolean;
+  image: string;
+}[];
 
-export const publications = [
-  {
-    slug: 'bodas-en-wakaya',
-    title: 'Celebraciones en un entorno natural',
-  },
-  {
-    slug: 'full-day-pucallpa',
-    title: 'Cómo vivir un Full Day en Wakaya',
-  },
-] as const;
-
-export const footerContact = {
-  place: 'Pucallpa · Perú',
-  domain: 'wakayaecolodge.com',
-  note: 'Atención personalizada del equipo Wakaya',
+type PublicNavItem = {
+  label: string;
+  href: string;
 };
+
+function buildNavItems(
+  locale: PublicSiteLocale | string,
+  navKeys: readonly PublicSitePathKey[],
+): PublicNavItem[] {
+  const copy = getLocalizedPublicSiteCopy(locale);
+
+  return navKeys.map((key) => ({
+    label: copy.navLabels[key],
+    href: publicSitePaths[key],
+  }));
+}
+
+export function getPublicSiteCopy(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale);
+}
+
+export function getPublicNav(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return buildNavItems(locale, publicNavOrder);
+}
+
+export function getPublicFooterNav(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  const copy = getLocalizedPublicSiteCopy(locale);
+  return buildNavItems(locale, copy.footerNavKeys);
+}
+
+export function getPublicFooterContact(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  const { place, domain, note } = getLocalizedPublicSiteCopy(locale).contact;
+
+  return {
+    place,
+    domain,
+    note,
+  };
+}
+
+export function getPublicContactCopy(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale).contact;
+}
+
+export function getPublicFooterCopy(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  const copy = getLocalizedPublicSiteCopy(locale);
+
+  return {
+    intro: copy.footerIntro,
+    headings: copy.footerHeadings,
+    bookingBullets: [...copy.bookingBullets],
+    contact: copy.contact,
+  };
+}
+
+export function getPublicSharedLabels(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale).sharedLabels;
+}
+
+export function getPublicPageLabels(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale).pageLabels;
+}
+
+export function getPublicBungalows(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  const copy = getLocalizedPublicSiteCopy(locale);
+
+  return publicBungalowCatalog.map((bungalow) => ({
+    ...bungalow,
+    ...copy.bungalows[bungalow.slug],
+  }));
+}
+
+export function getHomeSlides(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale).homeSlides;
+}
+
+export function getTestimonials(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale).testimonials;
+}
+
+export function getPublications(
+  locale: PublicSiteLocale | string = defaultPublicSiteLocale,
+) {
+  return getLocalizedPublicSiteCopy(locale).publications;
+}
+
+export const publicNav = getPublicNav();
+
+export const publicFooterNav = getPublicFooterNav();
+
+export const publicBungalows = getPublicBungalows();
+
+export const homeSlides = getHomeSlides();
+
+export const testimonials = getTestimonials();
+
+export const publications = getPublications();
+
+export const footerContact = getPublicFooterContact();
+
+export const publicFooterCopy = getPublicFooterCopy();
+
+export const publicSharedLabels = getPublicSharedLabels();
+
+export const publicPageLabels = getPublicPageLabels();
 
 export function getPublicBungalowLabel(bungalow: {
   homeName?: string | undefined;

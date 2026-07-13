@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { useRouterMock, redirectMock, notFoundMock, authenticateMock } = vi.hoisted(() => ({
+const { useRouterMock, redirectMock, notFoundMock, requireAdminPageAccessMock } = vi.hoisted(() => ({
   useRouterMock: vi.fn(),
   redirectMock: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -9,7 +9,7 @@ const { useRouterMock, redirectMock, notFoundMock, authenticateMock } = vi.hoist
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
-  authenticateMock: vi.fn(),
+  requireAdminPageAccessMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -18,12 +18,8 @@ vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
-vi.mock("next/headers", () => ({
-  headers: () => new Headers(),
-}));
-
-vi.mock("@/middleware/authn", () => ({
-  authenticate: authenticateMock,
+vi.mock("../require-admin-page-access", () => ({
+  requireAdminPageAccess: requireAdminPageAccessMock,
 }));
 
 import ReservationsAdminPage from "./page";
@@ -34,7 +30,7 @@ describe("ReservationsAdminPage", () => {
       replace: vi.fn(),
     });
     redirectMock.mockClear();
-    authenticateMock.mockResolvedValue({
+    requireAdminPageAccessMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
       subject: "dev-admin",
@@ -46,7 +42,6 @@ describe("ReservationsAdminPage", () => {
       await ReservationsAdminPage({
         searchParams: {
           selected: "reservation-demo-1",
-          date: "2026-06-12",
         },
       }),
     );
@@ -60,7 +55,16 @@ describe("ReservationsAdminPage", () => {
     expect(html).not.toContain('href="/admin/reservations/occupancy?view=occupancy"');
     expect(html).toContain("Ver reporte financiero");
     expect(html).toContain("Exportar CSV");
-    expect(html).toContain("Saldo total");
+    expect(html).not.toContain("Saldo total");
+    expect(html).toContain('name="status"');
+    expect(html).toContain('name="channel"');
+    expect(html).not.toContain('name="responsibleId"');
+    expect(html).not.toContain('name="date"');
+    expect(html).not.toContain('name="startDate"');
+    expect(html).not.toContain('name="endDate"');
+    expect(html).toContain('title="Abrir ficha"');
+    expect(html).toContain('title="Editar"');
+    expect(html).toContain('title="Ocupación"');
   });
 
   it("redirects to the canonical selected reservation when the requested selection is filtered out", async () => {
@@ -105,6 +109,22 @@ describe("ReservationsAdminPage", () => {
     expect(redirectMock).toHaveBeenCalledWith("/admin/reservations?selected=reservation-demo-1");
   });
 
+  it("drops legacy agenda filters from the canonical URL", async () => {
+    await expect(
+      ReservationsAdminPage({
+        searchParams: {
+          responsibleId: "user-reception-1",
+          date: "2026-06-12",
+          startDate: "2026-06-12",
+          endDate: "2026-06-14",
+          selected: "reservation-demo-1",
+        },
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT:/admin/reservations?selected=reservation-demo-1");
+
+    expect(redirectMock).toHaveBeenCalledWith("/admin/reservations?selected=reservation-demo-1");
+  });
+
   it("filters reservations by status", async () => {
     const html = renderToStaticMarkup(
       await ReservationsAdminPage({
@@ -119,11 +139,31 @@ describe("ReservationsAdminPage", () => {
     expect(html).not.toContain("RESERVATION-2026-0002");
   });
 
+  it("hides write actions for read-only users", async () => {
+    requireAdminPageAccessMock.mockResolvedValueOnce({
+      authenticated: true,
+      roles: ["viewer"],
+      subject: "viewer-user-1",
+    });
+
+    const html = renderToStaticMarkup(
+      await ReservationsAdminPage({
+        searchParams: {
+          selected: "reservation-demo-1",
+        },
+      }),
+    );
+
+    expect(html).not.toContain("Nueva reserva manual");
+    expect(html).not.toContain('title="Editar"');
+    expect(html).toContain('title="Abrir ficha"');
+  });
+
   it("renders an empty state when filters return no reservations", async () => {
     const html = renderToStaticMarkup(
       await ReservationsAdminPage({
         searchParams: {
-          responsibleId: "user-reception-9",
+          status: "cancelled",
         },
       }),
     );
@@ -133,11 +173,9 @@ describe("ReservationsAdminPage", () => {
   });
 
   it("rejects unauthenticated requests before loading the monitor", async () => {
-    authenticateMock.mockResolvedValueOnce({
-      authenticated: false,
-      roles: [],
-      reason: "missing_bearer",
-    });
+    requireAdminPageAccessMock.mockRejectedValueOnce(
+      new Error("NEXT_REDIRECT:/login?next=%2Fadmin%2Freservations"),
+    );
 
     await expect(
       ReservationsAdminPage({
@@ -145,8 +183,6 @@ describe("ReservationsAdminPage", () => {
           selected: "reservation-demo-1",
         },
       }),
-    ).rejects.toThrow("NEXT_NOT_FOUND");
-
-    expect(notFoundMock).toHaveBeenCalled();
+    ).rejects.toThrow("NEXT_REDIRECT:/login?next=%2Fadmin%2Freservations");
   });
 });

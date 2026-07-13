@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { useRouterMock, authenticateMock, notFoundMock, redirectMock } = vi.hoisted(() => ({
+const { useRouterMock, requireAdminPageAccessMock, notFoundMock, redirectMock } = vi.hoisted(() => ({
   useRouterMock: vi.fn(),
-  authenticateMock: vi.fn(),
+  requireAdminPageAccessMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
@@ -12,18 +12,14 @@ const { useRouterMock, authenticateMock, notFoundMock, redirectMock } = vi.hoist
   }),
 }));
 
-vi.mock("next/headers", () => ({
-  headers: () => new Headers(),
-}));
-
 vi.mock("next/navigation", () => ({
   useRouter: useRouterMock,
   notFound: notFoundMock,
   redirect: redirectMock,
 }));
 
-vi.mock("@/middleware/authn", () => ({
-  authenticate: authenticateMock,
+vi.mock("@/app/admin/require-admin-page-access", () => ({
+  requireAdminPageAccess: requireAdminPageAccessMock,
 }));
 
 import ReservationsOccupancyPage from "./page";
@@ -34,14 +30,14 @@ describe("ReservationsOccupancyPage", () => {
       replace: vi.fn(),
     });
     redirectMock.mockReset();
-    authenticateMock.mockResolvedValue({
+    requireAdminPageAccessMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
       subject: "dev-admin",
     });
   });
 
-  it("renders the occupancy shell with agenda and occupancy links", async () => {
+  it("renders the occupancy shell with compact week navigation", async () => {
     const html = renderToStaticMarkup(
       await ReservationsOccupancyPage({
         searchParams: {
@@ -53,11 +49,30 @@ describe("ReservationsOccupancyPage", () => {
     );
 
     expect(html).toContain("Ocupación semanal");
-    expect(html).toContain("Grilla semanal");
-    expect(html).toContain("2026-W24");
     expect(html).not.toContain('href="/admin/reservations?view=agenda"');
     expect(html).not.toContain('href="/admin/reservations/occupancy?view=occupancy"');
     expect(html).toContain("Libre");
+    expect(html).toContain("Leyenda operativa");
+    expect(html).toContain("Semana anterior");
+    expect(html).toContain("Semana actual");
+    expect(html).toContain("Semana siguiente");
+    expect(html).not.toContain("Selección activa");
+    expect(html).not.toContain("Abrir resumen");
+    expect(html).not.toContain("Detalle diario");
+    expect(html).not.toContain("Semana activa");
+    expect(html).not.toContain("Fecha ancla");
+    expect(html).not.toContain("Contexto activo");
+    expect(html).not.toContain("Navegación temporal");
+    expect(html).not.toContain("Superficies operativas");
+    expect(html).not.toContain("Mes -");
+    expect(html).not.toContain("Sem -");
+    expect(html).not.toContain("Sem +");
+    expect(html).not.toContain("Mes +");
+    expect(html).not.toContain(">W23<");
+    expect(html).not.toContain(">W24<");
+    expect(html).not.toContain(">W25<");
+    expect(html).not.toContain(">W26<");
+    expect(html).not.toContain(">W27<");
   });
 
   it("redirects to the canonical occupancy selection when selection is missing", async () => {
@@ -81,11 +96,9 @@ describe("ReservationsOccupancyPage", () => {
   });
 
   it("rejects unauthenticated requests before rendering occupancy", async () => {
-    authenticateMock.mockResolvedValueOnce({
-      authenticated: false,
-      roles: [],
-      reason: "missing_bearer",
-    });
+    requireAdminPageAccessMock.mockRejectedValueOnce(
+      new Error("NEXT_REDIRECT:/login?next=%2Fadmin%2Freservations%2Foccupancy"),
+    );
 
     await expect(
       ReservationsOccupancyPage({
@@ -93,8 +106,6 @@ describe("ReservationsOccupancyPage", () => {
           week: "2026-W24",
         },
       }),
-    ).rejects.toThrow("NEXT_NOT_FOUND");
-
-    expect(notFoundMock).toHaveBeenCalled();
+    ).rejects.toThrow("NEXT_REDIRECT:/login?next=%2Fadmin%2Freservations%2Foccupancy");
   });
 });

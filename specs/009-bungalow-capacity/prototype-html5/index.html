@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23164d6b'/%3E%3Cpath d='M8 20h16M10 17l6-7 6 7' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
+    <title>Wakaya · Cupos de bungalows</title>
+    <style>
+      :root {
+        --ink: #14283d;
+        --muted: #60738a;
+        --line: #d7e0e8;
+        --surface: #ffffff;
+        --canvas: #f3f6f8;
+        --brand: #164d6b;
+        --brand-strong: #103b53;
+        --success: #22734e;
+        --success-soft: #e5f5ec;
+        --warning: #946215;
+        --warning-soft: #fff1d4;
+        --danger: #a53f3f;
+        --danger-soft: #fde9e7;
+        --info-soft: #e7f1f7;
+        --shadow: 0 16px 44px rgba(29, 51, 72, 0.09);
+        --radius: 18px;
+        --radius-small: 10px;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 24px;
+        --space-6: 32px;
+        --space-7: 48px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top right, rgba(81, 151, 161, 0.11), transparent 36%),
+          var(--canvas);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      a:focus-visible {
+        outline: 3px solid rgba(22, 77, 107, 0.24);
+        outline-offset: 2px;
+      }
+
+      .app-shell {
+        width: min(1440px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: var(--space-5) 0 var(--space-7);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        margin-bottom: var(--space-4);
+      }
+
+      .back-link {
+        color: var(--brand);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .identity {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .identity strong {
+        color: var(--ink);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-5);
+        align-items: end;
+        padding: var(--space-6);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        margin: 0 0 var(--space-2);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: var(--space-2);
+        font-size: clamp(32px, 4vw, 48px);
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-copy {
+        max-width: 650px;
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .hero-metric {
+        min-width: 170px;
+        padding-left: var(--space-5);
+        border-left: 1px solid var(--line);
+      }
+
+      .hero-metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-metric strong {
+        display: block;
+        margin-top: var(--space-1);
+        font-size: 32px;
+      }
+
+      .filter-bar {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
+        gap: var(--space-4);
+        align-items: end;
+        margin-top: var(--space-5);
+        padding: var(--space-5);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .field {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .input,
+      .select {
+        width: 100%;
+        min-height: 46px;
+        padding: 0 var(--space-3);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-small);
+        color: var(--ink);
+        background: var(--surface);
+      }
+
+      .button {
+        min-height: 44px;
+        padding: 0 var(--space-4);
+        border: 1px solid var(--brand);
+        border-radius: 999px;
+        color: #ffffff;
+        background: var(--brand);
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background: var(--brand-strong);
+      }
+
+      .button.secondary {
+        color: var(--brand);
+        background: var(--surface);
+      }
+
+      .button.danger {
+        border-color: #d9a5a1;
+        color: var(--danger);
+        background: var(--surface);
+      }
+
+      .button.compact {
+        min-height: 36px;
+        padding-inline: var(--space-3);
+        font-size: 13px;
+      }
+
+      .surface {
+        margin-top: var(--space-5);
+        padding: var(--space-6);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-4);
+        margin-bottom: var(--space-5);
+      }
+
+      .section-header h2 {
+        margin-bottom: var(--space-1);
+        font-size: 22px;
+      }
+
+      .section-header p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .range-chip,
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .range-chip {
+        color: var(--brand);
+        background: var(--info-soft);
+      }
+
+      .badge.success {
+        color: var(--success);
+        background: var(--success-soft);
+      }
+
+      .badge.warning {
+        color: var(--warning);
+        background: var(--warning-soft);
+      }
+
+      .badge.neutral {
+        color: var(--muted);
+        background: #edf1f4;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: var(--space-4) var(--space-3);
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      td strong {
+        display: block;
+      }
+
+      .subtle {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .number {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+      }
+
+      .available {
+        color: var(--success);
+        font-size: 18px;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-2);
+        white-space: nowrap;
+      }
+
+      .block-list {
+        display: grid;
+        gap: var(--space-3);
+      }
+
+      .block-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) 120px 160px minmax(160px, 1fr) auto;
+        gap: var(--space-4);
+        align-items: center;
+        padding: var(--space-4) 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .block-row:last-child {
+        border-bottom: 0;
+      }
+
+      .block-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .panel-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        justify-content: flex-end;
+        background: rgba(15, 32, 49, 0.42);
+      }
+
+      .panel-backdrop.open {
+        display: flex;
+      }
+
+      .side-panel {
+        width: min(480px, 100%);
+        height: 100%;
+        padding: var(--space-6);
+        overflow-y: auto;
+        background: var(--surface);
+        box-shadow: -24px 0 60px rgba(13, 34, 50, 0.22);
+      }
+
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+      }
+
+      .panel-head h2 {
+        margin-bottom: var(--space-1);
+      }
+
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        color: var(--ink);
+        background: var(--surface);
+        cursor: pointer;
+      }
+
+      .form-stack {
+        display: grid;
+        gap: var(--space-4);
+      }
+
+      .form-actions {
+        display: flex;
+        gap: var(--space-2);
+        margin-top: var(--space-5);
+      }
+
+      .notice {
+        margin: var(--space-4) 0 0;
+        padding: var(--space-4);
+        border-radius: var(--radius-small);
+        color: var(--brand-strong);
+        background: var(--info-soft);
+        line-height: 1.5;
+      }
+
+      .notice.error {
+        color: var(--danger);
+        background: var(--danger-soft);
+      }
+
+      .state-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+
+      .state-card {
+        min-height: 108px;
+        padding: var(--space-4);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-small);
+      }
+
+      .state-card strong {
+        display: block;
+        margin-bottom: var(--space-2);
+      }
+
+      .state-card span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .toast {
+        position: fixed;
+        right: var(--space-5);
+        bottom: var(--space-5);
+        z-index: 40;
+        display: none;
+        max-width: 420px;
+        padding: var(--space-4) var(--space-5);
+        border-radius: var(--radius-small);
+        color: #ffffff;
+        background: var(--success);
+        box-shadow: var(--shadow);
+        font-weight: 700;
+      }
+
+      .toast.show {
+        display: block;
+      }
+
+      .toast.error {
+        background: var(--danger);
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 980px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-metric {
+          padding: var(--space-4) 0 0;
+          border-top: 1px solid var(--line);
+          border-left: 0;
+        }
+
+        .state-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .block-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .block-row .actions {
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .app-shell {
+          width: min(100% - 24px, 680px);
+          padding-top: var(--space-3);
+        }
+
+        .topbar,
+        .section-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero,
+        .surface,
+        .filter-bar {
+          padding: var(--space-4);
+          border-radius: 14px;
+        }
+
+        .filter-bar {
+          grid-template-columns: 1fr;
+        }
+
+        table,
+        tbody,
+        tr,
+        td {
+          display: block;
+          width: 100%;
+        }
+
+        thead {
+          display: none;
+        }
+
+        tr {
+          padding: var(--space-4) 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        td {
+          display: flex;
+          justify-content: space-between;
+          gap: var(--space-4);
+          padding: var(--space-2) 0;
+          border: 0;
+        }
+
+        td::before {
+          content: attr(data-label);
+          color: var(--muted);
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+
+        td:first-child {
+          display: block;
+          padding-bottom: var(--space-3);
+        }
+
+        td:first-child::before,
+        td.actions::before {
+          display: none;
+        }
+
+        td.actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          margin-top: var(--space-2);
+        }
+
+        .block-row,
+        .state-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .side-panel {
+          padding: var(--space-5) var(--space-4);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <div class="topbar">
+        <a class="back-link" href="../../../prototype/index.html">← Volver al hub del producto</a>
+        <div class="identity"><span>Administrador</span><strong>admin@wakaya.local</strong></div>
+      </div>
+
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Wakaya · operación</p>
+          <h1>Cupos de bungalows</h1>
+          <p class="hero-copy">Cantidades físicas, reservas confirmadas y bloqueos por fecha.</p>
+        </div>
+        <div class="hero-metric">
+          <span>Total físico</span>
+          <strong>17</strong>
+        </div>
+      </header>
+
+      <form class="filter-bar" id="range-form">
+        <div class="field">
+          <label for="check-in">Check-in</label>
+          <input class="input" id="check-in" type="date" value="2026-08-10" />
+        </div>
+        <div class="field">
+          <label for="check-out">Checkout</label>
+          <input class="input" id="check-out" type="date" value="2026-08-12" />
+        </div>
+        <button class="button" type="submit">Consultar</button>
+      </form>
+
+      <section class="surface" id="view-overview" data-view="overview">
+        <div class="section-header">
+          <div>
+            <h2>Disponibilidad por categoría</h2>
+            <p>Los conteos corresponden a la noche con menor disponibilidad.</p>
+          </div>
+          <span class="range-chip" id="range-chip">10–12 ago · 2 noches</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Total físico</th>
+                <th>Fecha crítica</th>
+                <th>Reservadas</th>
+                <th>Bloqueadas</th>
+                <th>Disponibles</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-category="Familiar">
+                <td><strong>Bungalow Familiar</strong><span class="subtle">Hasta 4 huéspedes</span></td>
+                <td class="number" data-label="Total físico">5</td>
+                <td data-label="Fecha crítica"><strong>10 ago</strong><span class="subtle">primera noche mínima</span></td>
+                <td class="number" data-label="Reservadas">1</td>
+                <td class="number" data-label="Bloqueadas">1</td>
+                <td data-label="Disponibles"><span class="badge success available">3</span></td>
+                <td class="actions">
+                  <button class="button secondary compact edit-trigger" type="button">Editar total</button>
+                  <button class="button compact block-trigger" type="button">Bloquear cupos</button>
+                </td>
+              </tr>
+              <tr data-category="Matrimonial">
+                <td><strong>Bungalow Matrimonial</strong><span class="subtle">Hasta 2 huéspedes</span></td>
+                <td class="number" data-label="Total físico">4</td>
+                <td data-label="Fecha crítica"><strong>11 ago</strong><span class="subtle">primera noche mínima</span></td>
+                <td class="number" data-label="Reservadas">2</td>
+                <td class="number" data-label="Bloqueadas">0</td>
+                <td data-label="Disponibles"><span class="badge success available">2</span></td>
+                <td class="actions">
+                  <button class="button secondary compact edit-trigger" type="button">Editar total</button>
+                  <button class="button compact block-trigger" type="button">Bloquear cupos</button>
+                </td>
+              </tr>
+              <tr data-category="Individual">
+                <td><strong>Bungalow Individual</strong><span class="subtle">Hasta 1 huésped</span></td>
+                <td class="number" data-label="Total físico">5</td>
+                <td data-label="Fecha crítica"><strong>10 ago</strong><span class="subtle">primera noche mínima</span></td>
+                <td class="number" data-label="Reservadas">2</td>
+                <td class="number" data-label="Bloqueadas">0</td>
+                <td data-label="Disponibles"><span class="badge success available">3</span></td>
+                <td class="actions">
+                  <button class="button secondary compact edit-trigger" type="button">Editar total</button>
+                  <button class="button compact block-trigger" type="button">Bloquear cupos</button>
+                </td>
+              </tr>
+              <tr data-category="Doble">
+                <td><strong>Bungalow Doble</strong><span class="subtle">Hasta 2 huéspedes</span></td>
+                <td class="number" data-label="Total físico">2</td>
+                <td data-label="Fecha crítica"><strong>10 ago</strong><span class="subtle">primera noche mínima</span></td>
+                <td class="number" data-label="Reservadas">1</td>
+                <td class="number" data-label="Bloqueadas">0</td>
+                <td data-label="Disponibles"><span class="badge success available">1</span></td>
+                <td class="actions">
+                  <button class="button secondary compact edit-trigger" type="button">Editar total</button>
+                  <button class="button compact block-trigger" type="button">Bloquear cupos</button>
+                </td>
+              </tr>
+              <tr data-category="Triple">
+                <td><strong>Bungalow Triple</strong><span class="subtle">Hasta 3 huéspedes</span></td>
+                <td class="number" data-label="Total físico">1</td>
+                <td data-label="Fecha crítica"><strong>10 ago</strong><span class="subtle">primera noche mínima</span></td>
+                <td class="number" data-label="Reservadas">1</td>
+                <td class="number" data-label="Bloqueadas">0</td>
+                <td data-label="Disponibles"><span class="badge warning">Agotado</span></td>
+                <td class="actions">
+                  <button class="button secondary compact edit-trigger" type="button">Editar total</button>
+                  <button class="button compact block-trigger" type="button" disabled>Sin cupo</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="surface" id="view-blocks" data-view="blocks">
+        <div class="section-header">
+          <div>
+            <h2>Bloqueos activos</h2>
+            <p>Mantenimiento y uso interno que reducen cupos temporalmente.</p>
+          </div>
+          <span class="badge neutral">2 activos</span>
+        </div>
+
+        <div class="block-list">
+          <article class="block-row">
+            <div><span class="block-label">Categoría</span><strong>Bungalow Familiar</strong></div>
+            <div><span class="block-label">Cantidad</span><strong>1 cupo</strong></div>
+            <div><span class="block-label">Rango</span><strong>10–12 ago</strong></div>
+            <div><span class="block-label">Motivo</span><strong>Mantenimiento</strong><span class="subtle">Revisión de techo</span></div>
+            <div class="actions"><button class="button danger compact cancel-block" type="button">Cancelar bloqueo</button></div>
+          </article>
+          <article class="block-row">
+            <div><span class="block-label">Categoría</span><strong>Bungalow Individual</strong></div>
+            <div><span class="block-label">Cantidad</span><strong>1 cupo</strong></div>
+            <div><span class="block-label">Rango</span><strong>18–19 ago</strong></div>
+            <div><span class="block-label">Motivo</span><strong>Uso interno</strong><span class="subtle">Visita técnica</span></div>
+            <div class="actions"><button class="button danger compact cancel-block" type="button">Cancelar bloqueo</button></div>
+          </article>
+        </div>
+        <p class="notice" id="empty-blocks" hidden>Sin bloqueos activos para el rango seleccionado.</p>
+      </section>
+
+      <section class="surface" id="view-states" data-view="states">
+        <div class="section-header">
+          <div>
+            <h2>Estados de operación</h2>
+            <p>Feedback directo para Administrador, Operación, Visitante y Auditor.</p>
+          </div>
+        </div>
+        <div class="state-grid">
+          <article class="state-card"><strong>Cargando</strong><span>Consultando capacidad y compromisos.</span></article>
+          <article class="state-card"><strong>Sin categorías</strong><span>No hay resultados para mostrar.</span></article>
+          <article class="state-card"><strong>Error</strong><span>No se pudo consultar. Reintentar.</span></article>
+          <article class="state-card"><strong>Guardado</strong><span>Cambio completado con auditoría.</span></article>
+          <article class="state-card"><strong>Acceso denegado 403</strong><span>Solo el Administrador modifica cupos.</span></article>
+          <article class="state-card"><strong>Conflicto de capacidad</strong><span>El total mínimo requerido es 5.</span></article>
+          <article class="state-card"><strong>Sin bloqueos</strong><span>No hay bloqueos activos.</span></article>
+          <article class="state-card"><strong>Auditoría</strong><span>Actor, fecha, valor anterior y nuevo.</span></article>
+        </div>
+      </section>
+    </main>
+
+    <div class="panel-backdrop" id="panel-backdrop" aria-hidden="true">
+      <aside class="side-panel" id="view-edit" data-view="edit" aria-labelledby="panel-title">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow" id="panel-eyebrow">Bungalow Familiar</p>
+            <h2 id="panel-title">Editar total físico</h2>
+          </div>
+          <button class="icon-button" id="panel-close" type="button" aria-label="Cerrar">×</button>
+        </div>
+
+        <form class="form-stack" id="edit-form">
+          <div class="field">
+            <label for="total-units">Cantidad física</label>
+            <input class="input" id="total-units" type="number" min="0" value="5" />
+          </div>
+          <p class="notice">Este valor indica cuántos bungalows existen, no cuántos huéspedes caben.</p>
+          <p class="notice error" id="capacity-conflict" hidden>
+            No puedes bajar a 4. El 20 de agosto se requieren al menos 5 cupos.
+          </p>
+          <div class="form-actions">
+            <button class="button" type="submit">Guardar total</button>
+            <button class="button secondary conflict-trigger" type="button">Simular conflicto</button>
+          </div>
+        </form>
+
+        <form class="form-stack" id="block-form" hidden>
+          <div class="field">
+            <label for="block-quantity">Cantidad a bloquear</label>
+            <input class="input" id="block-quantity" type="number" min="1" value="1" />
+          </div>
+          <div class="field">
+            <label for="block-from">Desde</label>
+            <input class="input" id="block-from" type="date" value="2026-08-10" />
+          </div>
+          <div class="field">
+            <label for="block-to">Hasta</label>
+            <input class="input" id="block-to" type="date" value="2026-08-12" />
+          </div>
+          <div class="field">
+            <label for="block-reason">Motivo</label>
+            <select class="select" id="block-reason">
+              <option>Mantenimiento</option>
+              <option>Uso interno</option>
+              <option>Fuera de servicio</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="block-note">Nota</label>
+            <input class="input" id="block-note" type="text" value="Revisión preventiva" />
+          </div>
+          <div class="form-actions">
+            <button class="button" type="submit">Guardar bloqueo</button>
+            <button class="button secondary" id="unauthorized-trigger" type="button">Simular acceso denegado</button>
+          </div>
+        </form>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Cambio guardado correctamente.</div>
+
+    <script>
+      const capacities = [
+        { id: "family", name: "Familiar", total: 5, available: 3 },
+        { id: "matrimonial", name: "Matrimonial", total: 4, available: 2 },
+        { id: "individual", name: "Individual", total: 5, available: 3 },
+        { id: "double", name: "Doble", total: 2, available: 1 },
+        { id: "triple", name: "Triple", total: 1, available: 0 },
+      ];
+
+      const backdrop = document.querySelector("#panel-backdrop");
+      const panelTitle = document.querySelector("#panel-title");
+      const panelEyebrow = document.querySelector("#panel-eyebrow");
+      const editForm = document.querySelector("#edit-form");
+      const blockForm = document.querySelector("#block-form");
+      const totalUnits = document.querySelector("#total-units");
+      const capacityConflict = document.querySelector("#capacity-conflict");
+      const toast = document.querySelector("#toast");
+
+      function showToast(message, kind = "success") {
+        toast.textContent = message;
+        toast.classList.toggle("error", kind === "error");
+        toast.classList.add("show");
+        window.setTimeout(() => toast.classList.remove("show"), 2600);
+      }
+
+      function openPanel(category, mode) {
+        const row = category.closest("tr");
+        const categoryName = row?.dataset.category || "Categoría";
+        panelEyebrow.textContent = `Bungalow ${categoryName}`;
+        panelTitle.textContent = mode === "block" ? "Bloquear cupos" : "Editar total físico";
+        editForm.hidden = mode === "block";
+        blockForm.hidden = mode !== "block";
+        capacityConflict.hidden = true;
+        backdrop.classList.add("open");
+        backdrop.setAttribute("aria-hidden", "false");
+        window.setTimeout(() => {
+          const firstInput = mode === "block" ? document.querySelector("#block-quantity") : totalUnits;
+          firstInput.focus();
+        }, 0);
+      }
+
+      function closePanel() {
+        backdrop.classList.remove("open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+
+      document.querySelectorAll(".edit-trigger").forEach((button) => {
+        button.addEventListener("click", () => openPanel(button, "edit"));
+      });
+
+      document.querySelectorAll(".block-trigger").forEach((button) => {
+        button.addEventListener("click", () => openPanel(button, "block"));
+      });
+
+      document.querySelector("#panel-close").addEventListener("click", closePanel);
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closePanel();
+      });
+
+      document.querySelector("#range-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        document.querySelector("#range-chip").textContent = "10–12 ago · 2 noches";
+        showToast("Disponibilidad actualizada para el rango.");
+      });
+
+      editForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        capacityConflict.hidden = true;
+        showToast(`Total guardado: ${totalUnits.value} cupos físicos.`);
+        closePanel();
+      });
+
+      document.querySelector(".conflict-trigger").addEventListener("click", () => {
+        totalUnits.value = "4";
+        capacityConflict.hidden = false;
+        showToast("No se pudo guardar: compromisos futuros en conflicto.", "error");
+      });
+
+      blockForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showToast("Bloqueo guardado correctamente.");
+        closePanel();
+      });
+
+      document.querySelector("#unauthorized-trigger").addEventListener("click", () => {
+        showToast("Acceso denegado 403. Solo Administrador.", "error");
+      });
+
+      document.querySelectorAll(".cancel-block").forEach((button) => {
+        button.addEventListener("click", () => {
+          const row = button.closest(".block-row");
+          row.remove();
+          showToast("Bloqueo cancelado y cupo liberado.");
+          if (!document.querySelector(".block-row")) {
+            document.querySelector("#empty-blocks").hidden = false;
+          }
+        });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && backdrop.classList.contains("open")) closePanel();
+      });
+
+      window.WAKAYA_CAPACITY_DATA = capacities;
+    </script>
+  </body>
+</html>

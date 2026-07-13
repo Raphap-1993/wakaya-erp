@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Wakaya · Inventario de bungalows</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --s1: 8px;
+        --s2: 16px;
+        --s3: 24px;
+        --s4: 32px;
+        --s6: 48px;
+        --bg: #edf3f6;
+        --surface: #fff;
+        --soft: #f6f9fb;
+        --ink: #132438;
+        --muted: #607287;
+        --line: #ccd8e2;
+        --brand: #17496f;
+        --brand-strong: #103551;
+        --brand-soft: #e5eff6;
+        --success: #1f714b;
+        --success-soft: #def3e6;
+        --warning: #855912;
+        --warning-soft: #fff0cb;
+        --danger: #9b3434;
+        --danger-soft: #ffe3e3;
+        --ota: #67428d;
+        --ota-soft: #efe6fa;
+        --shadow: 0 20px 48px rgba(19,36,56,.09);
+        --radius: 20px;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 5% 0%, rgba(23,73,111,.13), transparent 25rem),
+          linear-gradient(180deg, #f9fbfd, var(--bg));
+      }
+      button, input, select, textarea { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid rgba(199,126,57,.4); outline-offset: 2px; }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(1.85rem, 4vw, 2.7rem); letter-spacing: -.045em; }
+      h2 { font-size: 1.28rem; letter-spacing: -.02em; }
+      h3 { font-size: 1rem; }
+      a { color: var(--brand); }
+
+      .page { width: min(1480px, 100%); margin: 0 auto; padding: var(--s3); display: grid; gap: var(--s3); }
+      .surface { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.96); box-shadow: var(--shadow); }
+      .topbar { position: sticky; top: var(--s2); z-index: 10; display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); padding: var(--s2) var(--s3); }
+      .headline, .bar-actions, .stack { display: grid; }
+      .headline { gap: var(--s1); }
+      .bar-actions { gap: var(--s1); justify-items: end; }
+      .stack { gap: var(--s2); }
+      .eyebrow, .meta, .label { text-transform: uppercase; letter-spacing: .08em; font-size: .74rem; font-weight: 700; color: var(--muted); }
+      .muted { color: var(--muted); }
+      .small { font-size: .84rem; }
+      .mono { font-family: ui-monospace, "SFMono-Regular", monospace; }
+
+      .chips, .actions, .segmented, .tabs, .state-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1); }
+      button, .button-link, .chip { border: 1px solid var(--line); border-radius: 999px; min-height: 40px; padding: 9px 14px; background: #fff; color: var(--ink); font-weight: 700; text-decoration: none; }
+      .compact { min-height: 34px; padding: 7px 11px; font-size: .82rem; }
+      .chip { min-height: auto; padding: 7px 11px; font-size: .8rem; }
+      .primary { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--brand), var(--brand-strong)); }
+      .ghost { color: var(--brand); background: var(--soft); }
+      .danger { color: var(--danger); border-color: transparent; background: var(--danger-soft); }
+      .chip.success { color: var(--success); background: var(--success-soft); border-color: transparent; }
+      .chip.warning { color: var(--warning); background: var(--warning-soft); border-color: transparent; }
+      .chip.info { color: var(--brand); background: var(--brand-soft); border-color: transparent; }
+      .chip.ota { color: var(--ota); background: var(--ota-soft); border-color: transparent; }
+      button[disabled] { opacity: .48; cursor: not-allowed; }
+
+      .filterbar { padding: var(--s2) var(--s3); display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)) auto; gap: var(--s2); align-items: end; }
+      label { display: grid; gap: var(--s1); font-weight: 700; }
+      input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; color: var(--ink); background: #fff; }
+      textarea { min-height: 88px; resize: vertical; }
+
+      .tabs { padding: 0 var(--s2); flex-wrap: nowrap; overflow-x: auto; }
+      .tabs button { border: 0; border-radius: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); padding: var(--s2); flex: 0 0 auto; }
+      .tabs button[aria-selected="true"] { color: var(--brand); border-bottom-color: var(--brand); }
+      .view[hidden] { display: none; }
+
+      .content { padding: var(--s3); display: grid; gap: var(--s3); }
+      .section-head, .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); }
+      .section-head > div { display: grid; gap: 4px; }
+      .metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .metric { padding: var(--s2); border-right: 1px solid var(--line); }
+      .metric:last-child { border-right: 0; }
+      .metric strong { display: block; margin-top: 4px; font-size: 1.55rem; }
+
+      .table { display: grid; }
+      .table-row { display: grid; align-items: center; gap: var(--s2); padding: 14px 0; border-bottom: 1px solid var(--line); }
+      .types .table-row { grid-template-columns: minmax(210px, 1.2fr) repeat(4, minmax(82px, .55fr)) auto; }
+      .units .table-row { grid-template-columns: 100px minmax(180px, 1fr) 130px minmax(180px, 1fr) auto; }
+      .table-head { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
+      .type-name, .unit-name { display: grid; gap: 4px; }
+      .count { font-weight: 800; }
+
+      .detail-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .75fr); gap: var(--s3); align-items: start; }
+      .agenda { display: grid; gap: var(--s2); }
+      .agenda-grid { display: grid; grid-template-columns: 96px repeat(7, minmax(56px, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+      .agenda-cell { min-height: 52px; padding: 8px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; place-items: center; font-size: .78rem; background: #fff; }
+      .agenda-cell.head { background: var(--soft); font-weight: 800; }
+      .agenda-cell.busy { color: var(--brand); background: var(--brand-soft); }
+      .agenda-cell.blocked { color: var(--warning); background: var(--warning-soft); }
+      .agenda-cell.free { color: var(--success); background: var(--success-soft); }
+      .agenda-cell.inactive { color: var(--muted); background: #edf0f3; }
+
+      .audit { border-left: 3px solid var(--line); padding-left: var(--s2); display: grid; gap: var(--s2); }
+      .audit-item { display: grid; gap: 4px; }
+      .night-summary { padding: 12px 14px; border-radius: 12px; background: var(--brand-soft); color: var(--brand); font-weight: 800; }
+
+      .assignment { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s3); }
+      .reservation-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .fact { padding: var(--s2); border-right: 1px solid var(--line); display: grid; gap: 4px; }
+      .fact:last-child { border-right: 0; }
+      .radio-list { display: grid; gap: var(--s1); }
+      .radio-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s2); padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .radio-row input { width: auto; }
+
+      .soldout { max-width: 980px; margin: 0 auto; display: grid; gap: var(--s3); }
+      .soldout-hero { padding: var(--s4); border-radius: 18px; color: #fff; background: linear-gradient(145deg, #183e55, #477166 58%, #aa7542); display: grid; gap: var(--s1); }
+      .option-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s2); }
+      .option { padding: var(--s2) 0; border-top: 2px solid var(--line); display: grid; gap: var(--s1); }
+
+      .ota-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
+      .ota-block { padding-top: var(--s3); border-top: 3px solid var(--ota); display: grid; gap: var(--s2); }
+      .ota-facts { display: grid; gap: 0; }
+      .ota-fact { display: flex; justify-content: space-between; gap: var(--s2); padding: 10px 0; border-bottom: 1px solid var(--line); }
+
+      .state-panel { padding: var(--s2) var(--s3); display: grid; gap: var(--s2); }
+      .alert { padding: 12px 14px; border-radius: 12px; font-weight: 700; }
+      .alert.info { color: var(--brand); background: var(--brand-soft); }
+      .alert.success { color: var(--success); background: var(--success-soft); }
+      .alert.warning { color: var(--warning); background: var(--warning-soft); }
+      .alert.error { color: var(--danger); background: var(--danger-soft); }
+
+      dialog { width: min(640px, calc(100% - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 22px; color: var(--ink); box-shadow: 0 36px 90px rgba(7,22,34,.3); }
+      dialog::backdrop { background: rgba(8,24,37,.62); backdrop-filter: blur(3px); }
+      .dialog-head, .dialog-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); padding: var(--s2) var(--s3); }
+      .dialog-head { border-bottom: 1px solid var(--line); }
+      .dialog-foot { border-top: 1px solid var(--line); }
+      .dialog-body { padding: var(--s3); display: grid; gap: var(--s2); }
+      .dialog-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); }
+      .dialog-fields .full { grid-column: 1 / -1; }
+      .field-error { color: var(--danger); font-size: .82rem; font-weight: 700; }
+
+      .toast { position: fixed; z-index: 40; right: var(--s3); bottom: var(--s3); max-width: 360px; border-radius: 14px; padding: 12px 14px; color: #fff; background: #102f47; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); pointer-events: none; transition: 160ms ease; }
+      .toast.visible { opacity: 1; transform: translateY(0); }
+
+      @media (max-width: 1060px) {
+        .types .table-row { grid-template-columns: minmax(190px, 1fr) repeat(2, 90px) auto; }
+        .types .table-row > :nth-child(4), .types .table-row > :nth-child(5) { display: none; }
+        .detail-layout, .assignment { grid-template-columns: 1fr; }
+        .option-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 780px) {
+        .page { padding: 12px; gap: var(--s2); }
+        .topbar { position: static; flex-direction: column; padding: var(--s2); }
+        .bar-actions { justify-items: start; }
+        .filterbar { grid-template-columns: 1fr 1fr; padding: var(--s2); }
+        .filterbar label:first-child { grid-column: 1 / -1; }
+        .content { padding: var(--s2); }
+        .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .metric { border-bottom: 1px solid var(--line); }
+        .types .table-head, .units .table-head { display: none; }
+        .types .table-row, .units .table-row { grid-template-columns: 1fr auto; align-items: start; padding: var(--s2) 0; }
+        .types .table-row > :not(:first-child):not(:last-child), .units .table-row > :not(:first-child):not(:last-child) { grid-column: 1 / -1; display: block; }
+        .agenda-grid { display: grid; grid-template-columns: 96px repeat(2, minmax(84px, 1fr)); overflow-x: auto; }
+        .agenda-cell:nth-child(n+4):not(:nth-child(8n+1)):not(:nth-child(8n+2)):not(:nth-child(8n+3)) { display: none; }
+        .reservation-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .option-grid, .ota-grid { grid-template-columns: 1fr; }
+        .dialog-fields { grid-template-columns: 1fr; }
+        .dialog-fields .full { grid-column: auto; }
+        dialog { width: 100%; height: 100%; max-height: none; border-radius: 0; }
+      }
+
+      @media (max-width: 480px) {
+        .filterbar { grid-template-columns: 1fr; }
+        .filterbar label:first-child { grid-column: auto; }
+        .section-head { flex-direction: column; align-items: flex-start; }
+        .actions { width: 100%; }
+        .actions > button, .actions > a { flex: 1 1 auto; text-align: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="surface topbar" data-view="inventory-header">
+        <div class="headline">
+          <span class="eyebrow">Wakaya · Reservas</span>
+          <h1>Disponibilidad de bungalows</h1>
+          <div class="chips"><span class="chip success">17 unidades activas</span><span class="chip info">Recepción</span><span class="chip warning">Checkout exclusivo</span></div>
+          <a class="small" href="../../../prototype/index.html" data-hub-link="prototype-hub">← Volver al hub del producto</a>
+        </div>
+        <div class="bar-actions">
+          <span class="small muted">Actualizado 10 Jul, 00:08 · disponibilidad PostgreSQL</span>
+          <div class="actions"><a class="button-link ghost" href="../../006-public-content-hub/prototype-html5/index.html">Contenido público</a><button class="primary" id="new-unit-btn" type="button">Agregar unidad</button></div>
+        </div>
+      </header>
+
+      <section class="surface filterbar" data-view="availability-filter">
+        <label><span class="label">Check-in</span><input id="filter-checkin" type="date" value="2026-08-10" /></label>
+        <label><span class="label">Checkout</span><input id="filter-checkout" type="date" value="2026-08-12" /></label>
+        <label><span class="label">Huéspedes</span><select id="filter-guests"><option value="2">2 huéspedes</option><option value="3">3 huéspedes</option><option value="4">4 huéspedes</option></select></label>
+        <button class="primary" id="update-range-btn" type="button">Ver disponibilidad</button>
+      </section>
+
+      <nav class="surface tabs" role="tablist" aria-label="Vistas de inventario">
+        <button role="tab" aria-selected="true" data-tab="types" type="button">Tipos</button>
+        <button role="tab" aria-selected="false" data-tab="units" type="button">Unidades <span class="chip info">17</span></button>
+        <button role="tab" aria-selected="false" data-tab="detail" type="button">Agenda Individual</button>
+        <button role="tab" aria-selected="false" data-tab="assignment" type="button">Asignación sugerida</button>
+        <button role="tab" aria-selected="false" data-tab="soldout" type="button">Público agotado</button>
+        <button role="tab" aria-selected="false" data-tab="ota" type="button">Estado OTA</button>
+      </nav>
+
+      <section class="surface view" id="view-types" role="tabpanel" data-view="type-summary">
+        <div class="content">
+          <div class="section-head"><div><span class="meta">10–12 ago · 2 noches</span><h2>Disponibilidad por tipo</h2></div><span class="chip success">10 unidades disponibles</span></div>
+          <div class="metrics" data-panel="inventory-metrics">
+            <div class="metric"><span class="label">Tipos</span><strong>5</strong></div>
+            <div class="metric"><span class="label">Unidades</span><strong>17</strong></div>
+            <div class="metric"><span class="label">Disponibles</span><strong>10</strong></div>
+            <div class="metric"><span class="label">Ocupadas</span><strong>5</strong></div>
+            <div class="metric"><span class="label">Bloqueadas</span><strong>2</strong></div>
+          </div>
+          <div class="table types" data-panel="bungalow-types">
+            <div class="table-row table-head"><span>Tipo de bungalow</span><span>Total</span><span>Activas</span><span>Ocupadas</span><span>Disponibles</span><span>Acción</span></div>
+            <div class="table-row"><div class="type-name"><strong>Familiar</strong><span class="small muted">4 huéspedes · cinco unidades</span></div><span class="count">5</span><span>5</span><span>2</span><span class="chip success">3 libres</span><button class="ghost compact" data-tab-target="units" type="button">Ver unidades</button></div>
+            <div class="table-row"><div class="type-name"><strong>Matrimonial</strong><span class="small muted">2 huéspedes · cuatro unidades</span></div><span class="count">4</span><span>4</span><span>1</span><span class="chip success">3 libres</span><button class="ghost compact" data-tab-target="units" type="button">Ver unidades</button></div>
+            <div class="table-row"><div class="type-name"><strong>Individual</strong><span class="small muted">1 huésped · cinco unidades</span></div><span class="count">5</span><span>5</span><span>1 + 1 bloqueo</span><span class="chip success">3 libres</span><button class="ghost compact" data-open-detail="Individual" type="button">Ver unidades</button></div>
+            <div class="table-row"><div class="type-name"><strong>Doble</strong><span class="small muted">2 huéspedes · dos unidades</span></div><span class="count">2</span><span>2</span><span>1</span><span class="chip success">1 libre</span><button class="ghost compact" data-tab-target="assignment" type="button">Ver unidades</button></div>
+            <div class="table-row"><div class="type-name"><strong>Triple</strong><span class="small muted">3 huéspedes · una unidad</span></div><span class="count">1</span><span>1</span><span>1</span><span class="chip warning">Agotado</span><button class="ghost compact" data-tab-target="soldout" type="button">Ver alternativas</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-units" role="tabpanel" data-view="unit-inventory" hidden>
+        <div class="content">
+          <div class="section-head"><div><span class="meta">Inventario físico</span><h2>17 unidades</h2></div><div class="actions"><button class="ghost compact" type="button">Filtrar por tipo</button><button class="primary compact" id="open-block-from-list" type="button">Bloquear unidad</button></div></div>
+          <div class="table units" id="units-table" data-panel="all-units">
+            <div class="table-row table-head"><span>Código</span><span>Unidad</span><span>Estado</span><span>Próximo evento</span><span>Acciones</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-detail" role="tabpanel" data-view="double-detail" hidden>
+        <div class="content">
+          <div class="section-head"><div><span class="meta">Tipo Individual · 5 unidades</span><h2>Agenda y bloqueos</h2></div><div class="actions"><button class="ghost" id="cancel-block-btn" type="button">Cancelar bloqueo</button><button class="primary" id="open-block-btn" type="button">Bloquear IND-03</button></div></div>
+          <div class="detail-layout">
+            <div class="agenda" data-panel="availability-calendar">
+              <div class="row-between"><span class="night-summary">2 noches: 10 y 11 ago</span><div class="chips"><span class="chip success">Libre</span><span class="chip info">Ocupada</span><span class="chip warning">Bloqueada</span></div></div>
+              <div class="agenda-grid" id="agenda-grid"></div>
+            </div>
+            <aside class="stack" data-panel="audit-history">
+              <div><span class="meta">Unidad seleccionada</span><h2 id="block-unit-heading">IND-03</h2></div>
+              <div class="alert warning" id="unit-status">Bloqueada 10–12 ago · mantenimiento</div>
+              <div class="audit">
+                <div class="audit-item"><strong>Bloqueo creado</strong><span class="small muted">Revisión de aire acondicionado</span><span class="small">admin@wakaya.local · 10 Jul 00:02</span></div>
+                <div class="audit-item"><strong>Ocupación previa</strong><span class="small muted">Reserva WAK-2026-0139 · 07–09 ago</span><span class="small">Recepción · 06 Jul 18:10</span></div>
+                <div class="audit-item"><strong>Auditor</strong><span class="small muted">Conserva antes/después, actor y motivo.</span></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-assignment" role="tabpanel" data-view="assignment" hidden>
+        <div class="content">
+          <div class="section-head"><div><span class="meta">Reserva WAK-2026-0148</span><h2>Asignar unidad</h2></div><span class="chip info">Recepción · reservation:assign</span></div>
+          <div class="reservation-facts">
+            <div class="fact"><span class="label">Tipo</span><strong>Doble</strong></div>
+            <div class="fact"><span class="label">Rango</span><strong>10–12 ago</strong></div>
+            <div class="fact"><span class="label">Noches</span><strong>10 y 11</strong></div>
+            <div class="fact"><span class="label">Huéspedes</span><strong>2</strong></div>
+          </div>
+          <div class="assignment">
+            <div class="stack">
+              <div class="section-head"><div><span class="label">Disponibles</span><h3>Elige una unidad</h3></div><span class="chip success">1 opción</span></div>
+              <div class="radio-list" id="assignment-options">
+                <label class="radio-row"><input type="radio" name="unit" value="DOB-02" checked /><span><strong>DOB-02</strong><span class="small muted" style="display:block">Primera libre por orden operativo</span></span><span class="chip success">Sugerida</span></label>
+              </div>
+            </div>
+            <div class="stack">
+              <label>Razón del cambio<textarea id="change-reason" placeholder="Obligatoria al cambiar la sugerencia" disabled></textarea><span class="field-error" id="reason-error"></span></label>
+              <div class="alert info">Confirmar revalida la ocupación antes de escribir las noches.</div>
+              <div class="actions"><button class="ghost" id="race-btn" type="button">Simular carrera 409</button><button class="primary" id="confirm-assignment-btn" type="button">Confirmar asignación</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-soldout" role="tabpanel" data-view="public-sold-out" hidden>
+        <div class="content soldout">
+          <div class="soldout-hero"><span class="meta" style="color:rgba(255,255,255,.78)">Wakaya · Disponibilidad</span><h2 style="font-size:2rem">No hay Bungalow Triple disponible</h2><p>10–12 ago · 3 huéspedes. No se creó la solicitud.</p></div>
+          <div class="alert warning">El visitante ve tipos y fechas, nunca códigos de unidad ni bloqueos internos.</div>
+          <div class="section-head"><div><span class="label">Tipos alternativos</span><h3>Disponibles para todo el rango</h3></div><span class="chip success">3 opciones máximo</span></div>
+          <div class="option-grid" data-panel="alternative-types">
+            <article class="option"><span class="meta">2 huéspedes</span><h3>Bungalow Doble</h3><p class="small muted">2 unidades disponibles</p><button class="primary compact" data-alternative-type="Doble" data-guests="2" type="button">Elegir Doble</button></article>
+            <article class="option"><span class="meta">3 huéspedes</span><h3>Bungalow Triple</h3><p class="small muted">1 unidad disponible</p><button class="ghost compact" data-alternative-type="Triple" data-guests="3" type="button">Elegir Triple</button></article>
+            <article class="option"><span class="meta">4 huéspedes</span><h3>Bungalow Familiar</h3><p class="small muted">1 unidad disponible</p><button class="ghost compact" data-alternative-type="Familiar" data-guests="4" type="button">Elegir Familiar</button></article>
+          </div>
+          <div class="section-head"><div><span class="label">Mismo tipo · 2 noches</span><h3>Fechas alternativas</h3></div><span class="chip info">Dentro de 60 días</span></div>
+          <div class="option-grid" data-panel="alternative-dates">
+            <article class="option"><span class="meta">Primera opción</span><h3>13–15 ago</h3><p class="small muted">1 disponible</p><button class="ghost compact" data-alternative-start="2026-08-13" data-alternative-end="2026-08-15" type="button">Usar fechas</button></article>
+            <article class="option"><span class="meta">Segunda opción</span><h3>18–20 ago</h3><p class="small muted">1 disponible</p><button class="ghost compact" data-alternative-start="2026-08-18" data-alternative-end="2026-08-20" type="button">Usar fechas</button></article>
+            <article class="option"><span class="meta">Tercera opción</span><h3>24–26 ago</h3><p class="small muted">1 disponible</p><button class="ghost compact" data-alternative-start="2026-08-24" data-alternative-end="2026-08-26" type="button">Usar fechas</button></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-ota" role="tabpanel" data-view="ota-status" hidden>
+        <div class="content">
+          <div class="section-head"><div><span class="meta">Reservas importadas</span><h2>Estado OTA</h2></div><span class="chip ota">Idempotencia activa</span></div>
+          <div class="ota-grid">
+            <article class="ota-block" data-panel="ota-assigned">
+              <div class="row-between"><div><span class="meta">Booking.com · BK-88341</span><h3>Unidad asignada</h3></div><span class="chip success">assigned</span></div>
+              <div class="ota-facts"><div class="ota-fact"><span>Reserva</span><strong>WAK-OTA-0182</strong></div><div class="ota-fact"><span>Tipo</span><strong>Doble</strong></div><div class="ota-fact"><span>Unidad</span><strong>DOB-02</strong></div><div class="ota-fact"><span>Reintento</span><strong>Sin duplicados</strong></div></div>
+              <div class="alert success">Misma reserva, misma unidad y dos noches. Auditoría sin eventos duplicados.</div>
+            </article>
+            <article class="ota-block" data-panel="ota-conflict">
+              <div class="row-between"><div><span class="meta">Expedia · EX-99402</span><h3 id="ota-conflict-title">Conflicto de disponibilidad OTA</h3></div><span class="chip warning" id="ota-chip">conflict</span></div>
+              <div class="ota-facts"><div class="ota-fact"><span>Reserva</span><strong>WAK-OTA-0183</strong></div><div class="ota-fact"><span>Tipo</span><strong>Triple</strong></div><div class="ota-fact"><span>Unidad</span><strong id="ota-unit">Sin asignar</strong></div><div class="ota-fact"><span>Ocupación</span><strong id="ota-nights">0 noches</strong></div></div>
+              <div class="alert warning" id="ota-alert">Un conflicto abierto. Reintentar no crea una segunda reserva.</div>
+              <button class="primary" id="resolve-ota-btn" type="button">Reintentar tras liberar TRI-01</button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface state-panel" data-view="states">
+        <div class="section-head"><div><span class="meta">Estados</span><h2>Respuesta del inventario</h2></div><span class="chip info">Escenarios interactivos</span></div>
+        <div class="state-buttons" id="state-buttons">
+          <button class="compact" data-state="loading" type="button">Cargando</button>
+          <button class="compact" data-state="empty" type="button">Sin rango</button>
+          <button class="compact" data-state="inactive" type="button">Unidad inactiva</button>
+          <button class="compact" data-state="overlap" type="button">Bloqueo solapado</button>
+          <button class="compact" data-state="error" type="button">Error 409</button>
+          <button class="compact" data-state="unavailable" type="button">Servicio 503</button>
+          <button class="compact" data-state="success" type="button">Éxito</button>
+          <button class="compact" data-state="cancelled" type="button">Cancelación auditada</button>
+          <button class="compact" data-state="unauthorized" type="button">Acceso 403</button>
+        </div>
+        <div class="alert info" id="system-alert" role="status">Disponible: tres unidades para el rango seleccionado.</div>
+        <div class="small muted">Administrador: unidades y bloqueos · Recepción: asignación · Visitante: disponibilidad agregada · Auditor: historial y conflicto OTA.</div>
+      </section>
+    </main>
+
+    <dialog id="block-dialog" aria-labelledby="block-title">
+      <div class="dialog-head"><div><span class="meta">IND-03</span><h2 id="block-title">Bloquear unidad</h2></div><button class="compact" type="button" data-close="block-dialog">Cerrar</button></div>
+      <div class="dialog-body">
+        <div class="dialog-fields">
+          <label>Check-in<input id="block-start" type="date" value="2026-08-10" /></label>
+          <label>Checkout<input id="block-end" type="date" value="2026-08-12" /></label>
+          <label>Motivo<select id="block-reason"><option value="maintenance">Mantenimiento</option><option>Uso interno</option><option>Fuera de servicio</option><option>Otro</option></select></label>
+          <label class="full">Nota<textarea id="block-note">Revisión de aire acondicionado</textarea></label>
+        </div>
+        <div class="night-summary" id="block-night-summary" role="status">2 noches: 10 y 11 ago. Checkout 12 libre.</div>
+        <span class="field-error" id="block-error"></span>
+      </div>
+      <div class="dialog-foot"><span class="small muted">La operación registra actor, fecha, unidad y motivo.</span><button class="primary" id="confirm-block-btn" type="button">Confirmar bloqueo</button></div>
+    </dialog>
+
+    <dialog id="unit-dialog" aria-labelledby="unit-title">
+      <div class="dialog-head"><div><span class="meta">Inventario</span><h2 id="unit-title">Agregar unidad</h2></div><button class="compact" type="button" data-close="unit-dialog">Cerrar</button></div>
+      <div class="dialog-body dialog-fields"><label>Tipo<select><option>Familiar</option><option>Matrimonial</option><option>Individual</option><option>Doble</option><option>Triple</option></select></label><label>Código<input value="IND-06" /></label><label class="full">Nombre<input value="Individual 06" /></label><div class="alert warning full">El inventario inicial aprobado contiene 17 unidades. Este alta es solo una interacción de prototipo.</div></div>
+      <div class="dialog-foot"><button class="ghost" type="button" data-close="unit-dialog">Cancelar</button><button class="primary" type="button" data-close="unit-dialog">Guardar unidad</button></div>
+    </dialog>
+
+    <div class="toast notify" id="toast" role="status">Notificación</div>
+
+    <script>
+      const units = [
+        { id: "unit_fam_01", code: "FAM-01", name: "Familiar 01", type: "Familiar", active: true, status: "Ocupada", next: "Reserva WAK-2026-0141" },
+        { id: "unit_fam_02", code: "FAM-02", name: "Familiar 02", type: "Familiar", active: true, status: "Disponible", next: "Libre hasta 22 ago" },
+        { id: "unit_fam_03", code: "FAM-03", name: "Familiar 03", type: "Familiar", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_fam_04", code: "FAM-04", name: "Familiar 04", type: "Familiar", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_fam_05", code: "FAM-05", name: "Familiar 05", type: "Familiar", active: true, status: "Ocupada", next: "Reserva WAK-2026-0142" },
+        { id: "unit_mat_01", code: "MAT-01", name: "Matrimonial 01", type: "Matrimonial", active: true, status: "Ocupada", next: "Reserva WAK-2026-0146" },
+        { id: "unit_mat_02", code: "MAT-02", name: "Matrimonial 02", type: "Matrimonial", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_mat_03", code: "MAT-03", name: "Matrimonial 03", type: "Matrimonial", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_mat_04", code: "MAT-04", name: "Matrimonial 04", type: "Matrimonial", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_ind_01", code: "IND-01", name: "Individual 01", type: "Individual", active: true, status: "Ocupada", next: "Reserva WAK-2026-0147" },
+        { id: "unit_ind_02", code: "IND-02", name: "Individual 02", type: "Individual", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_ind_03", code: "IND-03", name: "Individual 03", type: "Individual", active: true, status: "Bloqueada", next: "Mantenimiento · 10–12 ago" },
+        { id: "unit_ind_04", code: "IND-04", name: "Individual 04", type: "Individual", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_ind_05", code: "IND-05", name: "Individual 05", type: "Individual", active: true, status: "Disponible", next: "Libre" },
+        { id: "unit_dob_01", code: "DOB-01", name: "Doble 01", type: "Doble", active: true, status: "Ocupada", next: "Reserva WAK-2026-0144 · 10–12 ago" },
+        { id: "unit_dob_02", code: "DOB-02", name: "Doble 02", type: "Doble", active: true, status: "Disponible", next: "Libre hasta 18 ago" },
+        { id: "unit_tri_01", code: "TRI-01", name: "Triple 01", type: "Triple", active: true, status: "Ocupada", next: "Expedia · 09–14 ago" }
+      ];
+      const dates = ["10 ago", "11 ago", "12 ago", "13 ago", "14 ago", "15 ago", "16 ago"];
+      const state = { tab: "types", blockActive: true, blockUnit: "IND-03", assignment: "DOB-02" };
+      const byId = (id) => document.getElementById(id);
+
+      function notify(message) {
+        const toast = byId("toast");
+        toast.textContent = "Notificación: " + message;
+        toast.classList.add("visible");
+        window.clearTimeout(notify.timer);
+        notify.timer = window.setTimeout(() => toast.classList.remove("visible"), 2500);
+      }
+
+      function setTab(tab) {
+        state.tab = tab;
+        document.querySelectorAll("[role='tab']").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.tab === tab)));
+        document.querySelectorAll("[role='tabpanel']").forEach((panel) => { panel.hidden = panel.id !== "view-" + tab; });
+      }
+
+      function renderUnits() {
+        const table = byId("units-table");
+        table.querySelectorAll(".data-row").forEach((row) => row.remove());
+        units.forEach((unit) => {
+          const row = document.createElement("div");
+          row.className = "table-row data-row";
+          row.dataset.card = unit.id;
+          const kind = unit.status === "Disponible" ? "success" : unit.status === "Bloqueada" ? "warning" : "info";
+          row.innerHTML = `<strong class="mono">${unit.code}</strong><div class="unit-name"><strong>${unit.name}</strong><span class="small muted">${unit.type}</span></div><span class="chip ${kind}">${unit.status}</span><span class="small">${unit.next}</span><div class="actions"><button class="compact" type="button">Editar</button><button class="compact" data-block="${unit.code}" type="button">Bloquear</button><button class="compact" data-tab-target="detail" type="button">Ver agenda</button></div>`;
+          table.appendChild(row);
+        });
+        document.querySelectorAll("[data-block]").forEach((button) => button.addEventListener("click", () => openBlock(button.dataset.block)));
+        bindTabTargets();
+      }
+
+      function renderAgenda() {
+        const grid = byId("agenda-grid");
+        grid.innerHTML = "";
+        const headers = ["Unidad", ...dates];
+        headers.forEach((label) => { const cell = document.createElement("div"); cell.className = "agenda-cell head"; cell.textContent = label; grid.appendChild(cell); });
+        units.filter((unit) => unit.type === "Individual").forEach((unit, unitIndex) => {
+          const title = document.createElement("div"); title.className = "agenda-cell head mono"; title.textContent = unit.code; grid.appendChild(title);
+          dates.forEach((date, dateIndex) => {
+            const cell = document.createElement("div");
+            const blocked = unit.code === state.blockUnit && state.blockActive && dateIndex < 2;
+            const busy = unitIndex === 0 && dateIndex < 2;
+            cell.className = "agenda-cell " + (blocked ? "blocked" : busy ? "busy" : "free");
+            cell.textContent = blocked ? "Bloqueo" : busy ? "Ocupada" : dateIndex === 2 ? "Checkout libre" : "Libre";
+            cell.title = unit.code + " · " + date;
+            grid.appendChild(cell);
+          });
+        });
+      }
+
+      function openBlock(code = "IND-03") {
+        state.blockUnit = code;
+        byId("block-title").textContent = "Bloquear " + code;
+        byId("block-unit-heading").textContent = code;
+        byId("block-error").textContent = "";
+        updateBlockSummary();
+        byId("block-dialog").showModal();
+      }
+
+      function dateOnly(value) {
+        return new Date(value + "T00:00:00.000Z");
+      }
+
+      function shortDate(value) {
+        return new Intl.DateTimeFormat("es-PE", { day: "numeric", month: "short", timeZone: "UTC" }).format(dateOnly(value)).replace(".", "");
+      }
+
+      function nightsForRange(start, end) {
+        if (!start || !end || start >= end) return [];
+        const nights = [];
+        const cursor = dateOnly(start);
+        const checkout = dateOnly(end);
+        while (cursor < checkout) {
+          nights.push(cursor.toISOString().slice(0, 10));
+          cursor.setUTCDate(cursor.getUTCDate() + 1);
+        }
+        return nights;
+      }
+
+      function updateBlockSummary() {
+        const start = byId("block-start").value;
+        const end = byId("block-end").value;
+        const nights = nightsForRange(start, end);
+        if (!nights.length) {
+          byId("block-night-summary").textContent = "Rango inválido: checkout debe ser posterior al check-in.";
+          return;
+        }
+        const labels = nights.map(shortDate);
+        byId("block-night-summary").textContent = `${nights.length} ${nights.length === 1 ? "noche" : "noches"}: ${labels.join(", ")}. Checkout ${shortDate(end)} libre.`;
+      }
+
+      function applyAlternative(message) {
+        setTab("types");
+        renderAgenda();
+        const alert = byId("system-alert");
+        alert.className = "alert success";
+        alert.textContent = message + " Disponibilidad recalculada; ya puedes continuar.";
+        notify(alert.textContent);
+      }
+
+      function setSystemState(kind) {
+        const alert = byId("system-alert");
+        const values = {
+          loading: ["info", "Cargando disponibilidad y ocupación…"],
+          empty: ["warning", "Sin rango: elige check-in y checkout para calcular disponibilidad."],
+          inactive: ["warning", "Unidad inactiva: conserva historial y no acepta nuevas asignaciones."],
+          overlap: ["error", "Bloqueo solapado: IND-03 ya está ocupada una noche del rango."],
+          error: ["error", "Conflicto 409: la unidad dejó de estar disponible. Nueva sugerencia DOB-02."],
+          unavailable: ["error", "Servicio 503: no se pudo decidir disponibilidad. Reintenta o contacta por WhatsApp."],
+          success: ["success", "Éxito: asignación confirmada y ocupación auditada."],
+          cancelled: ["success", "Cancelación auditada: noches futuras liberadas; historial conservado."],
+          unauthorized: ["warning", "Acceso denegado 403: el Operador puede consultar, pero no mutar inventario."]
+        };
+        alert.className = "alert " + values[kind][0];
+        alert.textContent = values[kind][1];
+        notify(values[kind][1]);
+      }
+
+      function bindTabTargets() {
+        document.querySelectorAll("[data-tab-target]").forEach((button) => {
+          button.onclick = () => setTab(button.dataset.tabTarget);
+        });
+      }
+
+      document.querySelectorAll("[role='tab']").forEach((button) => button.addEventListener("click", () => setTab(button.dataset.tab)));
+      document.querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", () => byId(button.dataset.close).close()));
+      document.querySelectorAll("[data-open-detail]").forEach((button) => button.addEventListener("click", () => setTab("detail")));
+      byId("update-range-btn").addEventListener("click", () => { applyAlternative(`Rango ${shortDate(byId("filter-checkin").value)}–${shortDate(byId("filter-checkout").value)}`); });
+      byId("new-unit-btn").addEventListener("click", () => byId("unit-dialog").showModal());
+      byId("open-block-from-list").addEventListener("click", () => openBlock());
+      byId("open-block-btn").addEventListener("click", () => openBlock());
+      byId("confirm-block-btn").addEventListener("click", () => {
+        if (byId("block-start").value >= byId("block-end").value) { byId("block-error").textContent = "Error: checkout debe ser posterior al check-in."; return; }
+        state.blockActive = true;
+        const unit = units.find((item) => item.code === state.blockUnit);
+        if (unit) {
+          unit.status = "Bloqueada";
+          unit.next = `Mantenimiento · ${shortDate(byId("block-start").value)}–${shortDate(byId("block-end").value)}`;
+        }
+        byId("unit-status").textContent = `Bloqueada ${shortDate(byId("block-start").value)}–${shortDate(byId("block-end").value)} · mantenimiento`;
+        byId("block-dialog").close();
+        renderUnits();
+        renderAgenda();
+        setSystemState("success");
+      });
+      byId("cancel-block-btn").addEventListener("click", () => {
+        state.blockActive = false;
+        const unit = units.find((item) => item.code === state.blockUnit);
+        if (unit) { unit.status = "Disponible"; unit.next = "Libre · bloqueo cancelado"; }
+        byId("unit-status").textContent = "Disponible · bloqueo cancelado con auditoría";
+        renderUnits();
+        renderAgenda();
+        setSystemState("cancelled");
+      });
+      byId("assignment-options").addEventListener("change", (event) => {
+        state.assignment = event.target.value;
+        const changed = state.assignment !== "DOB-02";
+        byId("change-reason").disabled = !changed;
+        byId("reason-error").textContent = changed ? "Escribe la razón antes de confirmar." : "";
+      });
+      byId("confirm-assignment-btn").addEventListener("click", () => {
+        const changed = state.assignment !== "DOB-02";
+        if (changed && !byId("change-reason").value.trim()) { byId("reason-error").textContent = "Razón obligatoria para cambiar la sugerencia."; return; }
+        byId("reason-error").textContent = "";
+        setSystemState("success");
+      });
+      byId("race-btn").addEventListener("click", () => setSystemState("error"));
+      byId("resolve-ota-btn").addEventListener("click", () => {
+        byId("ota-conflict-title").textContent = "Unidad asignada";
+        byId("ota-chip").textContent = "assigned";
+        byId("ota-chip").className = "chip success";
+        byId("ota-unit").textContent = "TRI-01";
+        byId("ota-nights").textContent = "2 noches";
+        byId("ota-alert").className = "alert success";
+        byId("ota-alert").textContent = "Conflicto resuelto en la misma reserva. Sin duplicados.";
+        notify("OTA asignada; conflicto resuelto de forma idempotente");
+      });
+      byId("block-start").addEventListener("change", updateBlockSummary);
+      byId("block-end").addEventListener("change", updateBlockSummary);
+      document.querySelectorAll("[data-alternative-type]").forEach((button) => button.addEventListener("click", () => {
+        byId("filter-guests").value = button.dataset.guests;
+        applyAlternative(`${button.dataset.alternativeType} elegido para ${button.dataset.guests} huéspedes.`);
+      }));
+      document.querySelectorAll("[data-alternative-start]").forEach((button) => button.addEventListener("click", () => {
+        byId("filter-checkin").value = button.dataset.alternativeStart;
+        byId("filter-checkout").value = button.dataset.alternativeEnd;
+        applyAlternative(`Fechas ${shortDate(button.dataset.alternativeStart)}–${shortDate(button.dataset.alternativeEnd)} elegidas.`);
+      }));
+      byId("state-buttons").addEventListener("click", (event) => { const button = event.target.closest("button[data-state]"); if (button) setSystemState(button.dataset.state); });
+
+      renderUnits();
+      renderAgenda();
+      bindTabTargets();
+      updateBlockSummary();
+    </script>
+  </body>
+</html>

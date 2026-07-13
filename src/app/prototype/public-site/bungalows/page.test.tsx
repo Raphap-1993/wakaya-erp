@@ -9,23 +9,21 @@ describe('BungalowsPage', () => {
       await BungalowsPage({
         searchParams: {
           category: 'bungalow-familiar',
-          checkIn: '2026-07-10',
-          checkOut: '2026-07-12',
+          checkIn: '2030-07-10',
+          checkOut: '2030-07-12',
           guests: '4',
         },
       }),
     );
 
-    expect(html).toContain('Resultados de búsqueda');
+    expect(html).toContain('Nuestros Bungalows');
     expect(html).toContain('Bungalow Familiar');
-    expect(html).toContain('2026-07-10');
-    expect(html).toContain('2026-07-12');
-    expect(html).toContain('4 huéspedes');
+    expect(html).toContain('4 personas · 55 m2');
     expect(html).not.toContain('Bungalow Matrimonial');
-    expect(html).toContain('aria-label="Ver detalle de Bungalow Familiar"');
     expect(html).toContain(
-      'href="/prototype/public-site/bungalows/bungalow-familiar?category=bungalow-familiar&amp;checkIn=2026-07-10&amp;checkOut=2026-07-12&amp;guests=4"',
+      'href="/es/bungalows/bungalow-familiar?category=bungalow-familiar&amp;checkIn=2030-07-10&amp;checkOut=2030-07-12&amp;guests=4"',
     );
+    expect(html).toContain('Ver detalles y reservar');
   });
 
   it('renders an empty state when category has no matching bungalow', async () => {
@@ -37,11 +35,11 @@ describe('BungalowsPage', () => {
       }),
     );
 
-    expect(html).toContain('Resultados de búsqueda');
+    expect(html).toContain('Nuestros Bungalows');
     expect(html).toContain('No encontramos coincidencias con esos filtros.');
   });
 
-  it('renders the bungalow detail route with the same presentation name used by the search flow', async () => {
+  it('renders the bungalow detail route with the same Figma naming used by the listing', async () => {
     const resultsHtml = renderToStaticMarkup(
       await BungalowsPage({
         searchParams: {
@@ -50,10 +48,9 @@ describe('BungalowsPage', () => {
       }),
     );
 
-    expect(resultsHtml).toContain('Bungalow Suite');
-    expect(resultsHtml).not.toContain('Bungalow Doble');
+    expect(resultsHtml).toContain('Bungalow Doble');
     expect(resultsHtml).toContain(
-      'href="/prototype/public-site/bungalows/bungalow-doble?category=bungalow-doble"',
+      'href="/es/bungalows/bungalow-doble?category=bungalow-doble"',
     );
 
     const { default: BungalowDetailPage } = await import('./[slug]/page');
@@ -66,8 +63,8 @@ describe('BungalowsPage', () => {
       }),
     );
 
-    expect(detailHtml).toContain('Bungalow Suite');
-    expect(detailHtml).toContain('Inicio / Bungalows / Bungalow Suite');
-    expect(detailHtml).toContain('Desde S/ 420');
+    expect(detailHtml).toContain('Bungalow Doble');
+    expect(detailHtml).toContain('href="/es">Inicio</a><span>/</span><a href="/es/bungalows">Bungalows</a><span>/</span><span>Bungalow Doble</span>');
+    expect(detailHtml).toContain('S/. 280');
   });
 });

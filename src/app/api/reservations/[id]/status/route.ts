@@ -2,7 +2,6 @@ import { requirePermission } from "@/middleware/authn";
 import { failureResponse, jsonResponse, readJsonBody } from "@/lib/reservations/http";
 import { reservationStatusSchema } from "@/lib/reservations/schemas";
 import { reservationStore } from "@/lib/reservations/store";
-import type { ReservationAction } from "@/lib/reservations/types";
 
 function isResponse(value: Response | Awaited<ReturnType<typeof requirePermission>>): value is Response {
   return value instanceof Response;

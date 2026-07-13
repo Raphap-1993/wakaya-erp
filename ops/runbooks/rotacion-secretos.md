@@ -1,3 +1,7 @@
+---
+kind: transversal
+---
+
 # Runbook: rotacion de secretos
 
 [README principal](../../README.md) | [Indice docs](../../docs/README.md) | [Volver a runbooks](README.md)

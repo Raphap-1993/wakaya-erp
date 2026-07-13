@@ -1,0 +1,1010 @@
+.hero {
+  position: relative;
+  width: 100vw;
+  margin: -28px calc(50% - 50vw) 56px;
+  overflow: clip;
+  background: #183126;
+}
+
+.heroMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.heroMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(15, 33, 26, 0.58), rgba(15, 33, 26, 0.72)),
+    radial-gradient(circle at top right, rgba(208, 168, 95, 0.2), transparent 30%);
+}
+
+.heroShell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  align-items: end;
+  gap: 28px;
+  width: min(100% - 48px, 1360px);
+  min-height: 520px;
+  margin: 0 auto;
+  padding: 176px 0 58px;
+}
+
+.heroCopy {
+  max-width: 680px;
+  color: #fff7ec;
+}
+
+.heroMeta {
+  margin-bottom: 14px;
+  color: #d5ad62;
+  font-family: var(--wakaya-font-sans);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  margin: 0 0 14px;
+  color: #fffaf4;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(clamp(3.2rem, 6vw, 5.6rem) + 2px);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.heroBody {
+  max-width: 540px;
+  margin: 0;
+  color: rgba(255, 246, 235, 0.86);
+  font-family: var(--wakaya-font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.heroExplore {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  align-self: center;
+  color: rgba(255, 247, 236, 0.84);
+}
+
+.heroExploreLabel {
+  font-family: var(--wakaya-font-sans);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.heroExploreIcon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(255, 244, 229, 0.4);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  font-size: 22px;
+}
+
+.section {
+  width: min(100%, 1360px);
+  margin: 0 auto 52px;
+}
+
+.roomGrid,
+.experienceGrid,
+.galleryGrid,
+.valueGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.roomGrid {
+  gap: 22px;
+}
+
+.roomCard {
+  display: grid;
+  grid-template-columns: minmax(280px, 356px) minmax(0, 1fr);
+  border: 1px solid #e4dccf;
+  background: #fffdfa;
+  box-shadow: 0 14px 34px rgba(42, 31, 19, 0.06);
+}
+
+.roomMedia {
+  position: relative;
+  min-height: 330px;
+  overflow: hidden;
+  background: #d8cfbe;
+}
+
+.roomMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.roomMediaBadge {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  padding: 10px 14px;
+  background: rgba(249, 239, 220, 0.94);
+  color: #0f2418;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.roomBody {
+  display: grid;
+  gap: 18px;
+  padding: 28px 28px 26px;
+}
+
+.roomHeadingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.roomTitleWrap h2,
+.roomTitleWrap h3 {
+  margin: 0 0 6px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(clamp(2rem, 3vw, 2.5rem) + 2px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.roomTagline {
+  color: #6e6256;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.priceStack {
+  min-width: 96px;
+  text-align: right;
+}
+
+.priceValue {
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(2rem + 2px);
+  line-height: 1;
+}
+
+.priceLabel {
+  margin-top: 4px;
+  color: #6e6256;
+  font-family: var(--wakaya-font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.roomDescription {
+  margin: 0;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f6efe2;
+  color: #143126;
+  font-family: var(--wakaya-font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.chipDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 0;
+  background: #c49840;
+}
+
+.buttonLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 18px;
+  border: 1px solid #153527;
+  background: #153527;
+  color: #fffaf4;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.buttonLink:hover {
+  transform: translateY(-1px);
+  background: #0f2418;
+  border-color: #0f2418;
+}
+
+.buttonLinkDisabled,
+.buttonLinkDisabled:hover {
+  transform: none;
+  cursor: not-allowed;
+  opacity: 0.72;
+  background: #6d726a;
+  border-color: #6d726a;
+}
+
+.buttonLinkLight {
+  background: #fffdfa;
+  color: #143126;
+  border-color: #e4dccf;
+}
+
+.buttonLinkLight:hover {
+  background: #f6efe2;
+  border-color: #d9c8aa;
+}
+
+.experienceGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.experienceCard {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: 1px solid #e4dccf;
+  background: #fffdfa;
+  box-shadow: 0 12px 28px rgba(42, 31, 19, 0.05);
+}
+
+.experienceMedia {
+  position: relative;
+  aspect-ratio: 1 / 0.88;
+  overflow: hidden;
+}
+
+.experienceMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.experienceBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 12px;
+  background: rgba(16, 35, 24, 0.88);
+  color: #fff8ed;
+  font-family: var(--wakaya-font-sans);
+  font-size: 14px;
+}
+
+.experienceBody {
+  display: grid;
+  gap: 12px;
+  padding: 20px 20px 22px;
+}
+
+.experienceMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #6e6256;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+}
+
+.experienceDuration {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.experienceDuration::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+  background: #c49840;
+}
+
+.experienceTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.experienceTitleIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  background: #f2eadc;
+  color: #c49840;
+  font-size: 17px;
+}
+
+.experienceTitle {
+  margin: 0;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(1.8rem + 2px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.experienceDescription {
+  margin: 0;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.ctaBand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 28px 32px;
+  border: 1px solid #e4dccf;
+  background: #fffdfa;
+}
+
+.ctaTitle {
+  margin: 0 0 6px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(clamp(2rem, 3vw, 2.8rem) + 2px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ctaCopy {
+  margin: 0;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.galleryGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.galleryTile {
+  display: grid;
+  gap: 10px;
+}
+
+.galleryTileImage {
+  aspect-ratio: 1 / 0.94;
+  overflow: hidden;
+  background: #ddd3c2;
+}
+
+.galleryTileImage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.galleryTileLabel {
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.experienceActions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+
+.experienceDialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(14, 23, 17, 0.74);
+}
+
+.experienceDialog {
+  width: min(1080px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
+  background: #fffdfa;
+  box-shadow: 0 30px 70px rgba(10, 22, 15, 0.32);
+}
+
+.experienceDialogMedia {
+  min-height: 100%;
+  background: #ddd3c2;
+}
+
+.experienceDialogMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.experienceDialogBody {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+}
+
+.experienceDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.experienceDialogEyebrow,
+.selectionBannerLabel {
+  display: inline-block;
+  color: #c49840;
+  font-family: var(--wakaya-font-sans);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.experienceDialogTitle,
+.selectionBannerTitle {
+  margin: 10px 0 8px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(clamp(2.2rem, 3.2vw, 3.2rem) + 1px);
+  font-weight: 700;
+  line-height: 0.98;
+}
+
+.experienceDialogLead,
+.selectionBannerCopy {
+  margin: 0;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+
+.experienceDialogMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #6e6256;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+}
+
+.experienceDialogCopy {
+  margin: 0;
+  color: #4f493f;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.experienceGalleryStrip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.experienceGalleryTile {
+  aspect-ratio: 1 / 0.86;
+  overflow: hidden;
+  background: #e8ddca;
+}
+
+.experienceGalleryTile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.experienceDialogColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.experienceDialogPanel,
+.selectionBanner {
+  border: 1px solid #e4dccf;
+  background: #fdf8f0;
+  padding: 18px;
+}
+
+.experienceDialogPanelTitle {
+  margin: 0 0 10px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.experienceDialogList {
+  margin: 0;
+  padding-left: 18px;
+  color: #4f493f;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.experienceDialogActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.storyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.storyPanel,
+.storyImagePanel,
+.valueCard,
+.contactInfoCard,
+.contactFormCard {
+  border: 1px solid #e4dccf;
+  background: #fffdfa;
+  box-shadow: 0 12px 28px rgba(42, 31, 19, 0.05);
+}
+
+.storyPanel {
+  padding: 30px 32px;
+}
+
+.storyDate {
+  display: block;
+  margin-bottom: 12px;
+  color: #c49840;
+  font-family: var(--wakaya-font-sans);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.storyTitle {
+  margin: 0 0 14px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(clamp(2.4rem, 4vw, 3.4rem) + 2px);
+  font-weight: 700;
+  line-height: 0.98;
+}
+
+.storyParagraph {
+  margin: 0 0 16px;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.85;
+}
+
+.storyImagePanel {
+  overflow: hidden;
+}
+
+.storyImagePanel img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+.valueGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.valueCard {
+  display: grid;
+  gap: 12px;
+  padding: 26px 24px;
+}
+
+.valueIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: #f2eadc;
+  color: #c49840;
+  font-size: 20px;
+}
+
+.valueTitle {
+  margin: 0;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(1.8rem + 2px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.valueCopy {
+  margin: 0;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.contactInfoCard,
+.contactFormCard {
+  padding: 28px 30px;
+}
+
+.contactCardTitle {
+  margin: 0 0 10px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(clamp(2rem, 3vw, 2.6rem) + 2px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.contactCardLead {
+  margin: 0 0 24px;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.contactDetailList {
+  display: grid;
+  gap: 16px;
+}
+
+.contactDetailRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.contactDetailIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: #f2eadc;
+  color: #c49840;
+  font-size: 17px;
+}
+
+.contactDetailLabel {
+  display: block;
+  margin-bottom: 2px;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.contactDetailValue {
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.contactForm {
+  display: grid;
+  gap: 16px;
+}
+
+.formGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field label {
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1px solid #ddd4c6;
+  border-radius: 0;
+  background: #fff;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.field textarea {
+  min-height: 130px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: #c49840;
+  box-shadow: 0 0 0 3px rgba(196, 152, 64, 0.12);
+}
+
+.hiddenField {
+  display: none;
+}
+
+.formError {
+  margin: -4px 0 0;
+  color: #9b1c1c;
+  font-family: var(--wakaya-font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.formAvailabilityCard {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(155, 28, 28, 0.16);
+  background: rgba(255, 246, 246, 0.94);
+  color: #5c1b1b;
+  font-family: var(--wakaya-font-sans);
+}
+
+.formAvailabilityCard strong,
+.formAvailabilityCard p {
+  margin: 0;
+}
+
+.formAvailabilityCopy {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.formAvailabilityGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.formAvailabilityLabel {
+  color: #102318;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.formAvailabilityActions {
+  display: grid;
+  gap: 8px;
+}
+
+.formAvailabilityButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ddd4c6;
+  background: #fff;
+  color: #143126;
+  font-family: var(--wakaya-font-sans);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.formAvailabilityButton:hover {
+  border-color: #c49840;
+}
+
+.formSuccessCard {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid rgba(91, 127, 88, 0.24);
+  background: rgba(247, 252, 244, 0.96);
+}
+
+.formSuccessCard strong,
+.formSuccessCard p {
+  margin: 0;
+}
+
+.cardHeaderCompact {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.cardTitleCompact {
+  margin: 0;
+  color: #102318;
+  font-family: var(--wakaya-font-sans);
+  font-size: calc(1.9rem + 2px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.cardCopyCompact {
+  margin: 0;
+  color: #5d5447;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+
+@media (max-width: 1100px) {
+  .heroShell {
+    grid-template-columns: 1fr;
+    min-height: 480px;
+    padding-top: 158px;
+  }
+
+  .heroExplore {
+    display: none;
+  }
+
+  .storyGrid,
+  .contactGrid,
+  .roomCard,
+  .experienceDialog,
+  .experienceDialogColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .experienceGrid,
+  .galleryGrid,
+  .valueGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roomMedia {
+    min-height: 290px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    margin-bottom: 34px;
+  }
+
+  .heroShell {
+    width: min(100% - 36px, 1360px);
+    min-height: 420px;
+    padding: 142px 0 40px;
+  }
+
+  .heroTitle {
+    font-size: calc(clamp(2.8rem, 12vw, 4rem) + 2px);
+  }
+
+  .section {
+    margin-bottom: 38px;
+  }
+
+  .experienceGrid,
+  .galleryGrid,
+  .valueGrid,
+  .experienceGalleryStrip,
+  .formGrid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .roomBody,
+  .storyPanel,
+  .contactInfoCard,
+  .contactFormCard {
+    padding: 22px 20px;
+  }
+
+  .ctaBand {
+    padding: 22px 20px;
+  }
+
+  .experienceDialogBackdrop {
+    padding: 0;
+  }
+
+  .experienceDialog {
+    max-height: 100vh;
+    min-height: 100vh;
+  }
+
+  .experienceDialogBody {
+    padding: 22px 20px;
+  }
+
+  .priceStack {
+    text-align: left;
+  }
+}

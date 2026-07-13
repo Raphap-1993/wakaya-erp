@@ -1,23 +1,21 @@
-import type { ReactNode } from 'react';
-import type { Metadata } from 'next';
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
-import { PlayFooter } from '@/components/public-site/play-footer';
-import { PlayHeader } from '@/components/public-site/play-header';
-import { publicSiteMetadataBase } from '@/components/public-site/public-site-metadata';
-import styles from '@/components/public-site/public-site-theme.module.css';
+import LocalizedPublicSiteLayout from "@/app/[locale]/layout";
+import { publicSiteMetadataBase } from "@/components/public-site/public-site-metadata";
+import { PROTOTYPE_PUBLIC_SITE_LOCALE } from "./prototype-public-site";
 
 export const metadata: Metadata = {
   metadataBase: publicSiteMetadataBase,
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
-export default function PublicSiteLayout({ children }: { children: ReactNode }) {
-  return (
-    <main className={styles.page}>
-      <div className={styles.shell}>
-        <PlayHeader />
-        {children}
-        <PlayFooter />
-      </div>
-    </main>
-  );
+export default async function PublicSiteLayout({ children }: { children: ReactNode }) {
+  return LocalizedPublicSiteLayout({
+    children,
+    params: { locale: PROTOTYPE_PUBLIC_SITE_LOCALE },
+  });
 }

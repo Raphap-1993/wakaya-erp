@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { ChangeEvent, FormEvent } from "react";
 import type { Bungalow } from "@/lib/reservations/types";
 import type { ReservationDetail } from "@/lib/reservations/store";
@@ -63,7 +62,6 @@ export function ReservationEditorForm({
   initialValues,
   reservation,
 }: ReservationEditorFormProps) {
-  const router = useRouter();
   const [values, setValues] = useState(initialValues);
   const [feedback, setFeedback] = useState<{ kind: "success" | "error"; message: string } | null>(
     null,
@@ -90,21 +88,24 @@ export function ReservationEditorForm({
     setIsSubmitting(true);
 
     const payload = {
-      number: values.number.trim(),
       channel: values.channel,
       bungalowId: values.bungalowId,
-      responsibleId: values.responsibleId.trim() || null,
       startDate: values.startDate,
       endDate: values.endDate,
       amountTotalCents: parseMoneyInput(values.amountTotal),
       amountPaidCents: parseMoneyInput(values.amountPaid),
     };
 
+    const requestBody =
+      mode === "create"
+        ? { number: values.number.trim(), ...payload }
+        : payload;
+
     try {
       const response = await fetch(actionHref, {
         method: mode === "create" ? "POST" : "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(requestBody),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -123,7 +124,7 @@ export function ReservationEditorForm({
         message: mode === "create" ? "Reserva creada correctamente." : "Reserva actualizada correctamente.",
       });
       window.setTimeout(() => {
-        router.replace(`/admin/reservations/${reservationId}`);
+        window.location.assign(`/admin/reservations/${reservationId}`);
       }, 450);
     } catch (error) {
       setFeedback({
@@ -175,8 +176,12 @@ export function ReservationEditorForm({
                       name="number"
                       value={values.number}
                       onChange={handleChange("number")}
+                      readOnly={mode === "edit"}
                       required
                     />
+                    {mode === "edit" ? (
+                      <span className={styles.fieldNote}>Código fijo después de crear la reserva.</span>
+                    ) : null}
                   </label>
 
                   <label className={styles.field}>
@@ -211,17 +216,6 @@ export function ReservationEditorForm({
                         </option>
                       ))}
                     </select>
-                  </label>
-
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Responsable</span>
-                    <input
-                      className={styles.input}
-                      name="responsibleId"
-                      value={values.responsibleId}
-                      onChange={handleChange("responsibleId")}
-                      placeholder="user-reception-1"
-                    />
                   </label>
 
                   <label className={styles.field}>

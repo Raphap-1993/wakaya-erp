@@ -1,5 +1,12 @@
 # Wakaya Minimo Verde Operable Design
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Date: 2026-06-03
 Status: Draft approved in conversation, pending final user review
 Topic: Minimum operable green pass for governance drift and local baseline

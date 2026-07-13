@@ -1,30 +1,26 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authenticateMock, notFoundMock } = vi.hoisted(() => ({
-  authenticateMock: vi.fn(),
+const { requireAdminPageAccessMock, notFoundMock } = vi.hoisted(() => ({
+  requireAdminPageAccessMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
-}));
-
-vi.mock("next/headers", () => ({
-  headers: () => new Headers(),
 }));
 
 vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
-vi.mock("@/middleware/authn", () => ({
-  authenticate: authenticateMock,
+vi.mock("@/app/admin/require-admin-page-access", () => ({
+  requireAdminPageAccess: requireAdminPageAccessMock,
 }));
 
 import ReservationFlowsPage from "./page";
 
 describe("ReservationFlowsPage", () => {
   beforeEach(() => {
-    authenticateMock.mockResolvedValue({
+    requireAdminPageAccessMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
       subject: "dev-admin",
@@ -43,13 +39,10 @@ describe("ReservationFlowsPage", () => {
   });
 
   it("rejects unauthenticated access", async () => {
-    authenticateMock.mockResolvedValueOnce({
-      authenticated: false,
-      roles: [],
-      reason: "missing_bearer",
-    });
+    requireAdminPageAccessMock.mockRejectedValueOnce(
+      new Error("NEXT_REDIRECT:/login?next=%2Fadmin%2Freservations%2Fflows"),
+    );
 
-    await expect(ReservationFlowsPage()).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(notFoundMock).toHaveBeenCalled();
+    await expect(ReservationFlowsPage()).rejects.toThrow("NEXT_REDIRECT:/login?next=%2Fadmin%2Freservations%2Fflows");
   });
 });

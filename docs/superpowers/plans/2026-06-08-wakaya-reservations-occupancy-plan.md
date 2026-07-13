@@ -1,5 +1,12 @@
 # Wakaya Reservations Occupancy Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a sibling occupancy view for the reservations backoffice that shows a weekly bungalow map with a daily detail panel, using the same reservations truth as the agenda.

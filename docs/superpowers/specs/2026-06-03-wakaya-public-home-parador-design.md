@@ -3,7 +3,7 @@
 <!-- nav-guided:start -->
 ## Navegacion guiada
 - Anterior: [Wakaya Public Site Prototype Design](2026-05-26-wakaya-public-site-design.md)
-- Siguiente: [Wakaya Public Home Parador Design](2026-06-03-wakaya-public-home-parador-design.md)
+- Siguiente: [Indice de documentacion](../../README.md)
 <!-- nav-guided:end -->
 
 Date: 2026-06-03

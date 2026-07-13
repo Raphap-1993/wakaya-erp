@@ -1,5 +1,12 @@
 # Wakaya MVP Cut: Hybrid Reservations Flow and Public Site Continuity Design
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Date: 2026-06-30
 Status: Approved in conversation, pending final written-spec review
 Topic: First executable MVP cut for `wakaya-erp` covering `booking_request`,

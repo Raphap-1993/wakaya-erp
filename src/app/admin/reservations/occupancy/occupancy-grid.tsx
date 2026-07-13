@@ -10,12 +10,24 @@ function cellLabel(cell: OccupancyCell): string {
     case "occupied":
       return "Ocupado";
     case "blocked":
-      return "Bloqueado";
+      return "Conflicto";
     case "attention-needed":
       return "Atención";
     default:
       return "Libre";
   }
+}
+
+function cellMeta(cell: OccupancyCell): string {
+  if (cell.state === "free") {
+    return "Asignar o crear";
+  }
+
+  if (cell.state === "blocked") {
+    return `${cell.reservations.length} reservas`;
+  }
+
+  return cell.primaryReservation?.number ?? "Reserva activa";
 }
 
 function cellClass(state: OccupancyCell["state"], selected: boolean): string {
@@ -71,9 +83,7 @@ export function OccupancyGrid({
                   onClick={() => onSelect(cell)}
                 >
                   <span className={styles.occupancyCellDate}>{cellLabel(cell)}</span>
-                  <span className={styles.occupancyCellMeta}>
-                    {cell.state === "free" ? "Disponible" : cell.primaryReservation?.number ?? `${cell.reservations.length} reservas`}
-                  </span>
+                  <span className={styles.occupancyCellMeta}>{cellMeta(cell)}</span>
                 </button>
               );
             })}

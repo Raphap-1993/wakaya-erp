@@ -1,5 +1,12 @@
 # Wakaya Reservations Agenda Operativa Design
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Date: 2026-06-06
 Status: Draft approved in conversation, pending final user review
 Topic: Visible product pass for `specs/001-reservations/` focused on daily reception operations

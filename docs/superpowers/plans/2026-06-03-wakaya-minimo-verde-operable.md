@@ -1,5 +1,12 @@
 # Wakaya Minimo Verde Operable Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Leave the repo in a minimum operable green state by clearing `check:trace-drift`, restoring `npm run typecheck`, restoring `npm run build`, and rerunning `npm run check:project` on a more truthful baseline.

@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wakaya Admin Home Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f1f4f8;
+        --surface: rgba(255, 255, 255, 0.94);
+        --surface-strong: #ffffff;
+        --ink: #102033;
+        --muted: #5d6f84;
+        --line: rgba(179, 193, 210, 0.95);
+        --brand: #17456f;
+        --brand-soft: #e7f0f9;
+        --accent: #c57f3e;
+        --success: #d8f4e2;
+        --danger: #ffe4e4;
+        --warning: #fff1d1;
+        --shadow: 0 18px 40px rgba(16, 32, 51, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Aptos", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(23, 69, 111, 0.12), transparent 28%),
+          linear-gradient(180deg, #f8fbff, var(--bg));
+        color: var(--ink);
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .page {
+        max-width: 1520px;
+        margin: 0 auto;
+        padding: 24px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .surface {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .publish-bar {
+        position: sticky;
+        top: 16px;
+        z-index: 5;
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        gap: 16px;
+        padding: 18px 20px;
+      }
+
+      .headline {
+        display: grid;
+        gap: 10px;
+      }
+
+      .eyebrow,
+      .meta,
+      .label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.76rem;
+        color: var(--muted);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.9rem, 3vw, 2.8rem);
+        letter-spacing: -0.05em;
+      }
+
+      .chips,
+      .actions,
+      .segmented,
+      .locale-tabs,
+      .preview-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .chip,
+      .ghost,
+      .primary,
+      .mini,
+      .segmented button,
+      .locale-tabs button,
+      .preview-tabs button {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: #fff;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .primary,
+      .segmented button.is-active,
+      .locale-tabs button.is-active,
+      .preview-tabs button.is-active {
+        background: linear-gradient(135deg, var(--brand), #103555);
+        color: #fff;
+        border-color: transparent;
+      }
+
+      .ghost {
+        background: #f8fbfe;
+        color: var(--brand);
+      }
+
+      .chip.success {
+        background: var(--success);
+      }
+
+      .chip.warning {
+        background: var(--warning);
+      }
+
+      .chip.role {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .bar-side {
+        display: grid;
+        gap: 12px;
+        justify-items: end;
+        align-content: start;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1.3fr) minmax(340px, 0.82fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .rail,
+      .editor,
+      .aside {
+        padding: 18px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .section {
+        display: grid;
+        gap: 12px;
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .item {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 12px;
+        background: linear-gradient(180deg, #ffffff, #f6f9fd);
+        display: grid;
+        gap: 10px;
+      }
+
+      .item.is-selected {
+        border-color: rgba(23, 69, 111, 0.45);
+        box-shadow: inset 0 0 0 1px rgba(23, 69, 111, 0.16);
+      }
+
+      .item-top,
+      .item-meta,
+      .row,
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .item-top button.link {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font-weight: 700;
+        text-align: left;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .mini {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+      }
+
+      .mini.toggle-on {
+        background: var(--success);
+      }
+
+      .mini.toggle-off {
+        background: #f0f3f7;
+      }
+
+      .group {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+        background: var(--surface-strong);
+        display: grid;
+        gap: 14px;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field-grid .full {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-weight: 600;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fff;
+        padding: 12px 14px;
+        color: var(--ink);
+      }
+
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .hint {
+        font-size: 0.83rem;
+        color: var(--muted);
+      }
+
+      .safe-grid {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: end;
+      }
+
+      .preview-card,
+      .revision-card,
+      .alert-card {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+        background: var(--surface-strong);
+        display: grid;
+        gap: 14px;
+      }
+
+      .preview-shell {
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, #f9fbfe, #edf3f8);
+        padding: 16px;
+      }
+
+      .preview-frame {
+        margin: 0 auto;
+        border: 1px solid rgba(16, 32, 51, 0.12);
+        border-radius: 24px;
+        background: #fff;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(16, 32, 51, 0.08);
+      }
+
+      .preview-frame.desktop {
+        width: 100%;
+        min-height: 420px;
+      }
+
+      .preview-frame.mobile {
+        width: 320px;
+        min-height: 520px;
+      }
+
+      .preview-top {
+        padding: 18px 20px 12px;
+        background:
+          linear-gradient(0deg, rgba(10, 23, 38, 0.2), rgba(10, 23, 38, 0.18)),
+          linear-gradient(135deg, #7da6c8, #274f71);
+        color: #fff;
+        display: grid;
+        gap: 10px;
+      }
+
+      .preview-content {
+        padding: 18px 20px 22px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .preview-block {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        background: #fff;
+        display: grid;
+        gap: 8px;
+      }
+
+      .preview-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #fff;
+        padding: 10px 14px;
+        width: fit-content;
+        font-weight: 700;
+      }
+
+      .revision-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .revision {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px;
+        display: grid;
+        gap: 6px;
+        background: linear-gradient(180deg, #fff, #f7fafc);
+      }
+
+      .alert {
+        border-radius: 16px;
+        padding: 14px;
+        font-weight: 600;
+      }
+
+      .alert.success {
+        background: var(--success);
+      }
+
+      .alert.error {
+        background: var(--danger);
+      }
+
+      .legend {
+        display: grid;
+        gap: 6px;
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        max-width: 320px;
+        border-radius: 18px;
+        padding: 12px 14px;
+        border: 1px solid rgba(16, 32, 51, 0.12);
+        background: rgba(16, 32, 51, 0.92);
+        color: #fff;
+        box-shadow: 0 16px 34px rgba(16, 32, 51, 0.2);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .code {
+        font-family: "SFMono-Regular", ui-monospace, monospace;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 1180px) {
+        .layout {
+          grid-template-columns: 280px minmax(0, 1fr);
+        }
+
+        .aside {
+          grid-column: 1 / -1;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 840px) {
+        .page {
+          padding: 14px;
+        }
+
+        .publish-bar {
+          grid-template-columns: 1fr;
+        }
+
+        .bar-side {
+          justify-items: start;
+        }
+
+        .layout,
+        .aside,
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .preview-frame.mobile,
+        .preview-frame.desktop {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="surface publish-bar">
+        <div class="headline">
+          <span class="eyebrow">Backoffice · home</span>
+          <h1>Contenido del home</h1>
+          <div class="chips">
+            <span class="chip success">Publicado</span>
+            <span class="chip role">Rol activo: Editor de contenido</span>
+            <span class="chip warning code" id="version-chip">v18</span>
+          </div>
+          <p class="muted">
+            Home, slide, seccion y revision se publican como un solo documento
+            valido.
+          </p>
+          <a class="muted" href="../../../prototype/index.html" data-hub-link="prototype-hub">← Volver al hub del producto</a>
+        </div>
+        <div class="bar-side">
+          <div class="legend">
+            <span><strong>Ultima publicacion:</strong> <span id="published-meta">09 Jul · admin@wakaya.local</span></span>
+            <span><strong>Permiso:</strong> `content:write`</span>
+          </div>
+          <div class="actions">
+            <button class="ghost" type="button">Ver home</button>
+            <button class="ghost" id="loading-btn" type="button">Simular loading</button>
+            <button class="ghost" id="validate-btn" type="button">Probar validacion</button>
+            <button class="ghost" id="conflict-btn" type="button">Simular 409</button>
+            <button class="primary" id="publish-btn" type="button">Guardar y publicar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="layout">
+        <aside class="surface rail" data-view="structure">
+          <div class="card-head">
+            <div>
+              <span class="meta">Estructura</span>
+              <h2>Slider y secciones</h2>
+            </div>
+            <button class="mini" id="add-slide-btn" type="button">Agregar slide</button>
+          </div>
+          <div class="section">
+            <span class="label">Slider principal</span>
+            <div class="list" id="slides-list"></div>
+          </div>
+          <div class="section">
+            <span class="label">Secciones del home</span>
+            <div class="list" id="sections-list"></div>
+          </div>
+        </aside>
+
+        <section class="surface editor" data-view="editor">
+          <div class="card-head">
+            <div>
+              <span class="meta" id="editor-meta">Editor</span>
+              <h2 id="editor-title">Selecciona un bloque</h2>
+            </div>
+            <div class="row">
+              <div class="locale-tabs" id="locale-tabs">
+                <button class="is-active" data-locale="es" type="button">ES</button>
+                <button data-locale="en" type="button">EN</button>
+              </div>
+            </div>
+          </div>
+
+          <article class="group">
+            <div class="card-head">
+              <div>
+                <span class="label">Contenido</span>
+                <h3>Copy localizado</h3>
+              </div>
+              <span class="muted" id="completion-pill">Completo</span>
+            </div>
+            <div class="field-grid">
+              <label>
+                Eyebrow
+                <input id="field-eyebrow" type="text" />
+              </label>
+              <label>
+                Titulo
+                <input id="field-title" type="text" />
+              </label>
+              <label class="full">
+                Descripcion
+                <textarea id="field-body"></textarea>
+              </label>
+            </div>
+          </article>
+
+          <article class="group">
+            <div class="card-head">
+              <div>
+                <span class="label">CTA</span>
+                <h3>Destino seguro</h3>
+              </div>
+              <span class="hint">Interno, telefono, WhatsApp o HTTPS</span>
+            </div>
+            <div class="field-grid">
+              <label>
+                Label
+                <input id="field-cta-label" type="text" />
+              </label>
+              <label>
+                Tipo
+                <select id="field-cta-kind">
+                  <option value="internal">Interno</option>
+                  <option value="phone">Telefono</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="https">HTTPS</option>
+                </select>
+              </label>
+              <label class="full">
+                Destino
+                <div class="safe-grid">
+                  <input id="field-cta-href" type="text" />
+                  <button class="mini" id="sanitize-btn" type="button">Normalizar</button>
+                </div>
+              </label>
+            </div>
+          </article>
+
+          <article class="group">
+            <div class="card-head">
+              <div>
+                <span class="label">Presentacion</span>
+                <h3>Tipografia y visibilidad</h3>
+              </div>
+            </div>
+            <div class="field-grid">
+              <div class="full">
+                <div class="segmented" id="size-controls">
+                  <button data-size="regular" class="is-active" type="button">Normal</button>
+                  <button data-size="large" type="button">Grande</button>
+                  <button data-size="display" type="button">Destacado</button>
+                </div>
+              </div>
+              <label>
+                Autoplay
+                <select id="field-interval">
+                  <option value="4000">4.0 s</option>
+                  <option value="4800" selected>4.8 s</option>
+                  <option value="6000">6.0 s</option>
+                  <option value="8000">8.0 s</option>
+                  <option value="10000">10.0 s</option>
+                </select>
+              </label>
+              <label>
+                Estado
+                <button class="mini toggle-on" id="visibility-btn" type="button">Visible</button>
+              </label>
+            </div>
+          </article>
+        </section>
+
+        <aside class="surface aside">
+          <article class="preview-card" data-view="preview">
+            <div class="card-head">
+              <div>
+                <span class="meta">Preview local</span>
+                <h2>Desktop / Mobile</h2>
+              </div>
+              <div class="preview-tabs" id="preview-tabs">
+                <button class="is-active" data-preview="desktop" type="button">Desktop</button>
+                <button data-preview="mobile" type="button">Mobile</button>
+              </div>
+            </div>
+            <div class="preview-shell">
+              <div class="preview-frame desktop" id="preview-frame">
+                <div class="preview-top">
+                  <span class="meta" style="color: rgba(255,255,255,0.8);">Wakaya home</span>
+                  <h3 id="preview-title">Descansa junto a la laguna</h3>
+                  <p id="preview-body">Slider, textos y CTA visibles segun la version local.</p>
+                  <span class="preview-cta" id="preview-cta">Ver bungalows</span>
+                </div>
+                <div class="preview-content">
+                  <div class="preview-block" id="preview-focus">
+                    <strong>Bloque activo</strong>
+                    <span class="muted" id="preview-focus-label">Slider principal</span>
+                  </div>
+                  <div class="preview-block">
+                    <strong>Estructura publicada</strong>
+                    <span class="muted" id="preview-order">slider · booking-band · stats · story</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="revision-card" data-view="revisions">
+            <div class="card-head">
+              <div>
+                <span class="meta">Revisiones</span>
+                <h2>Restore seguro</h2>
+              </div>
+              <button class="mini" id="restore-btn" type="button">Restaurar version 17</button>
+            </div>
+            <div class="revision-list" id="revision-list"></div>
+          </article>
+
+          <article class="alert-card" data-view="states">
+            <div class="card-head">
+              <div>
+                <span class="meta">Estados</span>
+                <h2>Validacion y conflicto</h2>
+              </div>
+            </div>
+            <div class="alert success" id="status-alert">
+              Listo para publicar. No hay cambios invalidos.
+            </div>
+            <div class="legend">
+              <span>Loading: preparando preview local y diff del home.</span>
+              <span>Empty: sin datos EN o bloque sin contenido completo.</span>
+              <span>Success: publicacion completa y version actualizada.</span>
+              <span>Error: CTA insegura o conflicto `409 home_content_version_conflict`.</span>
+              <span>Administrador disponible para restore de revision previa.</span>
+              <span>Operador sin permiso: ve la pantalla bloqueada y recibe 403.</span>
+              <span>Visitante: solo consume la version publicada del home.</span>
+            </div>
+          </article>
+        </aside>
+      </section>
+    </main>
+
+    <div class="toast notify" id="toast">Toast notify: listo para editar.</div>
+
+    <script>
+      const state = {
+        locale: "es",
+        preview: "desktop",
+        selectedKind: "slide",
+        selectedId: "slide-hero",
+        publishedVersion: 18,
+        slides: [
+          {
+            id: "slide-hero",
+            order: 1,
+            visible: true,
+            textSizePreset: "display",
+            content: {
+              es: {
+                eyebrow: "Wakaya",
+                title: "Descansa junto a la laguna",
+                body: "Slider principal para captar reservas y mostrar disponibilidad emocional."
+              },
+              en: {
+                eyebrow: "Wakaya",
+                title: "Stay by the lagoon",
+                body: "Main hero slide for bookings and atmosphere."
+              }
+            },
+            cta: {
+              kind: "internal",
+              label: { es: "Ver bungalows", en: "View bungalows" },
+              href: "/bungalows"
+            }
+          },
+          {
+            id: "slide-piscina",
+            order: 2,
+            visible: true,
+            textSizePreset: "large",
+            content: {
+              es: {
+                eyebrow: "Experiencia",
+                title: "Piscina, juegos y descanso",
+                body: "Slide secundario para familias y estancias de fin de semana."
+              },
+              en: {
+                eyebrow: "Experience",
+                title: "Pool, games and calm stays",
+                body: "Secondary slide for family and weekend stays."
+              }
+            },
+            cta: {
+              kind: "https",
+              label: { es: "Ver galeria", en: "Open gallery" },
+              href: "https://wakayaecolodge.com/gallery"
+            }
+          },
+          {
+            id: "slide-eventos",
+            order: 3,
+            visible: false,
+            textSizePreset: "regular",
+            content: {
+              es: {
+                eyebrow: "Eventos",
+                title: "Bodas y celebraciones",
+                body: "Slide oculto listo para activarse en temporada alta."
+              },
+              en: {
+                eyebrow: "Events",
+                title: "Weddings and celebrations",
+                body: "Hidden slide ready for high season."
+              }
+            },
+            cta: {
+              kind: "whatsapp",
+              label: { es: "Consultar por WhatsApp", en: "Ask on WhatsApp" },
+              href: "https://wa.me/51999999999"
+            }
+          }
+        ],
+        sections: [
+          {
+            id: "booking-band",
+            kind: "booking-band",
+            label: "Reserva rapida",
+            order: 1,
+            visible: true,
+            textSizePreset: "regular",
+            content: {
+              es: { eyebrow: "Reserva", title: "Consulta disponibilidad", body: "Atendemos booking requests desde la web publica." },
+              en: { eyebrow: "Booking", title: "Check availability", body: "We capture booking requests from the public site." }
+            },
+            cta: {
+              kind: "internal",
+              label: { es: "Solicitar estancia", en: "Request stay" },
+              href: "/contact"
+            }
+          },
+          {
+            id: "stats",
+            kind: "stats",
+            label: "Cifras",
+            order: 2,
+            visible: true,
+            textSizePreset: "regular",
+            content: {
+              es: { eyebrow: "Wakaya", title: "Naturaleza y descanso", body: "Metrica visible del home en cards compactas." },
+              en: { eyebrow: "Wakaya", title: "Nature and rest", body: "Compact metric band for the home." }
+            },
+            cta: { kind: "internal", label: { es: "Ver servicios", en: "View services" }, href: "/services" }
+          },
+          {
+            id: "story",
+            kind: "story",
+            label: "Historia",
+            order: 3,
+            visible: true,
+            textSizePreset: "large",
+            content: {
+              es: { eyebrow: "Historia", title: "Hospitalidad frente a la laguna", body: "Seccion editorial con imagen, texto y CTA seguro." },
+              en: { eyebrow: "Story", title: "Hospitality by the lagoon", body: "Editorial block with image, copy and safe CTA." }
+            },
+            cta: { kind: "internal", label: { es: "Conocer Wakaya", en: "About Wakaya" }, href: "/about" }
+          },
+          {
+            id: "bungalows",
+            kind: "bungalows",
+            label: "Bungalows",
+            order: 4,
+            visible: true,
+            textSizePreset: "display",
+            content: {
+              es: { eyebrow: "Estancias", title: "Bungalows destacados", body: "La grilla sigue viniendo del modulo de bungalows." },
+              en: { eyebrow: "Stays", title: "Featured bungalows", body: "Cards still come from the bungalow module." }
+            },
+            cta: { kind: "internal", label: { es: "Ver todos", en: "See all" }, href: "/bungalows" }
+          },
+          {
+            id: "quote-band",
+            kind: "quote-band",
+            label: "Frase destacada",
+            order: 5,
+            visible: false,
+            textSizePreset: "large",
+            content: {
+              es: { eyebrow: "Cita", title: "Un descanso que no necesita explicaciones largas", body: "Seccion actualmente oculta." },
+              en: { eyebrow: "Quote", title: "A stay that needs no long explanation", body: "Currently hidden section." }
+            },
+            cta: { kind: "https", label: { es: "Abrir testimonios", en: "Open testimonials" }, href: "https://wakayaecolodge.com/testimonials" }
+          },
+          {
+            id: "experiences",
+            kind: "experiences",
+            label: "Experiencias",
+            order: 6,
+            visible: true,
+            textSizePreset: "regular",
+            content: {
+              es: { eyebrow: "Experiencias", title: "Piscina, laguna y celebraciones", body: "EN aun necesita ajuste final." },
+              en: { eyebrow: "Experiences", title: "Pool, lagoon and events", body: "" }
+            },
+            cta: { kind: "internal", label: { es: "Ver actividades", en: "View activities" }, href: "/events" }
+          },
+          {
+            id: "testimonials",
+            kind: "testimonials",
+            label: "Testimonios",
+            order: 7,
+            visible: true,
+            textSizePreset: "regular",
+            content: {
+              es: { eyebrow: "Huespedes", title: "Lo que cuentan nuestros visitantes", body: "Social proof con copy administrable." },
+              en: { eyebrow: "Guests", title: "What our guests say", body: "Editable testimonial intro." }
+            },
+            cta: { kind: "internal", label: { es: "Ver opiniones", en: "Read reviews" }, href: "/testimonials" }
+          },
+          {
+            id: "closing-cta",
+            kind: "closing-cta",
+            label: "Cierre",
+            order: 8,
+            visible: true,
+            textSizePreset: "display",
+            content: {
+              es: { eyebrow: "Cierre", title: "Reserva tu proxima escapada", body: "CTA final del home con prioridad comercial." },
+              en: { eyebrow: "Closing", title: "Book your next getaway", body: "Closing CTA with commercial priority." }
+            },
+            cta: { kind: "phone", label: { es: "Llamar ahora", en: "Call now" }, href: "tel:+51999999999" }
+          }
+        ],
+        revisions: [
+          { version: 18, summary: "Hero actualizado + CTA story", by: "admin@wakaya.local", at: "09 Jul 23:10" },
+          { version: 17, summary: "Experiencias ES/EN", by: "editor@wakaya.local", at: "08 Jul 18:22" },
+          { version: 16, summary: "Orden de sections", by: "admin@wakaya.local", at: "06 Jul 09:15" }
+        ]
+      };
+
+      function selectedItem() {
+        const source = state.selectedKind === "slide" ? state.slides : state.sections;
+        return source.find((item) => item.id === state.selectedId) || source[0];
+      }
+
+      function sortByOrder(items) {
+        return [...items].sort((a, b) => a.order - b.order);
+      }
+
+      function renderRail() {
+        const slidesList = document.getElementById("slides-list");
+        const sectionsList = document.getElementById("sections-list");
+        slidesList.innerHTML = "";
+        sectionsList.innerHTML = "";
+
+        sortByOrder(state.slides).forEach((item) => slidesList.appendChild(renderItem(item, "slide")));
+        sortByOrder(state.sections).forEach((item) => sectionsList.appendChild(renderItem(item, "section")));
+      }
+
+      function renderItem(item, kind) {
+        const wrap = document.createElement("article");
+        wrap.className = "item" + (state.selectedId === item.id && state.selectedKind === kind ? " is-selected" : "");
+
+        const top = document.createElement("div");
+        top.className = "item-top";
+
+        const select = document.createElement("button");
+        select.type = "button";
+        select.className = "link";
+        select.textContent = kind === "slide" ? "Slide " + item.order + " · " + item.id : item.label;
+        select.addEventListener("click", () => {
+          state.selectedKind = kind;
+          state.selectedId = item.id;
+          renderAll();
+        });
+
+        const tag = document.createElement("span");
+        tag.className = "muted";
+        tag.textContent = item.visible ? "Visible" : "Oculto";
+
+        top.append(select, tag);
+
+        const meta = document.createElement("div");
+        meta.className = "item-meta";
+        meta.innerHTML = "<span class='muted'>Orden " + item.order + "</span><span class='muted'>" + (item.textSizePreset || "regular") + "</span>";
+
+        const controls = document.createElement("div");
+        controls.className = "actions";
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "mini " + (item.visible ? "toggle-on" : "toggle-off");
+        toggle.textContent = item.visible ? "Visible" : "Oculto";
+        toggle.addEventListener("click", () => {
+          item.visible = !item.visible;
+          renderAll();
+        });
+
+        const up = document.createElement("button");
+        up.type = "button";
+        up.className = "mini";
+        up.textContent = "Subir";
+        up.addEventListener("click", () => moveItem(kind, item.id, -1));
+
+        const down = document.createElement("button");
+        down.type = "button";
+        down.className = "mini";
+        down.textContent = "Bajar";
+        down.addEventListener("click", () => moveItem(kind, item.id, 1));
+
+        controls.append(toggle, up, down);
+        wrap.append(top, meta, controls);
+        return wrap;
+      }
+
+      function moveItem(kind, id, delta) {
+        const source = kind === "slide" ? state.slides : state.sections;
+        const ordered = sortByOrder(source);
+        const index = ordered.findIndex((item) => item.id === id);
+        const nextIndex = index + delta;
+        if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return;
+        const current = ordered[index];
+        const target = ordered[nextIndex];
+        const temp = current.order;
+        current.order = target.order;
+        target.order = temp;
+        renderAll();
+      }
+
+      function renderEditor() {
+        const item = selectedItem();
+        const data = item.content[state.locale];
+        document.getElementById("editor-meta").textContent = state.selectedKind === "slide" ? "Slider" : "Seccion del home";
+        document.getElementById("editor-title").textContent = state.selectedKind === "slide" ? "Editar " + item.id : item.label;
+        document.getElementById("field-eyebrow").value = data.eyebrow;
+        document.getElementById("field-title").value = data.title;
+        document.getElementById("field-body").value = data.body;
+        document.getElementById("field-cta-label").value = item.cta.label[state.locale];
+        document.getElementById("field-cta-kind").value = item.cta.kind;
+        document.getElementById("field-cta-href").value = item.cta.href;
+        document.getElementById("field-interval").value = String(state.slides[0].intervalMs || 4800);
+        document.getElementById("completion-pill").textContent = data.body ? "Completo" : "Sin datos EN";
+
+        document.getElementById("visibility-btn").textContent = item.visible ? "Visible" : "Oculto";
+        document.getElementById("visibility-btn").className = "mini " + (item.visible ? "toggle-on" : "toggle-off");
+
+        document.querySelectorAll("#size-controls button").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.size === item.textSizePreset);
+        });
+
+        document.querySelectorAll("#locale-tabs button").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.locale === state.locale);
+        });
+      }
+
+      function renderPreview() {
+        const item = selectedItem();
+        const data = item.content[state.locale];
+        const frame = document.getElementById("preview-frame");
+        frame.className = "preview-frame " + state.preview;
+        document.getElementById("preview-title").textContent = data.title;
+        document.getElementById("preview-body").textContent = data.body || "Falta completar este bloque en el idioma activo.";
+        document.getElementById("preview-cta").textContent = item.cta.label[state.locale];
+        document.getElementById("preview-focus-label").textContent = (state.selectedKind === "slide" ? "Slide activo · " : "Seccion activa · ") + (item.label || item.id);
+        document.getElementById("preview-order").textContent = sortByOrder(state.sections)
+          .filter((section) => section.visible)
+          .map((section) => section.kind)
+          .join(" · ");
+        document.querySelectorAll("#preview-tabs button").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.preview === state.preview);
+        });
+      }
+
+      function renderRevisions() {
+        const list = document.getElementById("revision-list");
+        list.innerHTML = "";
+        state.revisions.forEach((revision) => {
+          const item = document.createElement("article");
+          item.className = "revision";
+          item.innerHTML =
+            "<strong>Version " + revision.version + "</strong>" +
+            "<span>" + revision.summary + "</span>" +
+            "<span class='muted'>" + revision.by + " · " + revision.at + "</span>";
+          list.appendChild(item);
+        });
+      }
+
+      function renderAll() {
+        renderRail();
+        renderEditor();
+        renderPreview();
+        renderRevisions();
+        document.getElementById("version-chip").textContent = "v" + state.publishedVersion;
+      }
+
+      function activeData() {
+        return selectedItem().content[state.locale];
+      }
+
+      function bindFields() {
+        document.getElementById("field-eyebrow").addEventListener("input", (event) => {
+          activeData().eyebrow = event.target.value;
+          renderPreview();
+        });
+        document.getElementById("field-title").addEventListener("input", (event) => {
+          activeData().title = event.target.value;
+          renderPreview();
+        });
+        document.getElementById("field-body").addEventListener("input", (event) => {
+          activeData().body = event.target.value;
+          renderPreview();
+          document.getElementById("completion-pill").textContent = event.target.value ? "Completo" : "EN pendiente";
+        });
+        document.getElementById("field-cta-label").addEventListener("input", (event) => {
+          selectedItem().cta.label[state.locale] = event.target.value;
+          renderPreview();
+        });
+        document.getElementById("field-cta-kind").addEventListener("change", (event) => {
+          selectedItem().cta.kind = event.target.value;
+        });
+        document.getElementById("field-cta-href").addEventListener("input", (event) => {
+          selectedItem().cta.href = event.target.value;
+        });
+      }
+
+      function setAlert(kind, message) {
+        const alert = document.getElementById("status-alert");
+        alert.className = "alert " + kind;
+        alert.textContent = message;
+        const toast = document.getElementById("toast");
+        toast.textContent = "Toast notify: " + message;
+        toast.classList.add("is-visible");
+      }
+
+      function validateCurrent() {
+        const item = selectedItem();
+        if (!item.visible && state.selectedKind === "slide" && state.slides.every((slide) => !slide.visible || slide.id === item.id)) {
+          setAlert("error", "Error: el slider necesita al menos un slide visible.");
+          return false;
+        }
+        if (!/^(\/|tel:|https:\/\/wa\.me\/|https:\/\/)/.test(item.cta.href)) {
+          setAlert("error", "Error: CTA insegura. Usa ruta interna, telefono, WhatsApp o HTTPS.");
+          return false;
+        }
+        setAlert("success", "Success: bloque valido y listo para publicar.");
+        return true;
+      }
+
+      function bindActions() {
+        document.querySelectorAll("#locale-tabs button").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.locale = button.dataset.locale;
+            renderAll();
+          });
+        });
+
+        document.querySelectorAll("#preview-tabs button").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.preview = button.dataset.preview;
+            renderAll();
+          });
+        });
+
+        document.querySelectorAll("#size-controls button").forEach((button) => {
+          button.addEventListener("click", () => {
+            selectedItem().textSizePreset = button.dataset.size;
+            renderAll();
+          });
+        });
+
+        document.getElementById("visibility-btn").addEventListener("click", () => {
+          const item = selectedItem();
+          item.visible = !item.visible;
+          renderAll();
+        });
+
+        document.getElementById("sanitize-btn").addEventListener("click", () => {
+          const input = document.getElementById("field-cta-href");
+          if (!/^(\/|tel:|https:\/\/wa\.me\/|https:\/\/)/.test(input.value)) {
+            input.value = "/contact";
+            selectedItem().cta.kind = "internal";
+            selectedItem().cta.href = "/contact";
+            document.getElementById("field-cta-kind").value = "internal";
+            setAlert("error", "Error: CTA insegura detectada. Se normalizo a una ruta interna.");
+          } else {
+            setAlert("success", "Success: destino seguro confirmado.");
+          }
+        });
+
+        document.getElementById("validate-btn").addEventListener("click", () => {
+          validateCurrent();
+        });
+
+        document.getElementById("loading-btn").addEventListener("click", () => {
+          setAlert("success", "Loading: preparando preview local y diff antes de publicar.");
+        });
+
+        document.getElementById("publish-btn").addEventListener("click", () => {
+          if (!validateCurrent()) return;
+          state.publishedVersion += 1;
+          document.getElementById("published-meta").textContent = "09 Jul · editor@wakaya.local";
+          setAlert("success", "Success: home publicado de forma atomica. Version v" + state.publishedVersion + ".");
+          renderAll();
+        });
+
+        document.getElementById("conflict-btn").addEventListener("click", () => {
+          setAlert("error", "Error 409: home_content_version_conflict. Recarga la version 19 o restaura la revision 17.");
+        });
+
+        document.getElementById("restore-btn").addEventListener("click", () => {
+          state.publishedVersion += 1;
+          setAlert("success", "Success: revision 17 restaurada y publicada como version v" + state.publishedVersion + ".");
+          renderAll();
+        });
+
+        document.getElementById("add-slide-btn").addEventListener("click", () => {
+          const nextOrder = state.slides.length + 1;
+          state.slides.push({
+            id: "slide-nuevo-" + nextOrder,
+            order: nextOrder,
+            visible: true,
+            textSizePreset: "regular",
+            content: {
+              es: { eyebrow: "Nuevo slide", title: "Nuevo mensaje del home", body: "Completa el nuevo slide en ambos idiomas." },
+              en: { eyebrow: "New slide", title: "New home message", body: "Complete the new slide in both languages." }
+            },
+            cta: {
+              kind: "internal",
+              label: { es: "Definir CTA", en: "Set CTA" },
+              href: "/contact"
+            }
+          });
+          state.selectedKind = "slide";
+          state.selectedId = "slide-nuevo-" + nextOrder;
+          setAlert("success", "Success: slide agregado al manager local.");
+          renderAll();
+        });
+      }
+
+      renderAll();
+      bindFields();
+      bindActions();
+    </script>
+  </body>
+</html>

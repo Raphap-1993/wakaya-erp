@@ -37,7 +37,25 @@ describe("POST /api/booking-requests/[id]/confirm-transfer", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       bookingRequest: { status: "converted_to_reservation" },
-      reservation: { status: "confirmed", channel: "web" },
+      reservation: { status: "confirmed", channel: "web", bungalowId: null },
+    });
+  });
+
+  it("confirms when another stay overlaps but aggregate category capacity remains", async () => {
+    const { POST } = await loadRoute();
+    const response = await POST(
+      new Request("http://localhost/api/booking-requests/request-conflict/confirm-transfer", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer valid" },
+        body: JSON.stringify({ actorId: "user-reception-1", reason: "proof validated" }),
+      }),
+      { params: Promise.resolve({ id: "request-conflict" }) },
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      bookingRequest: { status: "converted_to_reservation" },
+      reservation: { status: "confirmed", bungalowId: "bungalow-family", bungalowUnitId: null },
     });
   });
 });

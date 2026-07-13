@@ -5,7 +5,7 @@
 <!-- nav-guided:start -->
 ## Navegacion guiada
 - Anterior: [ADR-010 - Memoria local AI-first](ADR-010-memoria-local-ai-first-sqlite-sqlite-vec-duckdb.md)
-- Siguiente: [ADR-012 - Pendiente](README.md)
+- Siguiente: [ADR-012 - Centro de contenido, media e inventario por unidades](ADR-012-centro-contenido-media-inventario-unidades.md)
 <!-- nav-guided:end -->
 
 ## Estado

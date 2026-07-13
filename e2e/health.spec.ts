@@ -8,6 +8,7 @@ test('el endpoint de salud responde ok', async ({ request }) => {
 });
 
 test('la home page se renderiza', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Wakaya ERP');
+  await page.goto('/es');
+  await page.getByRole('button', { name: 'Go to slide 1' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Wakaya Ecolodge' })).toBeVisible();
 });

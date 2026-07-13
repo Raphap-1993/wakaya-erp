@@ -2,34 +2,58 @@
 // Debe alinearse con docs/fase-3-arquitectura/03.08-auth-authz.md.
 
 export type Permission =
+  | "complaint:read"
+  | "complaint:write"
+  | "content:write"
   | "reservation:read"
   | "reservation:write"
   | "reservation:assign"
   | "reservation:approve"
+  | "inventory:manage"
   | "admin:users";
 
 export type Role = "viewer" | "editor" | "approver" | "admin";
 
+export const ROLE_VALUES: readonly Role[] = ["viewer", "editor", "approver", "admin"] as const;
+
+export const ROLE_LABELS: Record<Role, string> = {
+  viewer: "Solo lectura",
+  editor: "Edición operativa",
+  approver: "Aprobación",
+  admin: "Administrador",
+};
+
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  viewer: ["reservation:read"],
-  editor: ["reservation:read", "reservation:write", "reservation:assign"],
+  viewer: ["reservation:read", "complaint:read"],
+  editor: ["reservation:read", "reservation:write", "reservation:assign", "complaint:read", "complaint:write", "content:write"],
   approver: [
+    "complaint:read",
+    "complaint:write",
+    "content:write",
     "reservation:read",
     "reservation:write",
     "reservation:assign",
     "reservation:approve",
   ],
   admin: [
+    "complaint:read",
+    "complaint:write",
+    "content:write",
     "reservation:read",
     "reservation:write",
     "reservation:assign",
     "reservation:approve",
+    "inventory:manage",
     "admin:users",
   ],
 };
 
 export function isRole(value: string): value is Role {
   return value in ROLE_PERMISSIONS;
+}
+
+export function sanitizeRoles(roles: readonly string[]): Role[] {
+  return roles.filter((role): role is Role => isRole(role));
 }
 
 export function hasPermission(roles: readonly string[], permission: Permission): boolean {

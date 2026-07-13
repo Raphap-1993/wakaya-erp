@@ -331,10 +331,6 @@ export function MonitorDetailPanel({
                 {activeItem.startDate} → {activeItem.endDate}
               </span>
             </div>
-            <div className={styles.kv}>
-              <span className={styles.kvLabel}>Responsable</span>
-              <span className={styles.kvValue}>{activeItem.responsibleId ?? "system"}</span>
-            </div>
             </div>
           </div>
         ) : (
@@ -392,7 +388,11 @@ export function MonitorDetailPanel({
                 onClick={() => void submitPayment()}
                 disabled={!paymentEnabled || isPending || pendingAction !== null}
               >
-                {paymentEnabled ? `Registrar ${formatMoneyCents(balanceCents)}` : "Sin saldo pendiente"}
+                {permissions.canApprove
+                  ? paymentEnabled
+                    ? `Registrar ${formatMoneyCents(balanceCents)}`
+                    : "Sin saldo pendiente"
+                  : "Sin permiso de cobro"}
               </button>
             </div>
           </div>
@@ -424,7 +424,11 @@ export function MonitorDetailPanel({
                     </button>
                   ))}
                 </div>
-              ) : null}
+              ) : permissions.canAssign ? (
+                <p className={styles.helper}>No hay asignación disponible para el estado actual.</p>
+              ) : (
+                <p className={styles.helper}>No tienes permisos para asignar bungalow.</p>
+              )}
             </div>
 
             <div className={styles.quickActionGrid}>

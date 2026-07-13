@@ -1,5 +1,12 @@
 # Reservations Agenda Operativa Visible Pass Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Turn `specs/001-reservations/` from an auto-quality level-2 seed into a visibly product-like reception console centered on agenda, lateral detail, bungalow assignment, and embedded audit.
@@ -56,7 +63,7 @@ Write this file content:
 ```md
 # Product Design - Wakaya ERP
 
-[README principal](../../README.md) | [Specs](../README.md)
+[README principal](../../../README.md) | [Specs](../../README.md)
 
 ## Problema
 Recepción necesita operar llegadas, salidas y asignaciones de bungalow desde una sola superficie. Hoy la validación del contexto de la reserva, la asignación y la trazabilidad todavía no están materializadas en una experiencia visible del producto.
@@ -88,7 +95,7 @@ Write this file content:
 ```md
 # SPDD Frontend - Wakaya ERP
 
-[README principal](../../README.md) | [Specs](../README.md)
+[README principal](../../../README.md) | [Specs](../../README.md)
 
 ## Flujo UX
 Recepción abre la agenda operativa, filtra reservas del día, selecciona una reserva crítica, revisa el detalle lateral, asigna o reasigna bungalow y confirma la acción viendo la auditoría en la misma superficie.
@@ -133,7 +140,7 @@ Write this file content:
 ```md
 # Prototype - Wakaya ERP
 
-[README principal](../../README.md) | [Specs](../README.md)
+[README principal](../../../README.md) | [Specs](../../README.md)
 
 ## Herramienta
 HTML5-first por defecto. Penpot queda fuera de este slice salvo decisión posterior de formalización visual.
@@ -286,7 +293,7 @@ Agenda operativa del día
 ~~~~md
 # Prototype Validation - Wakaya ERP
 
-[README principal](../../README.md) | [Specs](../README.md)
+[README principal](../../../README.md) | [Specs](../../README.md)
 
 ## Validacion
 | Criterio | Estado | Observacion |
@@ -314,7 +321,7 @@ PENDIENTE de validación humana explícita. El slice debe quedar listo para revi
 ~~~~md
 # UI Test Cases - Wakaya ERP
 
-[README principal](../../README.md) | [Specs](../README.md)
+[README principal](../../../README.md) | [Specs](../../README.md)
 
 | Caso | Estado esperado |
 |---|---|

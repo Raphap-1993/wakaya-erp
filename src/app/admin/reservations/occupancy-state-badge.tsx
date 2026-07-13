@@ -4,7 +4,7 @@ import styles from "./reservations.module.css";
 const OCCUPANCY_STATE_META: Record<OccupancyCellState, { label: string; className: string }> = {
   free: { label: "Libre", className: "occupancyFree" },
   occupied: { label: "Ocupado", className: "occupancyOccupied" },
-  blocked: { label: "Bloqueado", className: "occupancyBlocked" },
+  blocked: { label: "Conflicto", className: "occupancyBlocked" },
   "attention-needed": { label: "Atención", className: "occupancyAttention" },
 };
 

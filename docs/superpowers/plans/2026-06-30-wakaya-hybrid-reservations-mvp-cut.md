@@ -1,5 +1,12 @@
 # Wakaya Hybrid Reservations MVP Cut Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the current reservation-centric demo flow with a real `booking_request -> review -> confirm -> reservation` operational path backed by PostgreSQL, hybrid mail adapters, and public forms aligned to that flow.

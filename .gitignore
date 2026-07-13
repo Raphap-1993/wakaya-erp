@@ -12,7 +12,17 @@ test-results
 .env.*.local
 !.env.example
 .data/
+backups-local/
+backups-correos/
+backups-prod/
+.playwright-cli/
+output/
+pnpm-lock.yaml
+pnpm-workspace.yaml
 ai/memory/*.db
+ai/locks/
+AGENT_BOARD.md
+ROADMAP_STATE.json
 *.tsbuildinfo
 *.log
 .DS_Store

@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+
 import "./globals.css";
 
 export const metadata = {
@@ -5,9 +7,12 @@ export const metadata = {
   description: "Wakaya hospitality site and reservations monitor",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get("x-wakaya-locale") ?? "es";
+
   return (
-    <html lang="es">
+    <html lang={locale === "en" ? "en" : "es"}>
       <body>{children}</body>
     </html>
   );

@@ -1,5 +1,12 @@
 # Wakaya Reservations Occupancy Design
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Date: 2026-06-08
 Topic: `specs/001-reservations` occupancy view
 Owner: Viernes

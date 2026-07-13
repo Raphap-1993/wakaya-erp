@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/copy-standalone-static.mjs",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
@@ -17,6 +18,8 @@
     "migrate": "node scripts/migrate.js up",
     "migrate:down": "node scripts/migrate.js down",
     "seed": "node scripts/seed.js",
+    "ota:booking:sync": "node scripts/ota-booking-worker.mjs once",
+    "ota:booking:worker": "node scripts/ota-booking-worker.mjs daemon",
     "memory:bootstrap": "node scripts/ai-framework-agent.mjs init-memory && node scripts/ai-framework-agent.mjs index-docs && node scripts/ai-framework-agent.mjs sync-memory && node scripts/ai-framework-agent.mjs regenerate-context && node scripts/ai-framework-agent.mjs index-docs && node scripts/ai-framework-agent.mjs embed-docs",
     "memory:bootstrap:quick": "node scripts/ai-framework-agent.mjs init-memory && node scripts/ai-framework-agent.mjs index-docs && node scripts/ai-framework-agent.mjs sync-memory && node scripts/ai-framework-agent.mjs regenerate-context && node scripts/ai-framework-agent.mjs index-docs",
     "memory:sync": "node scripts/ai-framework-agent.mjs sync-memory && node scripts/ai-framework-agent.mjs regenerate-context && node scripts/ai-framework-agent.mjs index-docs && node scripts/ai-framework-agent.mjs embed-docs",
@@ -101,6 +104,7 @@
     "prototype:prompt": "node scripts/prototype-prompt.mjs"
   },
   "dependencies": {
+    "fast-xml-parser": "^5.3.1",
     "jose": "^6.2.3",
     "next": "16.2.6",
     "pg": "^8.22.0",
@@ -108,6 +112,8 @@
     "pino-http": "11.0.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
+    "react-easy-crop": "^6.2.2",
+    "sharp": "^0.35.3",
     "zod": "4.3.6"
   },
   "devDependencies": {
@@ -119,8 +125,8 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.59.2",
-    "@typescript-eslint/parser": "8.59.1",
-    "eslint": "10.3.0",
+    "@typescript-eslint/parser": "8.59.2",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.2.6",
     "prettier": "3.8.3",
     "typescript": "6.0.3",

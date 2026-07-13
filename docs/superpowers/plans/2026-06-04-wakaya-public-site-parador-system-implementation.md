@@ -1,5 +1,12 @@
 # Wakaya Public Site Parador System Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Convert `002-public-site` into a multi-page public prototype that keeps Wakaya's real architecture while adopting Parador-grade header, footer, hero, motion, and search behavior.

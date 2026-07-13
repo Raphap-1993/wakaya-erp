@@ -43,6 +43,37 @@ describe("POST /api/reservations/[id]/status", () => {
     expect(body.reservation.status).toBe("confirmed");
   });
 
+  it("rejects confirmation when the category has no remaining capacity", async () => {
+    const { reservationStore } = await import("@/lib/reservations/store");
+    for (let index = 1; index <= 2; index += 1) {
+      try {
+        await reservationStore.create({
+          number: `OTA-DOUBLE-SOLD-${crypto.randomUUID()}`,
+          channel: "ota",
+          bungalowId: "bungalow-suite",
+          actorId: "system",
+          startDate: "2026-06-12",
+          endDate: "2026-06-14",
+        });
+      } catch (error) {
+        if (!(error instanceof Error) || error.message !== "bungalow_capacity_unavailable") throw error;
+        break;
+      }
+    }
+    const { POST } = await loadRoute();
+    const response = await POST(
+      new Request("http://localhost/api/reservations/reservation-demo-1/status", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "confirm", reason: "transfer verified" }),
+      }),
+      { params: { id: "reservation-demo-1" } },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({ error: "bungalow_capacity_unavailable" });
+  });
+
   it("marks a confirmed reservation as no_show", async () => {
     const { POST } = await loadRoute();
     const response = await POST(

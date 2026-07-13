@@ -1,20 +1,51 @@
 import { publicBungalows } from './public-site-data';
+import type { PublicSiteLocale } from './public-site-locale';
+import { getPublicRoute } from './public-site-routes';
 import styles from './public-site-theme.module.css';
 
-export function BookingBand() {
+type BookingBandBungalow = {
+  slug: string;
+  bookingRequestBungalowId: string | null;
+  displayName?: string;
+  homeName?: string;
+  name: string;
+};
+
+type BookingBandProps = {
+  locale?: PublicSiteLocale;
+  introTitle?: string;
+  introCopy?: string;
+  requestedGuestsLabel?: string;
+  requestedBungalowLabel?: string;
+  allCategoriesLabel?: string;
+  submitLabel?: string;
+  guestOptions?: string[];
+  bungalows?: readonly BookingBandBungalow[];
+};
+
+export function BookingBand({
+  locale,
+  introTitle = 'Disponibilidad referencial',
+  introCopy = 'Consulta fechas, huéspedes y categoría de bungalow.',
+  requestedGuestsLabel = 'Personas',
+  requestedBungalowLabel = 'Habitacion',
+  allCategoriesLabel = 'Todas las categorias',
+  submitLabel = 'Solicitar disponibilidad',
+  guestOptions = ['2 huespedes', '3 huespedes', '4 huespedes', '5 huespedes'],
+  bungalows = publicBungalows,
+}: BookingBandProps = {}) {
+  const action = locale ? getPublicRoute(locale, 'contact') : '/prototype/public-site/contact';
+
   return (
     <section className={styles.bookingBand} id="booking">
       <div className={styles.bookingIntro}>
-        <strong>Disponibilidad referencial</strong>
-        <p>
-          La disponibilidad es orientativa. La validación final y el pago se coordinan
-          manualmente con Wakaya.
-        </p>
+        <strong>{introTitle}</strong>
+        <p>{introCopy}</p>
       </div>
 
       <form
         className={styles.bookingForm}
-        action="/prototype/public-site/contact"
+        action={action}
         method="get"
       >
         <div className={styles.field}>
@@ -28,29 +59,30 @@ export function BookingBand() {
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="guests">Personas</label>
+          <label htmlFor="guests">{requestedGuestsLabel}</label>
           <select id="guests" name="requestedGuests" defaultValue="2">
-            <option value="2">2 huéspedes</option>
-            <option value="3">3 huéspedes</option>
-            <option value="4">4 huéspedes</option>
-            <option value="5">5 huéspedes</option>
-          </select>
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="category">Habitación</label>
-          <select id="category" name="requestedBungalowType" defaultValue="">
-            <option value="">Todas las categorías</option>
-            {publicBungalows.map((bungalow) => (
-              <option key={bungalow.slug} value={bungalow.bookingRequestBungalowId ?? ""}>
-                {bungalow.homeName ?? bungalow.name}
+            {guestOptions.map((option, index) => (
+              <option key={option} value={String(index + 2)}>
+                {option}
               </option>
             ))}
           </select>
         </div>
 
-        <button className={styles.primaryButton} type="submit">
-          Solicitar disponibilidad
+        <div className={styles.field}>
+          <label htmlFor="category">{requestedBungalowLabel}</label>
+          <select id="category" name="requestedBungalowType" defaultValue="">
+            <option value="">{allCategoriesLabel}</option>
+            {bungalows.map((bungalow) => (
+              <option key={bungalow.slug} value={bungalow.bookingRequestBungalowId ?? ""}>
+                {bungalow.displayName ?? bungalow.homeName ?? bungalow.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button className={`${styles.primaryButton} ${styles.bookingSubmit}`} type="submit">
+          {submitLabel}
         </button>
       </form>
     </section>

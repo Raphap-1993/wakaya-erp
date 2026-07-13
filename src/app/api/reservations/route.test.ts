@@ -193,7 +193,7 @@ describe("POST /api/reservations", () => {
     requirePermissionMock.mockReset();
   });
 
-  it("creates a reservation and blocks provisional occupancy", async () => {
+  it("creates a reservation with the logged user as implicit owner and audit actor", async () => {
     const { POST } = await loadRoute();
     const response = await POST(
       new Request("http://localhost/api/reservations", {
@@ -203,7 +203,6 @@ describe("POST /api/reservations", () => {
           number: "RESERVATION-2026-0200",
           channel: "web",
           bungalowId: "bungalow-matrimonial",
-          responsibleId: "user-reception-3",
           startDate: "2026-07-20",
           endDate: "2026-07-21",
         }),
@@ -213,7 +212,30 @@ describe("POST /api/reservations", () => {
 
     expect(response.status).toBe(201);
     expect(body.reservation.status).toBe("pending_review");
-    expect(body.occupancy).toHaveLength(2);
+    expect(body.reservation.responsibleId).toBe("user-admin-1");
+    expect(body.audit.actorId).toBe("user-admin-1");
+    expect(body.occupancy).toHaveLength(0);
+  });
+
+  it("returns a domain error when the bungalow does not exist in operational persistence", async () => {
+    const { POST } = await loadRoute();
+    const response = await POST(
+      new Request("http://localhost/api/reservations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          number: "RESERVATION-2026-0999",
+          channel: "web",
+          bungalowId: "bungalow-missing",
+          startDate: "2026-07-20",
+          endDate: "2026-07-21",
+        }),
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error).toBe("bungalow_not_found");
   });
 
   it("rejects an invalid reservation payload", async () => {

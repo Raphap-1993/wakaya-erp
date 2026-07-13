@@ -53,62 +53,6 @@ export function MonitorFilters({
         </select>
       </div>
 
-      <div className={styles.filterField}>
-        <label className={styles.fieldLabel} htmlFor="responsibleId">
-          Responsable
-        </label>
-        <input
-          className={styles.input}
-          id="responsibleId"
-          name="responsibleId"
-          value={filters.responsibleId}
-          onChange={(event) => onChange({ ...filters, responsibleId: event.target.value })}
-          placeholder="user-reception-1"
-        />
-      </div>
-
-      <div className={styles.filterField}>
-        <label className={styles.fieldLabel} htmlFor="date">
-          Fecha
-        </label>
-        <input
-          className={styles.input}
-          id="date"
-          name="date"
-          type="date"
-          value={filters.date}
-          onChange={(event) => onChange({ ...filters, date: event.target.value })}
-        />
-      </div>
-
-      <div className={styles.filterField}>
-        <label className={styles.fieldLabel} htmlFor="startDate">
-          Desde
-        </label>
-        <input
-          className={styles.input}
-          id="startDate"
-          name="startDate"
-          type="date"
-          value={filters.startDate}
-          onChange={(event) => onChange({ ...filters, startDate: event.target.value })}
-        />
-      </div>
-
-      <div className={styles.filterField}>
-        <label className={styles.fieldLabel} htmlFor="endDate">
-          Hasta
-        </label>
-        <input
-          className={styles.input}
-          id="endDate"
-          name="endDate"
-          type="date"
-          value={filters.endDate}
-          onChange={(event) => onChange({ ...filters, endDate: event.target.value })}
-        />
-      </div>
-
       <div className={styles.filterActions}>
         <button className={styles.button} type="submit">
           Filtrar

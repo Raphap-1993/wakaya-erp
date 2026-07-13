@@ -1,15 +1,16 @@
-import { notFound, redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { reservationStore } from "@/lib/reservations/store";
-import { authenticate } from "@/middleware/authn";
-import { hasPermission } from "@/lib/rbac";
 import type { ReservationChannel, ReservationStatus } from "@/lib/reservations/types";
 import ReservationsMonitor from "./reservations-monitor";
+import { requireAdminPageAccess } from "../require-admin-page-access";
+import { buildMonitorPermissions } from "./reservations-monitor-shared";
 import {
   buildReservationsMonitorHref,
   type ReservationsMonitorSearchParams,
   normalizeReservationsMonitorQuery,
 } from "./reservations-query";
+
+export const dynamic = "force-dynamic";
 
 const VALID_STATUSES = new Set<ReservationStatus>([
   "pending_review",
@@ -39,21 +40,11 @@ export default async function ReservationsAdminPage({
   searchParams?: ReservationsMonitorSearchParams | Promise<ReservationsMonitorSearchParams>;
 }) {
   const query = normalizeReservationsMonitorQuery((await searchParams) ?? {});
-  const requestHeaders = new Headers();
-  const currentHeaders = await headers();
-  currentHeaders.forEach((value, key) => requestHeaders.set(key, value));
-  const auth = await authenticate(new Request("http://localhost/admin/reservations", { headers: requestHeaders }));
-  if (!auth.authenticated || !hasPermission(auth.roles, "reservation:read")) {
-    notFound();
-  }
+  const auth = await requireAdminPageAccess("/admin/reservations", "reservation:read");
 
   const canonicalFilters = {
     status: toReservationStatus(query.status),
     channel: toReservationChannel(query.channel),
-    responsibleId: query.responsibleId,
-    date: query.date,
-    startDate: query.startDate,
-    endDate: query.endDate,
   };
   const items = await reservationStore.list(canonicalFilters);
   const requestedSelectedId = query.selected ?? null;
@@ -65,6 +56,10 @@ export default async function ReservationsAdminPage({
   if (
     query.status !== canonicalFilters.status ||
     query.channel !== canonicalFilters.channel ||
+    query.responsibleId ||
+    query.date ||
+    query.startDate ||
+    query.endDate ||
     requestedSelectedId !== selectedId
   ) {
     redirect(
@@ -76,5 +71,12 @@ export default async function ReservationsAdminPage({
     );
   }
 
-  return <ReservationsMonitor items={items} selectedId={selectedId} query={query} />;
+  return (
+    <ReservationsMonitor
+      items={items}
+      selectedId={selectedId}
+      query={query}
+      permissions={buildMonitorPermissions(auth.roles)}
+    />
+  );
 }

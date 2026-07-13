@@ -1,5 +1,9 @@
 :root {
   color-scheme: light;
+  --wakaya-font-sans: "Avenir Next", "Inter", "Segoe UI", sans-serif;
+  --font-playfair-display: var(--wakaya-font-sans);
+  --font-jost: var(--wakaya-font-sans);
+  --font-dm-mono: var(--wakaya-font-sans);
   --wakaya-bg: #f7f1e7;
   --wakaya-surface: rgba(255, 252, 247, 0.9);
   --wakaya-text: #17362f;
@@ -9,8 +13,11 @@
   --wakaya-forest: #28473e;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  border-radius: 0 !important;
 }
 
 html,
@@ -20,7 +27,8 @@ body {
   min-height: 100%;
   background: var(--wakaya-bg);
   color: var(--wakaya-text);
-  font-family: "Avenir Next", "Inter", "Segoe UI", sans-serif;
+  font-family: var(--wakaya-font-sans);
+  font-weight: 500;
 }
 
 body > div {
@@ -29,6 +37,21 @@ body > div {
 
 a {
   color: inherit;
+}
+
+a[href],
+button:not(:disabled),
+select,
+summary,
+[role="button"],
+[role="tab"],
+label[for],
+input[type="date"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+input[type="button"] {
+  cursor: pointer;
 }
 
 button,
@@ -55,7 +78,7 @@ textarea {
   margin-bottom: 28px;
   padding: 32px;
   border: 1px solid var(--wakaya-line);
-  border-radius: 28px;
+  border-radius: 0;
   background: var(--wakaya-surface);
   box-shadow: 0 24px 60px rgba(47, 33, 19, 0.08);
 }
@@ -93,7 +116,7 @@ textarea {
   gap: 8px;
   padding: 24px;
   border: 1px solid var(--wakaya-line);
-  border-radius: 24px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 16px 40px rgba(47, 33, 19, 0.06);
   text-decoration: none;

@@ -1,0 +1,116 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background:
+    radial-gradient(circle at top, rgba(196, 152, 64, 0.16), transparent 38%),
+    linear-gradient(180deg, #f8f4ea 0%, #efe7d7 100%);
+}
+
+.card {
+  width: min(100%, 460px);
+  border: 1px solid rgba(28, 52, 37, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 72px rgba(18, 28, 22, 0.12);
+  padding: 32px;
+  font-weight: 500;
+}
+
+.kicker {
+  margin: 0 0 10px;
+  color: #c49840;
+  font-family: var(--wakaya-font-sans);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #0d1b0e;
+  font-family: var(--wakaya-font-sans);
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 0.96;
+}
+
+.lead {
+  margin: 14px 0 0;
+  color: #5a5040;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  color: #5a5040;
+  font-family: var(--wakaya-font-sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.input {
+  min-height: 54px;
+  border: 1px solid rgba(28, 52, 37, 0.16);
+  background: #fff;
+  padding: 0 14px;
+  color: #0d1b0e;
+  font-family: var(--wakaya-font-sans);
+  font-size: 16px;
+}
+
+.button {
+  min-height: 54px;
+  border: 0;
+  background: #1c3425;
+  color: #f9f6ef;
+  font-family: var(--wakaya-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-family: var(--wakaya-font-sans);
+  line-height: 1.6;
+}
+
+.hint {
+  margin-top: 18px;
+  color: #5a5040;
+  font-size: 14px;
+}
+
+.error {
+  padding: 12px 14px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 24px 20px;
+  }
+
+  .title {
+    font-size: 40px;
+  }
+}

@@ -1,5 +1,12 @@
 # Wakaya Admin Shell Normalization Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Unify the entire `/admin` backoffice under one compact shell with a shared sidebar, contextual header, and consistent visual hierarchy for `Reservas`, `Ocupación`, and future modules.

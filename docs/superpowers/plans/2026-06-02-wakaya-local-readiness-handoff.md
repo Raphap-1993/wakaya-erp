@@ -1,5 +1,12 @@
 # Wakaya Local Readiness Handoff
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Fecha: 2026-06-02
 
 ## Objetivo de esta revision
@@ -36,26 +43,26 @@ env PORT=3200 AUTH_DEV_BYPASS=true WAKAYA_RESERVATIONS_DB_PATH=.data/wakaya-rese
 
 Errores detectados:
 
-- [src/app/api/public/reservations/route.ts](/Users/rapha/Projects/wakaya-erp/src/app/api/public/reservations/route.ts:12)
+- [src/app/api/public/reservations/route.ts](../../../src/app/api/public/reservations/route.ts)
   - spread sobre `rawBody` tipado como `unknown`
-- [src/components/public-site/play-header.tsx](/Users/rapha/Projects/wakaya-erp/src/components/public-site/play-header.tsx:41)
+- [src/components/public-site/play-header.tsx](../../../src/components/public-site/play-header.tsx)
   - `Link` con anchors hash no cuadra con typed routes de Next 16
-- [src/lib/i18n.ts](/Users/rapha/Projects/wakaya-erp/src/lib/i18n.ts:9)
+- [src/lib/i18n.ts](../../../src/lib/i18n.ts)
   - depende de `next-intl/server`, pero el paquete no esta instalado ni integrado
-- [src/lib/pii-redact.ts](/Users/rapha/Projects/wakaya-erp/src/lib/pii-redact.ts:23)
+- [src/lib/pii-redact.ts](../../../src/lib/pii-redact.ts)
   - firma del replacer incompatible con el tipo declarado
-- [tests/contract/resource.pact.test.ts](/Users/rapha/Projects/wakaya-erp/tests/contract/resource.pact.test.ts:9)
+- [tests/contract/resource.pact.test.ts](../../../tests/contract/resource.pact.test.ts)
   - matcher `iso8601DateTime` no existe en la version instalada de Pact
 
 ### 2. El flujo del monitor no esta cerrado end-to-end
 
 - La lista del monitor carga bien en `/admin/reservations`.
 - Abrir una fila demo en `/admin/reservations/reservation-demo-1` devuelve `404`.
-- El punto a revisar primero es [src/app/admin/reservations/[id]/page.tsx](/Users/rapha/Projects/wakaya-erp/src/app/admin/reservations/%5Bid%5D/page.tsx:50), porque el lookup no encuentra la reserva aunque la fila existe en la lista.
+- El punto a revisar primero es [src/app/admin/reservations/[id]/page.tsx](../../../src/app/admin/reservations/[id]/page.tsx), porque el lookup no encuentra la reserva aunque la fila existe en la lista.
 
 ### 3. Hay drift documental
 
-- [AI_CONTEXT.md](/Users/rapha/Projects/wakaya-erp/AI_CONTEXT.md:1) todavia describia el repo como si estuviera casi en fase 0.
+- [AI_CONTEXT.md](../../../AI_CONTEXT.md) todavia describia el repo como si estuviera casi en fase 0.
 - El codigo real ya incluye:
   - launcher
   - prototipo publico premium
@@ -67,8 +74,8 @@ Errores detectados:
 ## Señales positivas
 
 - El split de producto ya existe y se entiende:
-  - publico premium en [src/app/prototype/public-site/page.tsx](/Users/rapha/Projects/wakaya-erp/src/app/prototype/public-site/page.tsx:1)
-  - monitor operativo en [src/app/admin/reservations/page.tsx](/Users/rapha/Projects/wakaya-erp/src/app/admin/reservations/page.tsx:1)
+  - publico premium en [src/app/prototype/public-site/page.tsx](../../../src/app/prototype/public-site/page.tsx)
+  - monitor operativo en [src/app/admin/reservations/page.tsx](../../../src/app/admin/reservations/page.tsx)
 - La API interna responde en local:
   - `GET /api/reservations`
 - La API publica crea prereservas:

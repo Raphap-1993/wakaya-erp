@@ -5,7 +5,7 @@
 
 <!-- nav-guided:start -->
 ## Navegacion guiada
-- Anterior: [Plan de pruebas](../fase-6-qa/06.00-plan-pruebas.md)
+- Anterior: [Evidencia local del editor simple y cupos sin bloqueos](../fase-6-qa/06.06-content-workbench-capacity-simplification-local-evidence.md)
 - Siguiente: [Checklist de salida a produccion](07.00-checklist-salida-produccion.md)
 <!-- nav-guided:end -->
 

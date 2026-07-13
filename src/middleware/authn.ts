@@ -9,6 +9,7 @@
 // Alternativa: encapsular en un higher-order handler `withAuth(handler, required)`.
 
 import type { NextRequest } from "next/server";
+import { BACKOFFICE_SESSION_COOKIE } from "@/lib/backoffice-auth/constants";
 import { hasPermission, type Permission } from "@/lib/rbac";
 
 const JWKS_URL = process.env.OIDC_JWKS_URL;
@@ -74,7 +75,43 @@ export interface AuthContext {
   reason?: string;
 }
 
+async function authenticateBackofficeSession(
+  request: NextRequest | Request,
+): Promise<AuthContext | null> {
+  const cookieHeader = getCookieHeader(request);
+  const sessionToken = parseCookieValue(cookieHeader, BACKOFFICE_SESSION_COOKIE);
+  if (!sessionToken) {
+    return null;
+  }
+
+  const { backofficeAuthStore } = await import("@/lib/backoffice-auth/store");
+  const context = await backofficeAuthStore.getSession(sessionToken);
+  if (!context) {
+    return { authenticated: false, roles: [], reason: "invalid_backoffice_session" };
+  }
+
+  return {
+    authenticated: true,
+    subject: context.user.id,
+    roles: context.user.roles,
+    claims: {
+      authMethod: "backoffice_session",
+      email: context.user.email,
+      name: context.user.name,
+      sessionId: context.session.id,
+    },
+  };
+}
+
 export async function authenticate(request: NextRequest | Request): Promise<AuthContext> {
+  const backofficeSession = await authenticateBackofficeSession(request);
+  if (backofficeSession?.authenticated) {
+    return backofficeSession;
+  }
+  if (backofficeSession && !backofficeSession.authenticated) {
+    return backofficeSession;
+  }
+
   if (process.env.AUTH_DEV_BYPASS === "true" && process.env.NODE_ENV !== "production") {
     return {
       authenticated: true,

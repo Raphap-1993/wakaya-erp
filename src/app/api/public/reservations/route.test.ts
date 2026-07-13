@@ -22,7 +22,7 @@ describe("POST /api/public/reservations", () => {
     const body = await response.json();
 
     expect(response.status).toBe(201);
-    expect(body.bookingRequest.status).toBe("awaiting_initial_email");
+    expect(body.bookingRequest.status).toBe("awaiting_transfer");
     expect(body.bookingRequest.publicRef).toMatch(/^WR-\d{4}-\d{4}$/);
     expect(body.email.status).toBe("queued");
   });

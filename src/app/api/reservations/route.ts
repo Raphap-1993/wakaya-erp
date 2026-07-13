@@ -47,7 +47,8 @@ export async function POST(request: Request) {
 
     const result = await reservationStore.create({
       ...parsed,
-      responsibleId: parsed.responsibleId ?? auth.subject ?? null,
+      actorId: auth.subject ?? "system",
+      responsibleId: auth.subject ?? null,
     });
 
     return NextResponse.json(result, { status: 201 });

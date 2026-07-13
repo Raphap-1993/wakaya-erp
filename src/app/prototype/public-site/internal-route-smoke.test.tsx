@@ -15,21 +15,21 @@ import PublicSiteContactPage from './contact/page';
 describe('PublicSiteInternalRoutes', () => {
   it('renders the current public routes inside the shared shell', async () => {
     const routes = [
-      { heading: 'Un encuentro con lo mágico', page: <PublicSitePrototypePage /> },
-      { heading: 'Acerca de Wakaya', page: <PublicSiteAboutPage /> },
-      { heading: 'Resultados de búsqueda', page: <PublicSiteBungalowsPage /> },
-      { heading: 'Servicios', page: <PublicSiteServicesPage /> },
-      { heading: 'Eventos', page: <PublicSiteEventsPage /> },
-      { heading: 'Galería', page: <PublicSiteGalleryPage /> },
-      { heading: 'Publicaciones', page: <PublicSitePublicationsPage /> },
-      { heading: 'Contacto', page: await PublicSiteContactPage({}) },
+      { heading: 'Wakaya Ecolodge', page: await PublicSitePrototypePage() },
+      { heading: 'Nosotros', page: await PublicSiteAboutPage() },
+      { heading: 'Nuestros Bungalows', page: await PublicSiteBungalowsPage({}) },
+      { heading: 'Servicios', page: await PublicSiteServicesPage() },
+      { heading: 'Eventos', page: await PublicSiteEventsPage() },
+      { heading: 'Galería', page: await PublicSiteGalleryPage() },
+      { heading: 'Publicaciones', page: await PublicSitePublicationsPage() },
+      { heading: 'Contáctanos', page: await PublicSiteContactPage({}) },
     ];
 
     for (const route of routes) {
       const html = renderToStaticMarkup(
-        <PublicSiteLayout>
-          {route.page}
-        </PublicSiteLayout>,
+        await PublicSiteLayout({
+          children: route.page,
+        }),
       );
 
       expect(html).toContain(route.heading);
@@ -38,30 +38,25 @@ describe('PublicSiteInternalRoutes', () => {
     }
   });
 
-  it('renders home calls to action as real navigation links', () => {
+  it('renders home calls to action as real navigation links', async () => {
     const html = renderToStaticMarkup(
-      <PublicSiteLayout>
-        <PublicSitePrototypePage />
-      </PublicSiteLayout>,
+      await PublicSiteLayout({
+        children: await PublicSitePrototypePage(),
+      }),
     );
 
-    expect(html).toContain('href="/prototype/public-site/bungalows">Consultar disponibilidad</a>');
-    expect(html).toContain('href="/prototype/public-site/bungalows">Ver bungalows</a>');
-    expect(html).toContain(
-      'href="/prototype/public-site/bungalows?category=bungalow-familiar">Ver disponibilidad</a>',
-    );
-    expect(html).toContain(
-      'href="/prototype/public-site/publications">Leer más</a>',
-    );
-    expect(html).toContain(
-      'href="/prototype/public-site/contact">Solicitar novedades</a>',
-    );
+    expect(html).toContain('href="/es/contact">Reservar ahora</a>');
+    expect(html).toContain('href="/es/services">Explorar experiencias</a>');
+    expect(html).toContain('href="/es/about">Conoce nuestra historia</a>');
+    expect(html).toContain('href="/es/bungalows">Ver todos</a>');
+    expect(html).toContain('href="/es/services">Ver todas</a>');
+    expect(html).toContain('href="/es/contact">Solicitar reserva</a>');
   });
 
   it('renders the bungalow detail route inside the shared shell', async () => {
     const html = renderToStaticMarkup(
-      <PublicSiteLayout>
-        {await PublicSiteBungalowDetailPage({
+      await PublicSiteLayout({
+        children: await PublicSiteBungalowDetailPage({
           params: Promise.resolve({
             slug: 'bungalow-familiar',
           }),
@@ -71,20 +66,21 @@ describe('PublicSiteInternalRoutes', () => {
             checkOut: '2026-07-12',
             guests: '4',
           }),
-        })}
-      </PublicSiteLayout>,
+        }),
+      }),
     );
 
     expect(html).toContain('Bungalow Familiar');
     expect(html).toContain('Navegación pública Wakaya');
-    expect(html).toContain('href="/prototype/public-site/bungalows?category=bungalow-familiar');
+    expect(html).toContain('href="/es/bungalows?category=bungalow-familiar');
     expect(html).toContain('<footer');
   });
 
   it('routes the public contact flow to booking requests language', async () => {
     const html = renderToStaticMarkup(await PublicSiteContactPage({}));
 
-    expect(html).toContain('solicitud');
-    expect(html).toContain('transferencia');
+    expect(html).toContain('Contáctanos');
+    expect(html).toContain('action="/api/public/booking-requests"');
+    expect(html).toContain('Enviar solicitud');
   });
 });

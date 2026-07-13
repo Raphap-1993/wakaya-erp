@@ -1,0 +1,332 @@
+.page {
+  display: grid;
+  gap: 24px;
+  padding: 24px;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+}
+
+.eyebrow,
+.tabMeta {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title,
+.dialogTitle {
+  margin: 0;
+  color: #102033;
+}
+
+.lead {
+  margin: 0;
+  color: #465b70;
+  line-height: 1.6;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.tabButton,
+.tabButtonActive,
+.ghostButton,
+.primaryButton,
+.secondaryButton {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(182, 209, 229, 0.72);
+  background: #fff;
+  color: #163854;
+  font: inherit;
+}
+
+.tabButtonActive,
+.primaryButton {
+  background: linear-gradient(180deg, rgba(228, 242, 255, 0.96), rgba(216, 237, 255, 0.92));
+  border-color: rgba(79, 150, 220, 0.36);
+}
+
+.workspace {
+  display: grid;
+  gap: 20px;
+}
+
+.overview {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(182, 209, 229, 0.72);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 28px rgba(36, 69, 98, 0.06);
+}
+
+.overviewHeader h2 {
+  margin: 0;
+  color: #102033;
+  font-size: 1.35rem;
+}
+
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.moduleCard {
+  display: grid;
+  gap: 7px;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid rgba(182, 209, 229, 0.72);
+  background: rgba(248, 252, 255, 0.96);
+  color: #163854;
+  text-decoration: none;
+}
+
+.moduleCard:hover,
+.moduleCard:focus-visible {
+  border-color: rgba(79, 150, 220, 0.52);
+  background: linear-gradient(180deg, rgba(232, 244, 255, 0.98), rgba(244, 250, 255, 0.96));
+  outline: none;
+}
+
+.moduleName {
+  color: #64748b;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.moduleMeta {
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.panel,
+.editorCard,
+.dialogCard {
+  border: 1px solid rgba(182, 209, 229, 0.72);
+  background: rgba(255, 255, 255, 0.96);
+  padding: 18px;
+  box-shadow: 0 14px 28px rgba(36, 69, 98, 0.06);
+}
+
+.editorStack,
+.sectionStack {
+  display: grid;
+  gap: 18px;
+}
+
+.sectionBlock {
+  display: grid;
+  gap: 14px;
+}
+
+.advancedSection > summary {
+  color: #163854;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.advancedSection[open] > summary {
+  margin-bottom: 18px;
+}
+
+.sectionHeaderLine {
+  display: grid;
+  gap: 4px;
+}
+
+.sectionHeaderLine strong {
+  color: #102033;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.listItem,
+.listItemActive {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  text-align: left;
+  border: 1px solid rgba(182, 209, 229, 0.72);
+  background: rgba(248, 252, 255, 0.96);
+  color: #163854;
+}
+
+.listItemActive {
+  border-color: rgba(79, 150, 220, 0.36);
+  background: linear-gradient(180deg, rgba(228, 242, 255, 0.96), rgba(216, 237, 255, 0.92));
+}
+
+.listItemTitle {
+  font-weight: 700;
+}
+
+.listItemMeta {
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field,
+.fieldFull {
+  display: grid;
+  gap: 6px;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.field input,
+.field textarea,
+.field select,
+.fieldFull input,
+.fieldFull textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid rgba(182, 209, 229, 0.72);
+  background: #fff;
+  color: #102033;
+  font: inherit;
+}
+
+.field textarea,
+.fieldFull textarea {
+  min-height: 96px;
+}
+
+.localeTabs,
+.inlineActions,
+.cropStatusRow,
+.dialogTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.previewCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed rgba(182, 209, 229, 0.9);
+  background: rgba(248, 252, 255, 0.92);
+}
+
+.previewImage {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+}
+
+.assetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.statusChipReady,
+.statusChipPending {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.statusChipReady {
+  background: rgba(226, 245, 233, 0.96);
+  color: #20563a;
+}
+
+.statusChipPending {
+  background: rgba(254, 242, 224, 0.98);
+  color: #7c4a14;
+}
+
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 24, 38, 0.52);
+  z-index: 50;
+}
+
+.dialogCard {
+  width: min(920px, 100%);
+  display: grid;
+  gap: 16px;
+}
+
+.dialogHeader,
+.dialogFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.cropStage {
+  position: relative;
+  min-height: 360px;
+  background: #0b1420;
+}
+
+.cropStage :global(.reactEasyCrop_Container) {
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 960px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

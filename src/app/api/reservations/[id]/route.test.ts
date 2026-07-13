@@ -44,8 +44,9 @@ describe("PUT /api/reservations/[id]", () => {
     requirePermissionMock.mockReset();
   });
 
-  it("updates the reservation detail", async () => {
+  it("updates editable fields, preserves the original number and keeps the current responsible owner", async () => {
     const { PUT, GET } = await loadRoute();
+    const { GET: getAudit } = await import("./audit/route");
     const response = await PUT(
       new Request("http://localhost/api/reservations/reservation-demo-1", {
         method: "PUT",
@@ -54,7 +55,6 @@ describe("PUT /api/reservations/[id]", () => {
           number: "RESERVATION-2026-0099",
           channel: "web",
           bungalowId: "bungalow-family",
-          responsibleId: "user-reception-9",
           startDate: "2026-06-20",
           endDate: "2026-06-22",
           amountTotalCents: 48000,
@@ -66,8 +66,9 @@ describe("PUT /api/reservations/[id]", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.reservation.number).toBe("RESERVATION-2026-0099");
+    expect(body.reservation.number).toBe("RESERVATION-2026-0001");
     expect(body.reservation.bungalowId).toBe("bungalow-family");
+    expect(body.reservation.responsibleId).toBe("user-reception-1");
     expect(body.reservation.startDate).toBe("2026-06-20");
     expect(body.reservation.paymentStatus).toBe("partial");
 
@@ -76,6 +77,16 @@ describe("PUT /api/reservations/[id]", () => {
       { params: { id: "reservation-demo-1" } },
     );
     const detailBody = await detailResponse.json();
-    expect(detailBody.reservation.number).toBe("RESERVATION-2026-0099");
+    expect(detailBody.reservation.number).toBe("RESERVATION-2026-0001");
+    expect(detailBody.reservation.responsibleId).toBe("user-reception-1");
+
+    const auditResponse = await getAudit(
+      new Request("http://localhost/api/reservations/reservation-demo-1/audit"),
+      { params: { id: "reservation-demo-1" } },
+    );
+    const auditBody = await auditResponse.json();
+    expect(auditResponse.status).toBe(200);
+    expect(auditBody.items[0].actorId).toBe("user-admin-1");
+    expect(auditBody.items[0].reason).toBe("manual reservation edit");
   });
 });

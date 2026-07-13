@@ -1,5 +1,12 @@
 # Wakaya Public Home Parador Implementation Plan
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reemplazar la home actual del prototipo HTML5 de `002-public-site` por una home basada casi directamente en `Parador`, traducida a Wakaya por color, fotografia, copy y oferta real, y dejar la documentacion canonica alineada.

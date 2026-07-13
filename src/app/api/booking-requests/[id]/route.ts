@@ -1,5 +1,6 @@
 import { requirePermission } from "@/middleware/authn";
-import { failureResponse, jsonResponse } from "@/lib/reservations/http";
+import { failureResponse, jsonResponse, readJsonBody } from "@/lib/reservations/http";
+import { bookingRequestUpdateSchema } from "@/lib/reservations/schemas";
 import { reservationStore } from "@/lib/reservations/store";
 
 function isResponse(value: Response | Awaited<ReturnType<typeof requirePermission>>): value is Response {
@@ -19,12 +20,37 @@ export async function GET(
   if (isResponse(auth)) return auth;
 
   try {
-    const bookingRequest = await reservationStore.getBookingRequest(await readId(context));
-    if (!bookingRequest) {
+    const threadView = await reservationStore.getBookingRequestThreadView(await readId(context));
+    if (!threadView) {
       return jsonResponse({ error: "booking_request_not_found" }, 404);
     }
 
-    return jsonResponse({ bookingRequest });
+    return jsonResponse(threadView);
+  } catch (error) {
+    return failureResponse(error);
+  }
+}
+
+export async function PUT(
+  request: Request,
+  context: { params: { id: string } | Promise<{ id: string }> },
+) {
+  const auth = await requirePermission(request, "reservation:write");
+  if (isResponse(auth)) return auth;
+
+  try {
+    const payload = bookingRequestUpdateSchema.parse(await readJsonBody<unknown>(request));
+    const result = await reservationStore.updateBookingRequest(await readId(context), {
+      actorId: payload.actorId ?? auth.subject ?? "system",
+      requestedCheckIn: payload.requestedCheckIn,
+      requestedCheckOut: payload.requestedCheckOut,
+      requestedBungalowType: payload.requestedBungalowType ?? null,
+      requestedExperienceId: payload.requestedExperienceId ?? null,
+      notes: payload.notes ?? null,
+      reason: payload.reason,
+    });
+
+    return jsonResponse(result, 200);
   } catch (error) {
     return failureResponse(error);
   }

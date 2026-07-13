@@ -4,7 +4,6 @@ export type ReservationEditorValues = {
   number: string;
   channel: "web" | "ota";
   bungalowId: string;
-  responsibleId: string;
   startDate: string;
   endDate: string;
   amountTotal: string;
@@ -24,7 +23,6 @@ export function createReservationEditorValues(
       number: "",
       channel: "web",
       bungalowId: "",
-      responsibleId: "",
       startDate: "",
       endDate: "",
       amountTotal: "",
@@ -36,7 +34,6 @@ export function createReservationEditorValues(
     number: reservation.number,
     channel: reservation.channel,
     bungalowId: reservation.bungalowId ?? "",
-    responsibleId: reservation.responsibleId ?? "",
     startDate: reservation.startDate,
     endDate: reservation.endDate,
     amountTotal: centsToInputValue(reservation.amountTotalCents),

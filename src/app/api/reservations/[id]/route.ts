@@ -1,6 +1,6 @@
 import { requirePermission } from "@/middleware/authn";
 import { failureResponse, jsonResponse, readJsonBody } from "@/lib/reservations/http";
-import { reservationCreateSchema } from "@/lib/reservations/schemas";
+import { reservationUpdateSchema } from "@/lib/reservations/schemas";
 import { reservationStore } from "@/lib/reservations/store";
 
 function isResponse(value: Response | Awaited<ReturnType<typeof requirePermission>>): value is Response {
@@ -42,10 +42,9 @@ export async function PUT(
   try {
     const id = await readId(context);
     const rawBody = await readJsonBody<unknown>(request);
-    const parsed = reservationCreateSchema.parse(rawBody);
+    const parsed = reservationUpdateSchema.parse(rawBody);
     const reservation = await reservationStore.update(id, {
       ...parsed,
-      responsibleId: parsed.responsibleId ?? auth.subject ?? null,
       actorId: auth.subject ?? "system",
       reason: "manual reservation edit",
     });

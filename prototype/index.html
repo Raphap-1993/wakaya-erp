@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case Management — Hub de Prototipos</title>
+<title>Wakaya ERP — Hub de Prototipos</title>
 <style>
   :root {
     --brand: #2563EB;
@@ -187,23 +187,23 @@
 <!-- ── 1. BANNER ── -->
 <div class="banner">
   <span class="banner-tag spdd">◆ SPDD HUB</span>
-  <span class="banner-tag info">Case Management · 2 specs · 2 prototipos</span>
-  <span class="banner-tag ok">✓ TODOS VALIDADOS</span>
-  <span class="banner-tag date">2026-06-05</span>
+  <span class="banner-tag info">Wakaya ERP · 5 specs · 4 prototipos</span>
+  <span class="banner-tag warn">⏳ 3 validaciones humanas pendientes</span>
+  <span class="banner-tag date">2026-07-10</span>
 </div>
 
 <!-- ── 2. HERO ── -->
 <section class="hero">
   <div class="container">
     <div class="hero-eyebrow">Spec-Prototype-Driven Development</div>
-    <h1 class="hero-title">Case Management</h1>
+    <h1 class="hero-title">Wakaya ERP</h1>
     <p class="hero-subtitle">Hub de Prototipos — Navegación End-to-End</p>
-    <p class="hero-desc">Centro de navegación para todos los prototipos HTML5 del producto. Cada spec es una vertical funcional completa. Abre cualquier prototipo para validar flujos y diseño antes de implementar.</p>
+    <p class="hero-desc">Centro de navegación para los prototipos HTML5 de reservas, sitio público y backoffice Wakaya. Cada spec representa una vertical funcional lista para validación antes de implementación productiva.</p>
     <div class="hero-stats">
-      <div class="stat"><span class="stat-num">2</span><span class="stat-label">Specs</span></div>
-      <div class="stat"><span class="stat-num">2</span><span class="stat-label">Prototipos HTML5</span></div>
-      <div class="stat"><span class="stat-num">3</span><span class="stat-label">Actores</span></div>
-      <div class="stat"><span class="stat-num">3</span><span class="stat-label">Flujos cubiertos</span></div>
+      <div class="stat"><span class="stat-num">5</span><span class="stat-label">Specs</span></div>
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Prototipos HTML5</span></div>
+      <div class="stat"><span class="stat-num">5</span><span class="stat-label">Actores</span></div>
+      <div class="stat"><span class="stat-num">5</span><span class="stat-label">Flujos cubiertos</span></div>
       <div class="stat"><span class="stat-num">0</span><span class="stat-label">Backend real</span></div>
     </div>
   </div>
@@ -218,7 +218,7 @@
     <div class="journey-wrap">
       <!-- @auto:start name=journeys -->
       <div class="journey-row">
-        <div class="journey-actor-label"><div class="actor-pill">👷 OPERADOR DE RESERVAS</div></div>
+        <div class="journey-actor-label"><div class="actor-pill">👤 RECEPCIÓN OPERANDO LLEGADAS</div></div>
         <div class="journey-steps">
         <a class="j-node" href="../specs/001-reservations/prototype-html5/index.html?from=hub&demo-mode=true&role=default" target="_blank" style="--card-clr:hsl(222 55% 38%)">
           <span class="j-num">001</span>
@@ -227,7 +227,16 @@
         </div>
       </div>
       <div class="journey-row">
-        <div class="journey-actor-label"><div class="actor-pill">👤 RECEPCION CON PERMISOS RBAC.</div></div>
+        <div class="journey-actor-label"><div class="actor-pill">👤 SALIDAS</div></div>
+        <div class="journey-steps">
+        <a class="j-node" href="../specs/001-reservations/prototype-html5/index.html?from=hub&demo-mode=true&role=default" target="_blank" style="--card-clr:hsl(222 55% 38%)">
+          <span class="j-num">001</span>
+          <span class="j-name">Reservations</span>
+        </a>
+        </div>
+      </div>
+      <div class="journey-row">
+        <div class="journey-actor-label"><div class="actor-pill">👤 ASIGNACIONES DE BUNGALOW DÍA A DÍA.</div></div>
         <div class="journey-steps">
         <a class="j-node" href="../specs/001-reservations/prototype-html5/index.html?from=hub&demo-mode=true&role=default" target="_blank" style="--card-clr:hsl(222 55% 38%)">
           <span class="j-num">001</span>
@@ -241,6 +250,15 @@
         <a class="j-node" href="../specs/002-public-site/prototype-html5/index.html?from=hub&demo-mode=true&role=default" target="_blank" style="--card-clr:hsl(222 55% 44%)">
           <span class="j-num">002</span>
           <span class="j-name">Public Site</span>
+        </a>
+        </div>
+      </div>
+      <div class="journey-row">
+        <div class="journey-actor-label"><div class="actor-pill">✏️ EDITOR DE CONTENIDO CON PERMISO `CONTENT:WRITE`.</div></div>
+        <div class="journey-steps">
+        <a class="j-node" href="../specs/005-home-content-management/prototype-html5/index.html?from=hub&demo-mode=true&role=default" target="_blank" style="--card-clr:hsl(222 55% 38%)">
+          <span class="j-num">005</span>
+          <span class="j-name">Home Content Management</span>
         </a>
         </div>
       </div>
@@ -271,7 +289,7 @@
         <li><span class="inv-icon">🔴</span>RF-04: src/lib/reservations/state-machine.ts, src/lib/res</li>
         </ul>
         <div class="card-bottom">
-          <div class="actor-chips"><span class="actor-chip">👷 OPERADOR DE RESERVAS</span><span class="actor-chip">👤 RECEPCION CON PERMISOS RBAC.</span></div>
+          <div class="actor-chips"><span class="actor-chip">👤 RECEPCIÓN OPERANDO LLEGADAS</span><span class="actor-chip">👤 SALIDAS</span><span class="actor-chip">👤 ASIGNACIONES DE BUNGALOW DÍA A DÍA.</span></div>
           <a class="open-btn" href="../specs/001-reservations/prototype-html5/index.html?from=hub&demo-mode=true" target="_blank">Abrir →</a>
         </div>
       </div>
@@ -293,6 +311,50 @@
           <a class="open-btn" href="../specs/002-public-site/prototype-html5/index.html?from=hub&demo-mode=true" target="_blank">Abrir →</a>
         </div>
       </div>
+      <div class="spec-card" style="--card-clr:hsl(222 55% 50%)">
+        <div class="card-top">
+          <span class="spec-num-badge">SPEC 003</span>
+          <span class="status-pill pendiente">⏳ pendiente</span>
+        </div>
+        <h3 class="spec-title">Guest Trust Layer</h3>
+        <p class="spec-desc">Agregar una capa pública de confianza y un flujo formal de reclamos online para Wakaya Ecolodge, con continuidad interna en el back office.</p>
+        <ul class="invariants">
+        <li><span class="inv-icon">🔴</span>RF-01: src/components/public-site/play-footer.tsx</li>
+        <li><span class="inv-icon">🔴</span>RF-02: src/app/[locale]/policies/page.tsx</li>
+        <li><span class="inv-icon">🔴</span>RF-03: src/app/[locale]/pet-friendly/page.tsx</li>
+        <li><span class="inv-icon">🔴</span>RF-04: src/app/api/public/complaints/route.ts, src/compon</li>
+        </ul>
+        <div class="card-bottom">
+          <div class="actor-chips"></div>
+          <span class="open-btn" style="opacity:0.5;cursor:not-allowed">Pendiente</span>
+        </div>
+      </div>
+      <div class="spec-card" style="--card-clr:hsl(222 55% 56%)">
+        <div class="card-top">
+          <span class="spec-num-badge">SPEC 004</span>
+          <span class="status-pill pendiente">⏳ pendiente</span>
+        </div>
+        <h3 class="spec-title">Bungalow Backoffice Media</h3>
+        <p class="spec-desc">Permitir que backoffice administre bungalows con una experiencia más ordenada, una zona de imágenes fácil de reemplazar y una optimización automática de media apta para la web pública.</p>
+
+        <div class="card-bottom">
+          <div class="actor-chips"></div>
+          <a class="open-btn" href="../specs/004-bungalow-backoffice-media/prototype-html5/index.html?from=hub&demo-mode=true" target="_blank">Abrir →</a>
+        </div>
+      </div>
+      <div class="spec-card" style="--card-clr:hsl(222 55% 38%)">
+        <div class="card-top">
+          <span class="spec-num-badge">SPEC 005</span>
+          <span class="status-pill pendiente">⏳ pendiente</span>
+        </div>
+        <h3 class="spec-title">Home Content Management</h3>
+        <p class="spec-desc">Permitir que backoffice administre el home publico de Wakaya desde un editor estructurado, bilingue y seguro, con publicacion inmediata y sin romper la logica existente del sitio.</p>
+
+        <div class="card-bottom">
+          <div class="actor-chips"><span class="actor-chip">✏️ EDITOR DE CONTENIDO CON PERMISO `CONTENT:WRITE`.</span></div>
+          <a class="open-btn" href="../specs/005-home-content-management/prototype-html5/index.html?from=hub&demo-mode=true" target="_blank">Abrir →</a>
+        </div>
+      </div>
       <!-- @auto:end -->
     </div>
   </div>
@@ -307,15 +369,22 @@
     <div class="actors-grid">
       <!-- @auto:start name=actors -->
       <div class="actor-card">
-        <div class="actor-emoji">👷</div>
-        <div class="actor-name">OPERADOR DE RESERVAS</div>
+        <div class="actor-emoji">👤</div>
+        <div class="actor-name">RECEPCIÓN OPERANDO LLEGADAS</div>
         <div class="actor-role">1 spec</div>
         <div class="actor-desc">Toca 1 vertical del producto. Permitir que recepcion y operaciones gestionen reservas con trazabilidad, asigna</div>
         <div class="actor-spec-tags"><span class="spec-tag">001</span></div>
       </div>
       <div class="actor-card">
         <div class="actor-emoji">👤</div>
-        <div class="actor-name">RECEPCION CON PERMISOS RBAC.</div>
+        <div class="actor-name">SALIDAS</div>
+        <div class="actor-role">1 spec</div>
+        <div class="actor-desc">Toca 1 vertical del producto. Permitir que recepcion y operaciones gestionen reservas con trazabilidad, asigna</div>
+        <div class="actor-spec-tags"><span class="spec-tag">001</span></div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-emoji">👤</div>
+        <div class="actor-name">ASIGNACIONES DE BUNGALOW DÍA A DÍA.</div>
         <div class="actor-role">1 spec</div>
         <div class="actor-desc">Toca 1 vertical del producto. Permitir que recepcion y operaciones gestionen reservas con trazabilidad, asigna</div>
         <div class="actor-spec-tags"><span class="spec-tag">001</span></div>
@@ -326,6 +395,13 @@
         <div class="actor-role">1 spec</div>
         <div class="actor-desc">Toca 1 vertical del producto. Definir la experiencia publica premium de Wakaya Ecolodge para captar interes, m</div>
         <div class="actor-spec-tags"><span class="spec-tag">002</span></div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-emoji">✏️</div>
+        <div class="actor-name">EDITOR DE CONTENIDO CON PERMISO `CONTENT:WRITE`.</div>
+        <div class="actor-role">1 spec</div>
+        <div class="actor-desc">Toca 1 vertical del producto. Permitir que backoffice administre el home publico de Wakaya desde un editor est</div>
+        <div class="actor-spec-tags"><span class="spec-tag">005</span></div>
       </div>
       <!-- @auto:end -->
     </div>
@@ -380,6 +456,42 @@
             <td><span class="ok">✓</span></td>
             <td><span class="cov-status val">Validado</span></td>
           </tr>
+          <tr>
+            <td><div class="row-num"><div class="dot" style="background:hsl(222 55% 50%)"></div><a class="sp-link" href="../specs/003-guest-trust-layer/" target="_blank">003</a></div></td>
+            <td>Guest Trust Layer</td>
+            <td><span class="missing">✗</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="cov-status pend">Pendiente</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-num"><div class="dot" style="background:hsl(222 55% 56%)"></div><a class="sp-link" href="../specs/004-bungalow-backoffice-media/" target="_blank">004</a></div></td>
+            <td>Bungalow Backoffice Media</td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="cov-status pend">Pendiente</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-num"><div class="dot" style="background:hsl(222 55% 38%)"></div><a class="sp-link" href="../specs/005-home-content-management/" target="_blank">005</a></div></td>
+            <td>Home Content Management</td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="ok">✓</span></td>
+            <td><span class="cov-status pend">Pendiente</span></td>
+          </tr>
         </tbody>
       </table>
       <!-- @auto:end -->
@@ -398,8 +510,8 @@
       <!-- @auto:start name=decisions -->
       <ul>
         <li>Politica de simulacion: hub conserva banner; prototipos individuales NO (regla v12.20).</li>
-        <li>Goldens nivel 3 son piso de calidad: los prototipos se calibran contra ejemplos/fase-2-ux-ui/prototype-html5-golden/.</li>
-        <li>Auto-rating obligatorio (generar-prototipo-html5-ejecutable.md) antes de declarar un prototipo listo.</li>
+        <li>Goldens nivel 3 son piso de calidad.</li>
+        <li>Auto-rating obligatorio antes de declarar un prototipo listo.</li>
       </ul>
       <!-- @auto:end -->
     </div>
@@ -416,6 +528,9 @@
       <!-- @auto:start name=doclinks -->
       <a class="doc-link" href="../specs/001-reservations/"><span class="icon">📁</span>001 — Reservations</a>
       <a class="doc-link" href="../specs/002-public-site/"><span class="icon">📁</span>002 — Public Site</a>
+      <a class="doc-link" href="../specs/003-guest-trust-layer/"><span class="icon">📁</span>003 — Guest Trust Layer</a>
+      <a class="doc-link" href="../specs/004-bungalow-backoffice-media/"><span class="icon">📁</span>004 — Bungalow Backoffice Media</a>
+      <a class="doc-link" href="../specs/005-home-content-management/"><span class="icon">📁</span>005 — Home Content Management</a>
       <!-- @auto:end -->
     </div>
   </div>

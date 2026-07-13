@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wakaya Backoffice Bungalow Media Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eef4fa;
+        --surface: rgba(255, 255, 255, 0.94);
+        --ink: #102033;
+        --muted: #5d7087;
+        --line: rgba(190, 203, 220, 0.9);
+        --brand: #1f4e79;
+        --brand-soft: #e7f1fb;
+        --success: #d9f5e7;
+        --success-ink: #16643d;
+        --warning: #fff2cc;
+        --danger: #b42318;
+        --danger-soft: #fee4e2;
+        --focus: #72aee6;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "SF Pro Display", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(31, 78, 121, 0.16), transparent 28%),
+          linear-gradient(180deg, #f7fbff, var(--bg));
+        color: var(--ink);
+      }
+
+      .page {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 28px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .bar, .card {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--surface);
+        box-shadow: 0 20px 40px rgba(16, 32, 51, 0.08);
+      }
+
+      .bar {
+        position: sticky;
+        top: 18px;
+        z-index: 2;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 20px;
+      }
+
+      .title {
+        display: grid;
+        gap: 8px;
+      }
+
+      .eyebrow, .meta, .label {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.05em; }
+      .chips, .actions, .tabs { display: flex; flex-wrap: wrap; gap: 10px; }
+      button { font: inherit; cursor: pointer; }
+      .chip, .tab, .button, .ghost {
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-weight: 700;
+        border: 1px solid var(--line);
+      }
+
+      .chip.success { background: var(--success); }
+      .chip.info { background: var(--brand-soft); color: var(--brand); }
+      .tab.active, .button {
+        background: linear-gradient(135deg, var(--brand), #163a5c);
+        color: #fff;
+        border: none;
+      }
+      .tab { background: #f4f8fc; color: var(--muted); }
+      .ghost { background: #fff; color: var(--brand); }
+      .tab:focus-visible, .button:focus-visible, .ghost:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+        gap: 18px;
+      }
+
+      .stack { display: grid; gap: 18px; }
+      .card { padding: 18px; }
+      .card header { display: grid; gap: 6px; margin-bottom: 16px; }
+      .copy { color: var(--muted); line-height: 1.55; }
+      .view-panel[hidden] { display: none; }
+
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field.full { grid-column: 1 / -1; }
+      .input {
+        margin-top: 6px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #fff;
+        min-height: 48px;
+      }
+
+      .media-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 16px;
+      }
+
+      .hero-preview {
+        min-height: 280px;
+        border-radius: 20px;
+        background:
+          linear-gradient(0deg, rgba(15, 23, 42, 0.28), rgba(15, 23, 42, 0.12)),
+          url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80") center/cover;
+        display: flex;
+        align-items: end;
+        padding: 18px;
+        color: #fff;
+      }
+
+      .thumbs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .thumb {
+        min-height: 124px;
+        border-radius: 18px;
+        background:
+          linear-gradient(0deg, rgba(16, 32, 51, 0.34), rgba(16, 32, 51, 0.08)),
+          linear-gradient(135deg, #c6d8ea, #eef4fa);
+        padding: 14px;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .thumb small { font-weight: 700; letter-spacing: 0.04em; }
+      .small-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .small-actions span {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .state-banner {
+        display: grid;
+        gap: 6px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .state-banner[data-state="loading"] { background: var(--warning); color: #775b00; }
+      .state-banner[data-state="empty"] { background: #f7fafc; color: var(--muted); }
+      .state-banner[data-state="error"] { background: var(--danger-soft); color: var(--danger); }
+      .state-banner[data-state="success"] { background: var(--success); color: var(--success-ink); }
+
+      .state-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .state-actions button {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .language-panel {
+        margin-top: 16px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fff;
+      }
+
+      .language-panel[hidden] { display: none; }
+      .empty-copy { color: var(--muted); font-style: italic; }
+
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 5;
+        max-width: min(380px, calc(100vw - 32px));
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: var(--ink);
+        color: #fff;
+        box-shadow: 0 20px 40px rgba(16, 32, 51, 0.22);
+        opacity: 0;
+        transform: translateY(12px);
+        pointer-events: none;
+        transition: opacity 160ms ease, transform 160ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .aside {
+        display: grid;
+        gap: 18px;
+        align-self: start;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .stat {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px;
+        background: linear-gradient(180deg, #fff, #eef5fb);
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 6px;
+        font-size: 1.35rem;
+      }
+
+      .notice {
+        padding: 14px;
+        border-radius: 16px;
+        background: #f7fafc;
+        border: 1px dashed var(--line);
+        color: var(--muted);
+      }
+
+      @media (max-width: 960px) {
+        .layout, .media-grid { grid-template-columns: 1fr; }
+        .fields, .stat-grid, .thumbs { grid-template-columns: 1fr; }
+        .page { padding: 16px; }
+      }
+
+      @media (max-width: 560px) {
+        .bar { position: static; }
+        .tabs, .actions { display: grid; grid-template-columns: 1fr; }
+        .state-actions { grid-template-columns: 1fr; }
+        .toast { right: 16px; bottom: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="bar">
+        <div class="title">
+          <span class="eyebrow">Wakaya · bungalows</span>
+          <h1>Bungalow Doble</h1>
+          <div class="chips">
+            <span class="chip success">Activo para asignación</span>
+            <span class="chip info">Visible en home</span>
+          </div>
+          <a class="meta" href="../../../prototype/index.html" data-hub-link="prototype-hub">← Hub del producto</a>
+        </div>
+        <div class="stack" style="gap: 12px; align-items: end;">
+          <div class="tabs">
+            <button class="tab active" type="button" data-tab-control data-target="operation" aria-selected="true">Operación</button>
+            <button class="tab" type="button" data-tab-control data-target="public" aria-selected="false">Ficha web</button>
+            <button class="tab" type="button" data-tab-control data-target="copy" aria-selected="false">Textos web</button>
+          </div>
+          <div class="actions">
+            <button class="ghost" type="button" data-notify="Cambios descartados; la versión publicada no cambió.">Cancelar</button>
+            <button class="ghost" type="button" data-notify="Preview público abierto para revisión.">Ver ficha pública</button>
+            <button class="button" id="save-button" type="button">Guardar cambios</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="layout">
+        <div class="stack">
+          <article class="card view-panel" id="view-public" data-view="public" hidden>
+            <header>
+              <span class="meta">Ficha web</span>
+              <h2>Imágenes</h2>
+              <p class="copy">La portada y la galería se editan como activos visuales. El modo manual de URLs queda escondido como fallback avanzado.</p>
+            </header>
+            <div class="media-grid">
+              <div class="stack">
+                <div class="hero-preview">
+                  <div class="stack" style="gap: 8px;">
+                    <span class="meta" style="color: rgba(255,255,255,0.84);">Portada web · 1600px · WebP</span>
+                    <h3>Vista principal de la ficha pública</h3>
+                    <div class="actions">
+                      <button class="button" type="button" data-media-state="loading">Reemplazar portada</button>
+                      <button class="ghost" type="button" data-media-state="success" style="background: rgba(255,255,255,0.2); color: #fff;">Usar imagen de galería</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="notice">Modo avanzado: editar URLs manualmente solo si necesitas compatibilidad temporal con contenido legado.</div>
+              </div>
+              <div class="stack">
+                <ol class="thumbs" aria-label="Galería ordenada">
+                  <li class="thumb">
+                    <small>01 · Galería</small>
+                    <div class="small-actions"><span>Reemplazar</span><span>Mover</span><span>Eliminar</span></div>
+                  </li>
+                  <li class="thumb">
+                    <small>02 · Galería</small>
+                    <div class="small-actions"><span>Reemplazar</span><span>Mover</span><span>Eliminar</span></div>
+                  </li>
+                  <li class="thumb">
+                    <small>03 · Galería</small>
+                    <div class="small-actions"><span>Reemplazar</span><span>Mover</span><span>Eliminar</span></div>
+                  </li>
+                  <li class="thumb">
+                    <small>04 · Galería</small>
+                    <div class="small-actions"><span>Reemplazar</span><span>Mover</span><span>Eliminar</span></div>
+                  </li>
+                </ol>
+                <div class="actions">
+                  <button class="button" type="button" data-media-state="loading">Agregar imagen</button>
+                  <button class="ghost" type="button" data-notify="Orden de galería listo para guardar.">Reordenar galería</button>
+                </div>
+                <div class="state-banner" id="media-state" data-state="success" role="status" aria-live="polite">
+                  <strong>Success · variantes listas</strong>
+                  <span>Hero, card y thumb sirven WebP optimizado.</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card view-panel" id="view-operation" data-view="operation">
+            <header>
+              <span class="meta">Operación</span>
+              <h2>Inventario y operación</h2>
+              <p class="copy">Los cambios operativos ya no dependen del copy editorial. Esta superficie queda limpia para recepción y administración.</p>
+            </header>
+            <div class="fields">
+              <label class="field"><span class="label">Código interno</span><div class="input">SUITE</div></label>
+              <label class="field"><span class="label">Nombre base del bungalow</span><div class="input">Bungalow Doble</div></label>
+              <label class="field"><span class="label">Capacidad</span><div class="input">2</div></label>
+              <label class="field"><span class="label">Estado</span><div class="input">Activo para asignación y ocupación</div></label>
+            </div>
+          </article>
+
+          <article class="card view-panel" id="view-copy" data-view="copy" hidden>
+            <header>
+              <span class="meta">Textos web</span>
+              <h2>Contenido por idioma</h2>
+              <p class="copy">El copy ES/EN ya no compite con operación ni media. Cada idioma muestra su propio estado de completitud.</p>
+            </header>
+            <div class="tabs">
+              <button class="tab active" type="button" data-language="es" aria-selected="true">Contenido ES</button>
+              <button class="tab" type="button" data-language="en" aria-selected="false">Contenido EN · incompleto</button>
+            </div>
+            <div class="language-panel" data-language-panel="es">
+              <span class="label">Descripción corta</span>
+              <p class="copy">Descansa frente al valle en un bungalow para dos personas, con terraza privada y desayuno incluido.</p>
+            </div>
+            <div class="language-panel" data-language-panel="en" hidden>
+              <strong>Empty · no hay descripción en inglés</strong>
+              <p class="empty-copy">Completa este idioma antes de publicar la ficha en EN.</p>
+            </div>
+          </article>
+        </div>
+
+        <aside class="aside">
+          <article class="card" data-view="summary">
+            <header>
+              <span class="meta">Resumen</span>
+              <h2>Estado rápido</h2>
+            </header>
+            <div class="stat-grid">
+              <div class="stat"><span class="label">Tarifa</span><strong>PEN 280</strong></div>
+              <div class="stat"><span class="label">Área</span><strong>32 m2</strong></div>
+              <div class="stat"><span class="label">Galería</span><strong>4</strong></div>
+              <div class="stat"><span class="label">Idioma EN</span><strong>Incompleto</strong></div>
+            </div>
+          </article>
+
+          <article class="card" data-view="optimization">
+            <p class="small muted">Roles cubiertos: Admin, Sistema, administrador, recepción y editor de contenido. Entidades: bungalow, portada, galería, activo de galería y contenido localizado.</p>
+            <header>
+              <span class="meta">Optimización</span>
+              <h2>Reglas de media</h2>
+            </header>
+            <div class="notice">
+              JPGs de 4 a 8 MB entran por upload server-side, pasan a WebP y
+              generan variantes para hero, card y thumb sin exponer archivos
+              crudos en la web pública.
+            </div>
+          </article>
+
+          <article class="card" data-view="media-states">
+            <header>
+              <span class="meta">Estados del gestor</span>
+              <h2>Validar el flujo</h2>
+              <p class="copy">Escenarios del mismo activo sin alterar la imagen publicada.</p>
+            </header>
+            <div class="state-actions">
+              <button type="button" data-media-state="loading">Procesar imagen</button>
+              <button type="button" data-media-state="empty">Quitar portada</button>
+              <button type="button" data-media-state="error">Archivo inválido</button>
+              <button type="button" data-media-state="success">Carga completada</button>
+            </div>
+            <ul class="copy">
+              <li>Portada original conservada durante loading.</li>
+              <li>Error de formato sin mutar la ficha pública.</li>
+              <li>Success confirma tres variantes WebP.</li>
+            </ul>
+          </article>
+        </aside>
+      </section>
+    </main>
+    <div class="toast notify" id="toast" role="status" aria-live="polite">Notificación lista.</div>
+    <script>
+      const tabControls = [...document.querySelectorAll("[data-tab-control]")];
+      const viewPanels = [...document.querySelectorAll(".view-panel")];
+      const toast = document.getElementById("toast");
+      const stateBanner = document.getElementById("media-state");
+      let toastTimer;
+
+      function notify(message) {
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2200);
+      }
+
+      function setView(target) {
+        viewPanels.forEach((panel) => {
+          panel.hidden = panel.dataset.view !== target;
+        });
+        tabControls.forEach((control) => {
+          const active = control.dataset.target === target;
+          control.classList.toggle("active", active);
+          control.setAttribute("aria-selected", String(active));
+        });
+      }
+
+      function setMediaState(state) {
+        const content = {
+          loading: ["Loading · optimizando imagen", "La portada publicada se conserva mientras generamos variantes."],
+          empty: ["Empty · no hay portada", "Agrega una imagen para habilitar la ficha pública."],
+          error: ["Error · no se pudo procesar", "Usa JPG, PNG o WebP dentro de los límites permitidos."],
+          success: ["Success · variantes listas", "Hero, card y thumb sirven WebP optimizado."],
+        };
+        const [title, detail] = content[state];
+        stateBanner.dataset.state = state;
+        stateBanner.innerHTML = `<strong>${title}</strong><span>${detail}</span>`;
+        setView("public");
+        notify(`${title}. ${detail}`);
+      }
+
+      tabControls.forEach((control) => {
+        control.addEventListener("click", () => setView(control.dataset.target));
+      });
+
+      document.querySelectorAll("[data-media-state]").forEach((control) => {
+        control.addEventListener("click", () => setMediaState(control.dataset.mediaState));
+      });
+
+      document.querySelectorAll("[data-notify]").forEach((control) => {
+        control.addEventListener("click", () => notify(control.dataset.notify));
+      });
+
+      document.querySelectorAll("[data-language]").forEach((control) => {
+        control.addEventListener("click", () => {
+          const language = control.dataset.language;
+          document.querySelectorAll("[data-language-panel]").forEach((panel) => {
+            panel.hidden = panel.dataset.languagePanel !== language;
+          });
+          document.querySelectorAll("[data-language]").forEach((button) => {
+            const active = button.dataset.language === language;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-selected", String(active));
+          });
+        });
+      });
+
+      document.getElementById("save-button").addEventListener("click", () => {
+        notify("Success · cambios guardados sin bloquear operación por contenido EN.");
+      });
+    </script>
+  </body>
+</html>

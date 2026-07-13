@@ -1,16 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authenticateMock, notFoundMock, useRouterMock } = vi.hoisted(() => ({
-  authenticateMock: vi.fn(),
+const { requireAdminPageAccessMock, notFoundMock, useRouterMock } = vi.hoisted(() => ({
+  requireAdminPageAccessMock: vi.fn(),
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
   useRouterMock: vi.fn(),
-}));
-
-vi.mock("next/headers", () => ({
-  headers: () => new Headers(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -18,8 +14,8 @@ vi.mock("next/navigation", () => ({
   useRouter: useRouterMock,
 }));
 
-vi.mock("@/middleware/authn", () => ({
-  authenticate: authenticateMock,
+vi.mock("@/app/admin/require-admin-page-access", () => ({
+  requireAdminPageAccess: requireAdminPageAccessMock,
 }));
 
 import EditReservationPage from "./page";
@@ -35,7 +31,7 @@ describe("EditReservationPage", () => {
       forward: vi.fn(),
       reload: vi.fn(),
     });
-    authenticateMock.mockResolvedValue({
+    requireAdminPageAccessMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
       subject: "dev-admin",
@@ -49,6 +45,11 @@ describe("EditReservationPage", () => {
     expect(html).toContain("Datos de reserva");
     expect(html).toContain("Guardar cambios");
     expect(html).toContain("RESERVATION-2026-0001");
+    expect(html).toContain("Código fijo después de crear la reserva.");
+    expect(html).toContain('name="number"');
+    expect(html).toContain('readOnly=""');
+    expect(html).not.toContain("Responsable");
+    expect(html).not.toContain('name="responsibleId"');
     expect(html).toContain("Vista previa");
   });
 

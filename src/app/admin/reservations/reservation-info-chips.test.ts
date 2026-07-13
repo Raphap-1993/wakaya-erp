@@ -13,7 +13,7 @@ describe("reservation-info-chips", () => {
     });
 
     expect(chips.map((chip) => chip.key)).toEqual(["status", "payment", "channel", "balance", "bungalow"]);
-    expect(chips[0]).toMatchObject({ value: "Pending review", tone: "statusPendingReview" });
+    expect(chips[0]).toMatchObject({ value: "Pendiente de revisión", tone: "statusPendingReview" });
     expect(chips[1]).toMatchObject({ value: "Parcial", tone: "paymentPartial" });
     expect(chips[3]).toMatchObject({ value: "S/ 360.00", tone: "statusPendingReview" });
   });

@@ -17,11 +17,35 @@ export function MonitorStats({
   return (
     <ReservationMetricCards
       items={[
-        { key: "total", label: "Reservas visibles", value: total },
-        { key: "pending", label: "Pendientes", value: pending },
-        { key: "balance", label: "Con saldo", value: withBalance },
-        { key: "paid", label: "Pagadas", value: paid },
-        { key: "due", label: "Saldo total", value: formatMoneyCents(balanceDueCents) },
+        { key: "total", label: "Reservas visibles", value: total, tone: "info", meta: "Vista operativa" },
+        {
+          key: "pending",
+          label: "Pendientes",
+          value: pending,
+          tone: pending > 0 ? "warning" : "success",
+          meta: pending > 0 ? "Seguimiento" : "Al día",
+        },
+        {
+          key: "balance",
+          label: "Con saldo",
+          value: withBalance,
+          tone: withBalance > 0 ? "warning" : "success",
+          meta: withBalance > 0 ? "Cobranza" : "Saldado",
+        },
+        {
+          key: "paid",
+          label: "Pagadas",
+          value: paid,
+          tone: paid > 0 ? "success" : "neutral",
+          meta: paid > 0 ? "Cerradas" : "Sin cierres",
+        },
+        {
+          key: "due",
+          label: "Saldo total",
+          value: formatMoneyCents(balanceDueCents),
+          tone: balanceDueCents > 0 ? "warning" : "success",
+          meta: balanceDueCents > 0 ? "Por cobrar" : "Cerrado",
+        },
       ]}
     />
   );

@@ -1,5 +1,12 @@
 # Wakaya Public Site Parador System Design
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Date: 2026-06-04
 Status: Approved in conversation, pending written-spec review
 Topic: Capa publica multipagina de `002-public-site` con arquitectura real de Wakaya y lenguaje visual tipo `Parador`

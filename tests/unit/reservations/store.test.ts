@@ -5,43 +5,47 @@ import { join } from "node:path";
 import { ReservationStore } from "@/lib/reservations/store";
 
 describe("reservation store", () => {
-  it("creates a web reservation with provisional occupancy", () => {
+  it("creates a pending web reservation without consuming capacity", () => {
     const store = new ReservationStore();
     const result = store.create({
       number: "RESERVATION-2026-0100",
       channel: "web",
       bungalowId: "bungalow-suite",
+      actorId: "user-reception-1",
       responsibleId: "user-reception-1",
       startDate: "2026-07-01",
       endDate: "2026-07-03",
     });
 
     expect(result.reservation.status).toBe("pending_review");
-    expect(result.occupancy).toHaveLength(3);
+    expect(result.occupancy).toHaveLength(0);
     expect(store.get(result.reservation.id)?.auditCount).toBe(1);
   });
 
-  it("blocks a conflicting reservation for the same bungalow night", () => {
+  it("allows overlapping pending requests because they do not consume capacity", () => {
     const store = new ReservationStore();
     store.create({
       number: "RESERVATION-2026-0101",
       channel: "web",
       bungalowId: "bungalow-suite",
+      actorId: "user-reception-1",
       responsibleId: "user-reception-1",
       startDate: "2026-06-12",
       endDate: "2026-06-13",
     });
 
-    expect(() =>
-      store.create({
-        number: "RESERVATION-2026-0102",
-        channel: "web",
-        bungalowId: "bungalow-suite",
-        responsibleId: "user-reception-1",
-        startDate: "2026-06-12",
-        endDate: "2026-06-13",
-      }),
-    ).toThrow("occupancy_conflict");
+    const second = store.create({
+      number: "RESERVATION-2026-0102",
+      channel: "web",
+      bungalowId: "bungalow-suite",
+      actorId: "user-reception-1",
+      responsibleId: "user-reception-1",
+      startDate: "2026-06-12",
+      endDate: "2026-06-13",
+    });
+
+    expect(second.reservation.status).toBe("pending_review");
+    expect(second.occupancy).toHaveLength(0);
   });
 
   it("transitions and audits a reservation", () => {
@@ -50,6 +54,7 @@ describe("reservation store", () => {
       number: "RESERVATION-2026-0102",
       channel: "ota",
       bungalowId: "bungalow-matrimonial",
+      actorId: "user-reception-2",
       responsibleId: "user-reception-2",
       startDate: "2026-07-10",
       endDate: "2026-07-11",
@@ -71,6 +76,7 @@ describe("reservation store", () => {
       number: "RESERVATION-2026-0104",
       channel: "web",
       bungalowId: "bungalow-suite",
+      actorId: "user-reception-4",
       responsibleId: "user-reception-4",
       startDate: "2026-07-18",
       endDate: "2026-07-19",
@@ -99,6 +105,7 @@ describe("reservation store", () => {
       number: "RESERVATION-2026-0105",
       channel: "ota",
       bungalowId: "bungalow-family",
+      actorId: "user-reception-5",
       responsibleId: "user-reception-5",
       startDate: "2026-07-20",
       endDate: "2026-07-21",
@@ -133,6 +140,7 @@ describe("reservation store", () => {
       number: "RESERVATION-2026-0106",
       channel: "ota",
       bungalowId: "bungalow-family",
+      actorId: "user-reception-6",
       responsibleId: "user-reception-6",
       startDate: "2026-07-22",
       endDate: "2026-07-23",
@@ -157,6 +165,7 @@ describe("reservation store", () => {
       number: "RESERVATION-2026-0103",
       channel: "web",
       bungalowId: "bungalow-matrimonial",
+      actorId: "user-reception-3",
       responsibleId: "user-reception-3",
       startDate: "2026-07-15",
       endDate: "2026-07-16",
@@ -171,7 +180,7 @@ describe("reservation store", () => {
     ).toThrow("invalid_transition");
   });
 
-  it("rejects conflicting assignments across stale store instances", () => {
+  it("allows two double-category commitments and rejects the third across stale store instances", () => {
     const dir = mkdtempSync(join(tmpdir(), "wakaya-reservations-atomic-"));
     const dbPath = join(dir, "reservations.sqlite");
 
@@ -199,6 +208,17 @@ describe("reservation store", () => {
           endDate: "2026-08-22",
           updatedAt: "2026-08-01T00:00:00.000Z",
         },
+        {
+          id: "reservation-atomic-3",
+          number: "RESERVATION-2026-0203",
+          channel: "web" as const,
+          status: "confirmed" as const,
+          bungalowId: null,
+          responsibleId: "user-reception-3",
+          startDate: "2026-08-20",
+          endDate: "2026-08-22",
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
       ];
 
       const first = new ReservationStore({
@@ -213,13 +233,21 @@ describe("reservation store", () => {
         reason: "first assignment",
       });
 
+      const second = stale.assign("reservation-atomic-2", {
+        bungalowId: "bungalow-suite",
+        actorId: "user-reception-2",
+        reason: "second assignment",
+      });
+      expect(second.bungalowId).toBe("bungalow-suite");
+
+      const latest = new ReservationStore({ storagePath: dbPath });
       expect(() =>
-        stale.assign("reservation-atomic-2", {
+        latest.assign("reservation-atomic-3", {
           bungalowId: "bungalow-suite",
-          actorId: "user-reception-2",
-          reason: "stale conflicting assignment",
+          actorId: "user-reception-3",
+          reason: "third assignment",
         }),
-      ).toThrow("occupancy_conflict");
+      ).toThrow("bungalow_capacity_unavailable");
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

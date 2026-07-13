@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 import type { ComponentProps } from "react";
-import { authenticate } from "@/middleware/authn";
-import { hasPermission } from "@/lib/rbac";
 import { reservationStore } from "@/lib/reservations/store";
+import { requireAdminPageAccess } from "@/app/admin/require-admin-page-access";
+import { ReservationMetricCards } from "@/app/admin/reservations/reservation-metric-cards";
+import { buildMonitorPermissions } from "@/app/admin/reservations/reservations-monitor-shared";
 import styles from "../reservations.module.css";
+
+export const dynamic = "force-dynamic";
 
 type FlowThread = {
   id: string;
@@ -26,16 +27,8 @@ function getSampleReservationId(items: Awaited<ReturnType<typeof reservationStor
 }
 
 export default async function ReservationFlowsPage() {
-  const requestHeaders = new Headers();
-  const currentHeaders = await headers();
-  currentHeaders.forEach((value, key) => requestHeaders.set(key, value));
-
-  const auth = await authenticate(
-    new Request("http://localhost/admin/reservations/flows", { headers: requestHeaders }),
-  );
-  if (!auth.authenticated || !hasPermission(auth.roles, "reservation:read")) {
-    notFound();
-  }
+  const auth = await requireAdminPageAccess("/admin/reservations/flows", "reservation:read");
+  const permissions = buildMonitorPermissions(auth.roles);
 
   const items = await reservationStore.list();
   const pendingId = getSampleReservationId(items, "pending_review");
@@ -57,8 +50,12 @@ export default async function ReservationFlowsPage() {
         "Edición inmediata tras crear",
       ],
       links: [
-        { label: "Abrir nueva reserva", href: "/admin/reservations/new", primary: true },
-        ...(pendingId ? [{ label: "Editar reserva pendiente", href: `/admin/reservations/${pendingId}/edit` }] : []),
+        ...(permissions.canWrite
+          ? [{ label: "Abrir nueva reserva", href: "/admin/reservations/new", primary: true }]
+          : []),
+        ...(permissions.canWrite && pendingId
+          ? [{ label: "Editar reserva pendiente", href: `/admin/reservations/${pendingId}/edit` }]
+          : []),
       ],
     },
     {
@@ -144,20 +141,31 @@ export default async function ReservationFlowsPage() {
             reserva: ingreso, edición, confirmación, operación, caja y cierre.
           </p>
 
-          <div className={styles.stats}>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Hilos activos</span>
-              <span className={styles.statValue}>{threads.length}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Reservas activas</span>
-              <span className={styles.statValue}>{items.length}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Cobertura</span>
-              <span className={styles.statValue}>E2E</span>
-            </div>
-          </div>
+          <ReservationMetricCards
+            items={[
+              {
+                key: "threads",
+                label: "Hilos activos",
+                value: threads.length,
+                tone: "success",
+                meta: "Cobertura operativa",
+              },
+              {
+                key: "reservations",
+                label: "Reservas activas",
+                value: items.length,
+                tone: items.length > 0 ? "info" : "neutral",
+                meta: items.length > 0 ? "Con movimiento" : "Sin carga viva",
+              },
+              {
+                key: "coverage",
+                label: "Cobertura",
+                value: "E2E",
+                tone: "success",
+                meta: "Ingreso a cierre",
+              },
+            ]}
+          />
 
           <div className={styles.heroActions}>
             <Link className={styles.button} href="/admin/reservations">
@@ -166,9 +174,11 @@ export default async function ReservationFlowsPage() {
             <Link className={`${styles.button} ${styles.buttonSecondary}`} href="/admin/reservations/occupancy">
               Abrir ocupación
             </Link>
-            <Link className={`${styles.button} ${styles.buttonSecondary}`} href="/admin/reservations/new">
-              Nueva reserva
-            </Link>
+            {permissions.canWrite ? (
+              <Link className={`${styles.button} ${styles.buttonSecondary}`} href="/admin/reservations/new">
+                Nueva reserva
+              </Link>
+            ) : null}
           </div>
         </header>
 

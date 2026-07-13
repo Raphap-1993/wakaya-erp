@@ -31,6 +31,15 @@ export async function POST(
 
     return jsonResponse({ reservation });
   } catch (error) {
+    if (error instanceof Error && error.message === "bungalow_capacity_unavailable") {
+      return jsonResponse(
+        {
+          error: "bungalow_capacity_unavailable",
+          message: "No hay cupos disponibles para esa categoría y rango.",
+        },
+        409,
+      );
+    }
     return failureResponse(error);
   }
 }

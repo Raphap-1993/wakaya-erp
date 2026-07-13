@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Wakaya · Centro de contenido</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --space-1: 8px;
+        --space-2: 16px;
+        --space-3: 24px;
+        --space-4: 32px;
+        --space-6: 48px;
+        --bg: #eef3f7;
+        --surface: #ffffff;
+        --surface-soft: #f7f9fb;
+        --ink: #132438;
+        --muted: #607287;
+        --line: #cfd9e3;
+        --brand: #17496f;
+        --brand-strong: #103551;
+        --brand-soft: #e5eff6;
+        --accent: #c77e39;
+        --success: #1f714b;
+        --success-soft: #dff3e7;
+        --warning: #8a5b12;
+        --warning-soft: #fff1cd;
+        --danger: #9a3535;
+        --danger-soft: #ffe5e5;
+        --shadow: 0 20px 48px rgba(19, 36, 56, 0.09);
+        --radius: 20px;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 0%, rgba(23, 73, 111, 0.13), transparent 26rem),
+          linear-gradient(180deg, #f9fbfd, var(--bg));
+      }
+
+      button, input, textarea, select { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible {
+        outline: 3px solid rgba(199, 126, 57, 0.38);
+        outline-offset: 2px;
+      }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(1.85rem, 4vw, 2.7rem); letter-spacing: -0.045em; }
+      h2 { font-size: 1.28rem; letter-spacing: -0.02em; }
+      h3 { font-size: 1rem; }
+      a { color: var(--brand); }
+
+      .page {
+        width: min(1480px, 100%);
+        margin: 0 auto;
+        padding: var(--space-3);
+        display: grid;
+        gap: var(--space-3);
+      }
+
+      .surface {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: var(--shadow);
+      }
+
+      .publish-bar {
+        position: sticky;
+        top: var(--space-2);
+        z-index: 20;
+        padding: var(--space-2) var(--space-3);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+
+      .headline, .bar-actions, .stack, .section-stack { display: grid; }
+      .headline { gap: var(--space-1); }
+      .bar-actions { gap: var(--space-1); justify-items: end; }
+      .stack { gap: var(--space-2); }
+      .section-stack { gap: var(--space-3); }
+      .eyebrow, .label, .meta {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.74rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .muted { color: var(--muted); }
+      .small { font-size: 0.86rem; }
+      .mono { font-family: ui-monospace, "SFMono-Regular", monospace; }
+
+      .chips, .actions, .tablist, .segmented, .state-controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--space-1);
+      }
+      .chip, button, .button-link {
+        min-height: 40px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 9px 14px;
+        background: var(--surface);
+        color: var(--ink);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .chip { min-height: auto; padding: 7px 11px; font-size: 0.82rem; }
+      .chip.success { color: var(--success); background: var(--success-soft); border-color: transparent; }
+      .chip.warning { color: var(--warning); background: var(--warning-soft); border-color: transparent; }
+      .chip.info { color: var(--brand); background: var(--brand-soft); border-color: transparent; }
+      .primary { color: white; background: linear-gradient(135deg, var(--brand), var(--brand-strong)); border-color: transparent; }
+      .danger { color: var(--danger); background: var(--danger-soft); border-color: transparent; }
+      .ghost { color: var(--brand); background: var(--surface-soft); }
+      .compact { min-height: 34px; padding: 7px 11px; font-size: 0.82rem; }
+      button[disabled] { cursor: not-allowed; opacity: 0.48; }
+
+      .tabs-shell { padding: 0 var(--space-2); }
+      .tablist { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin; }
+      .tablist button { flex: 0 0 auto; border-radius: 0; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); padding: var(--space-2); }
+      .tablist button[aria-selected="true"] { color: var(--brand); border-bottom-color: var(--brand); }
+
+      .view[hidden] { display: none; }
+      .view { animation: enter 180ms ease-out; }
+      @keyframes enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+      .workbench {
+        display: grid;
+        grid-template-columns: 304px minmax(0, 1fr);
+        min-height: 640px;
+        overflow: hidden;
+      }
+      .rail {
+        border-right: 1px solid var(--line);
+        background: var(--surface-soft);
+        padding: var(--space-3) var(--space-2);
+        display: grid;
+        align-content: start;
+        gap: var(--space-2);
+      }
+      .editor { padding: var(--space-3); display: grid; align-content: start; gap: var(--space-4); }
+      .section-head, .row-between {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+      .section-head > div { display: grid; gap: 4px; }
+      .list { display: grid; gap: var(--space-1); }
+      .list-item {
+        width: 100%;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 12px;
+        text-align: left;
+        background: transparent;
+        display: grid;
+        gap: var(--space-1);
+      }
+      .list-item:hover { background: #fff; border-color: var(--line); }
+      .list-item.is-active { background: #fff; border-color: rgba(23, 73, 111, 0.45); box-shadow: inset 3px 0 var(--brand); }
+      .item-title { font-weight: 800; }
+      .item-meta { display: flex; justify-content: space-between; gap: var(--space-1); color: var(--muted); font-size: 0.8rem; }
+
+      .form-section {
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--line);
+        display: grid;
+        gap: var(--space-2);
+      }
+      .form-section:first-of-type { padding-top: 0; border-top: 0; }
+      .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+      .field-grid .full { grid-column: 1 / -1; }
+      label { display: grid; gap: var(--space-1); font-weight: 700; }
+      input, textarea, select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 12px;
+        background: #fff;
+        color: var(--ink);
+      }
+      textarea { min-height: 96px; resize: vertical; }
+      .field-error { color: var(--danger); font-size: 0.82rem; font-weight: 700; }
+
+      .media-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.7fr); gap: var(--space-2); }
+      .art {
+        min-height: 240px;
+        border-radius: 18px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: end;
+        padding: var(--space-2);
+        color: #fff;
+        background:
+          linear-gradient(0deg, rgba(10, 31, 44, 0.78), rgba(10, 31, 44, 0.03) 68%),
+          radial-gradient(circle at 72% 24%, rgba(240, 194, 110, 0.78), transparent 12%),
+          linear-gradient(145deg, #224f62 0 34%, #4d7f75 34% 62%, #b88a50 62% 66%, #183c43 66%);
+      }
+      .art::before {
+        content: "";
+        position: absolute;
+        inset: 18% 10% 0 36%;
+        border-radius: 60% 30% 0 0;
+        background: rgba(32, 94, 66, 0.44);
+        transform: skewX(-10deg);
+      }
+      .art > div { position: relative; z-index: 1; display: grid; gap: var(--space-1); }
+      .asset-facts { display: grid; gap: 0; border-top: 1px solid var(--line); }
+      .asset-fact { display: flex; justify-content: space-between; gap: var(--space-2); padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .file-picker { margin-top: var(--space-1); padding: 12px; border: 1px dashed var(--line); border-radius: 12px; background: var(--surface-soft); }
+      .file-picker input { margin-top: var(--space-1); padding: 8px; }
+
+      .home-map { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--space-3); }
+      .map-list { display: grid; gap: var(--space-1); align-content: start; }
+      .map-item { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: var(--space-1); }
+      .home-preview { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); }
+      .home-hero { min-height: 280px; padding: var(--space-3); color: #fff; display: grid; align-content: end; gap: var(--space-1); background: linear-gradient(145deg, #244f60, #668c74 58%, #c08a4c); }
+      .home-body { padding: var(--space-2); display: grid; gap: var(--space-2); background: #fff; }
+      .home-block { display: grid; grid-template-columns: 1fr auto; gap: var(--space-2); padding-bottom: var(--space-2); border-bottom: 1px solid var(--line); }
+
+      .gallery-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+      .gallery-item { display: grid; gap: var(--space-1); }
+      .gallery-art { aspect-ratio: 4 / 3; border-radius: 14px; background: linear-gradient(145deg, var(--tone-a, #2c5968), var(--tone-b, #c18d55)); position: relative; overflow: hidden; }
+      .gallery-art::after { content: ""; position: absolute; inset: 45% -8% -25% 15%; border-radius: 50% 50% 0 0; background: rgba(255,255,255,0.16); transform: rotate(-8deg); }
+      .gallery-actions { display: flex; gap: 6px; }
+
+      .bungalow-list { display: grid; gap: 0; }
+      .bungalow-row { display: grid; grid-template-columns: minmax(180px, 1fr) 100px 130px 140px auto; gap: var(--space-2); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--line); }
+
+      .status-panel { padding: var(--space-2) var(--space-3); display: grid; gap: var(--space-2); }
+      .state-controls button { font-size: 0.82rem; }
+      .alert { border-radius: 14px; padding: 12px 14px; font-weight: 700; }
+      .alert.info { color: var(--brand); background: var(--brand-soft); }
+      .alert.success { color: var(--success); background: var(--success-soft); }
+      .alert.warning { color: var(--warning); background: var(--warning-soft); }
+      .alert.error { color: var(--danger); background: var(--danger-soft); }
+
+      dialog {
+        width: min(1040px, calc(100% - 32px));
+        max-height: calc(100vh - 32px);
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        color: var(--ink);
+        box-shadow: 0 36px 90px rgba(7, 22, 34, 0.28);
+      }
+      dialog::backdrop { background: rgba(8, 24, 37, 0.62); backdrop-filter: blur(3px); }
+      .dialog-head, .dialog-foot { padding: var(--space-2) var(--space-3); display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+      .dialog-head { border-bottom: 1px solid var(--line); }
+      .dialog-foot { border-top: 1px solid var(--line); }
+      .dialog-body { padding: var(--space-3); }
+      .crop-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) 280px; gap: var(--space-3); }
+      .crop-canvas { min-height: 420px; border-radius: 18px; background: linear-gradient(145deg, #204b5c, #5c8776 58%, #bf8c50); position: relative; overflow: hidden; }
+      .crop-frame { position: absolute; border: 3px solid #fff; box-shadow: 0 0 0 999px rgba(10, 24, 35, 0.48); left: 12%; right: 12%; top: 24%; aspect-ratio: 16 / 9; }
+      .crop-frame.mobile { left: 35%; right: 35%; top: 8%; aspect-ratio: 4 / 5; }
+      .crop-side { display: grid; align-content: start; gap: var(--space-2); }
+      .crop-preview { height: 108px; border-radius: 12px; background: linear-gradient(145deg, #29586b, #b78950); border: 2px solid transparent; display: grid; place-items: center; color: #fff; font-weight: 800; }
+      .crop-preview.done { border-color: var(--success); }
+
+      .public-dialog { width: min(760px, calc(100% - 32px)); }
+      .public-hero { min-height: 280px; background: linear-gradient(145deg, #174d5c, #6b8f71 55%, #c48645); color: #fff; padding: var(--space-3); display: grid; align-content: end; gap: var(--space-1); }
+      .public-copy { display: grid; gap: var(--space-2); line-height: 1.55; }
+      .booking-ref { border-left: 4px solid var(--brand); padding: var(--space-2); background: var(--brand-soft); display: grid; gap: 4px; }
+
+      .toast {
+        position: fixed;
+        right: var(--space-3);
+        bottom: var(--space-3);
+        z-index: 50;
+        max-width: 360px;
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #102f47;
+        color: #fff;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: 160ms ease;
+      }
+      .toast.is-visible { opacity: 1; transform: translateY(0); }
+
+      @media (max-width: 1080px) {
+        .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .media-layout, .crop-layout { grid-template-columns: 1fr; }
+        .crop-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 780px) {
+        .page { padding: 12px; gap: var(--space-2); }
+        .publish-bar { position: static; padding: var(--space-2); flex-direction: column; }
+        .bar-actions { justify-items: start; width: 100%; }
+        .workbench { grid-template-columns: 1fr; }
+        .rail { border-right: 0; border-bottom: 1px solid var(--line); }
+        .editor { padding: var(--space-2); gap: var(--space-3); }
+        .field-grid, .home-map { grid-template-columns: 1fr; }
+        .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .bungalow-row { grid-template-columns: 1fr auto; }
+        .bungalow-row > :nth-child(2), .bungalow-row > :nth-child(3), .bungalow-row > :nth-child(4) { grid-column: 1 / -1; }
+        .dialog-head, .dialog-foot, .dialog-body { padding: var(--space-2); }
+        #crop-dialog { width: 100%; max-width: none; max-height: none; height: 100%; border-radius: 0; }
+        #crop-dialog[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+        #crop-dialog .dialog-body { overflow-y: auto; }
+        .crop-canvas { min-height: 320px; }
+        .crop-side { grid-template-columns: 1fr; }
+        .mobile-sticky { position: sticky; bottom: 0; z-index: 5; padding: var(--space-2) 0 0; background: linear-gradient(0deg, #fff 72%, transparent); }
+      }
+
+      @media (max-width: 480px) {
+        .gallery-grid { grid-template-columns: 1fr; }
+        .section-head { align-items: flex-start; flex-direction: column; }
+        .actions { width: 100%; }
+        .actions > button, .actions > a { flex: 1 1 auto; text-align: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="surface publish-bar" data-view="content-header">
+        <div class="headline">
+          <span class="eyebrow">Wakaya · Contenido</span>
+          <h1>Centro de contenido</h1>
+          <div class="chips">
+            <span class="chip success">Publicado</span>
+            <span class="chip info">Editor de contenido</span>
+            <span class="chip warning mono">v18</span>
+          </div>
+          <a class="small" href="../../../prototype/index.html" data-hub-link="prototype-hub">← Volver al hub del producto</a>
+        </div>
+        <div class="bar-actions">
+          <span class="small muted"><strong>Última publicación:</strong> 09 Jul, 23:10 · admin@wakaya.local</span>
+          <div class="actions">
+            <button class="ghost" type="button" id="public-preview-btn">Ver sitio</button>
+            <button class="ghost" type="button" id="validate-btn">Validar</button>
+            <button class="primary" type="button" id="publish-btn">Guardar y publicar</button>
+          </div>
+        </div>
+      </header>
+
+      <nav class="surface tabs-shell" aria-label="Áreas de contenido">
+        <div class="tablist" role="tablist" id="content-tabs">
+          <button role="tab" aria-selected="true" aria-controls="view-home" data-tab="home">Home</button>
+          <button role="tab" aria-selected="false" aria-controls="view-experiences" data-tab="experiences">Experiencias <span class="chip info">8</span></button>
+          <button role="tab" aria-selected="false" aria-controls="view-gallery" data-tab="gallery">Galería <span class="chip info">18</span></button>
+          <button role="tab" aria-selected="false" aria-controls="view-bungalows" data-tab="bungalows">Bungalows <span class="chip info">4</span></button>
+        </div>
+      </nav>
+
+      <section class="surface view" id="view-home" role="tabpanel" data-view="home">
+        <div class="editor">
+          <div class="section-head">
+            <div>
+              <span class="meta">Home · versión 18</span>
+              <h2>Estructura y preview</h2>
+            </div>
+            <div class="segmented" aria-label="Idioma del Home">
+              <button class="primary compact" type="button">ES</button>
+              <button class="compact" type="button">EN · 1 pendiente</button>
+            </div>
+          </div>
+          <div class="home-map">
+            <div class="map-list" data-panel="home-structure">
+              <div class="map-item"><strong>Slider principal</strong><span class="chip success">3 visibles</span></div>
+              <div class="map-item"><strong>Reserva rápida</strong><span class="chip success">Visible</span></div>
+              <div class="map-item"><strong>Historia</strong><span class="chip success">Visible</span></div>
+              <div class="map-item"><strong>Bungalows</strong><span class="chip success">4 tipos</span></div>
+              <div class="map-item"><strong>Experiencias</strong><span class="chip warning">EN pendiente</span></div>
+              <div class="map-item"><strong>Testimonios</strong><span class="chip success">Visible</span></div>
+              <div class="map-item"><strong>Cierre</strong><span class="chip success">Visible</span></div>
+            </div>
+            <div class="home-preview" data-panel="home-preview">
+              <div class="home-hero">
+                <span class="meta" style="color:rgba(255,255,255,.78)">Wakaya · Pucallpa</span>
+                <h2 style="font-size:clamp(1.8rem,4vw,3rem)">Descansa junto a la laguna</h2>
+                <p>Laguna, jardines, piscina y bungalows cálidos.</p>
+                <span class="button-link" style="width:fit-content">Ver bungalows</span>
+              </div>
+              <div class="home-body">
+                <div class="home-block"><div><strong>Experiencias únicas</strong><p class="muted small">Kayak, fotografía y celebraciones.</p></div><span class="chip success">Desde fuente única</span></div>
+                <div class="home-block"><div><strong>Bungalows destacados</strong><p class="muted small">Familiar, Matrimonial, Doble y Triple.</p></div><span class="chip info">4 tipos</span></div>
+                <div class="actions"><button class="ghost compact" type="button">Preview Desktop</button><button class="compact" type="button">Preview Mobile</button><button class="compact" type="button">Revisiones</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-experiences" role="tabpanel" data-view="experiences" hidden>
+        <div class="workbench">
+          <aside class="rail" data-panel="experience-list">
+            <div class="section-head">
+              <div><span class="meta">Lista</span><h2>Experiencias</h2></div>
+              <button class="primary compact" type="button" id="add-experience-btn">Agregar</button>
+            </div>
+            <label>
+              <span class="label">Buscar</span>
+              <input id="experience-search" type="search" placeholder="Título o slug" />
+            </label>
+            <div class="list" id="experience-list"></div>
+          </aside>
+          <section class="editor" data-panel="experience-editor">
+            <div class="section-head">
+              <div><span class="meta" id="experience-slug">paseo-laguna</span><h2 id="experience-heading">Full Day en la Laguna</h2></div>
+              <div class="chips"><span class="chip success" id="experience-status">Visible</span><span class="chip info">ES/EN completo</span></div>
+            </div>
+
+            <div class="form-section">
+              <div class="row-between"><div><span class="label">Contenido</span><h3>Datos compartidos</h3></div><div class="segmented" id="locale-tabs"><button class="primary compact" data-locale="es" type="button">ES</button><button class="compact" data-locale="en" type="button">EN</button></div></div>
+              <div class="field-grid">
+                <label>Slug estable<input id="field-slug" value="paseo-laguna" readonly /></label>
+                <label>Orden<input id="field-order" type="number" min="1" value="2" /></label>
+                <label>Título<input id="field-title" value="Full Day en la Laguna" /></label>
+                <label>Duración<input id="field-duration" value="8 h" /></label>
+                <label class="full">Resumen<textarea id="field-summary">Día completo explorando la laguna con kayak, almuerzo y guía.</textarea></label>
+                <label class="full">Descripción<textarea id="field-body">Una jornada completa para recorrer el entorno tropical de Wakaya con pausas, guía local y almuerzo.</textarea></label>
+                <label>CTA<input id="field-cta" value="Consultar experiencia" /></label>
+                <label>Precio mostrado<input id="field-price" value="S/ 120" /></label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-head"><div><span class="label">Media</span><h3>Hero público</h3></div><span class="chip warning" id="crop-chip">Recortes pendientes</span></div>
+              <div class="media-layout">
+                <div class="art"><div><span class="meta" style="color:rgba(255,255,255,.8)">Hero · source 3200 × 2133</span><strong id="art-title">Full Day en la Laguna</strong><span>Desktop 16:9 · Mobile 4:5</span></div></div>
+                <div class="asset-facts">
+                  <div class="asset-fact"><span>Estado del activo</span><strong>ready</strong></div>
+                  <div class="asset-fact"><span>Desktop</span><strong id="desktop-state">Pendiente</strong></div>
+                  <div class="asset-fact"><span>Mobile</span><strong id="mobile-state">Pendiente</strong></div>
+                  <div class="asset-fact"><span>Master</span><strong>WebP 95</strong></div>
+                  <label class="file-picker">Seleccionar nueva imagen<input id="hero-file-input" type="file" accept="image/jpeg,image/png,image/webp" /><span class="small muted" id="hero-file-state">Al seleccionar, el crop se abre obligatoriamente.</span></label>
+                  <button class="ghost" type="button" id="open-crop-btn">Ajustar activo vigente</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-head"><div><span class="label">Salida pública</span><h3>Popup y solicitud</h3></div><button class="ghost compact" type="button" id="open-public-btn">Abrir popup público</button></div>
+              <div class="booking-ref">
+                <strong>Experiencia solicitada</strong>
+                <span>Full Day en la Laguna · <span class="mono">paseo-laguna</span> · <span class="mono">exp_02</span></span>
+                <span class="small muted">Visible en el detalle de booking request, separado de las notas.</span>
+              </div>
+            </div>
+
+            <div class="mobile-sticky">
+              <div class="actions">
+                <button class="danger" type="button" id="archive-experience-btn">Archivar</button>
+                <button class="ghost" type="button" id="toggle-experience-btn">Ocultar</button>
+                <button class="primary" type="button" id="save-experience-btn">Guardar experiencia</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-gallery" role="tabpanel" data-view="gallery" hidden>
+        <div class="editor">
+          <div class="section-head">
+            <div><span class="meta">Colección global · v8</span><h2>Galería pública</h2></div>
+            <div class="actions"><button class="ghost" type="button">Reordenar</button><label class="file-picker compact">Agregar imagen<input id="gallery-file-input" type="file" accept="image/jpeg,image/png,image/webp" /></label></div>
+          </div>
+          <div class="row-between"><span class="muted">18 activos · alt ES/EN completo</span><span class="chip success">Orden continuo 1–18</span></div>
+          <div class="gallery-grid" id="gallery-grid" data-panel="gallery-assets"></div>
+        </div>
+      </section>
+
+      <section class="surface view" id="view-bungalows" role="tabpanel" data-view="bungalows" hidden>
+        <div class="editor">
+          <div class="section-head">
+            <div><span class="meta">Ficha pública por tipo</span><h2>Bungalows</h2></div>
+            <a class="button-link ghost" href="../../007-bungalow-unit-inventory/prototype-html5/index.html">Abrir inventario de unidades</a>
+          </div>
+          <div class="bungalow-list" data-panel="bungalow-types">
+            <div class="bungalow-row"><div><strong>Bungalow Familiar</strong><div class="small muted">Dos habitaciones · 4 huéspedes</div></div><span>S/ 350</span><span>4 imágenes</span><span class="chip success">Visible en Home</span><button class="ghost compact" type="button">Editar ficha</button></div>
+            <div class="bungalow-row"><div><strong>Bungalow Matrimonial</strong><div class="small muted">Retiro para pareja · 2 huéspedes</div></div><span>S/ 250</span><span>5 imágenes</span><span class="chip success">Visible en Home</span><button class="ghost compact" type="button">Editar ficha</button></div>
+            <div class="bungalow-row"><div><strong>Bungalow Doble</strong><div class="small muted">Dos camas · 2 huéspedes</div></div><span>S/ 280</span><span>4 imágenes</span><span class="chip success">Visible en Home</span><button class="ghost compact" type="button">Editar ficha</button></div>
+            <div class="bungalow-row"><div><strong>Bungalow Triple</strong><div class="small muted">Cama doble + individual · 3 huéspedes</div></div><span>S/ 300</span><span>3 imágenes</span><span class="chip warning">Fuera de Home</span><button class="ghost compact" type="button">Editar ficha</button></div>
+          </div>
+          <div class="alert info">La ficha pública pertenece al tipo. Las nueve unidades físicas se gestionan en Inventario.</div>
+        </div>
+      </section>
+
+      <section class="surface status-panel" data-view="states">
+        <div class="section-head"><div><span class="meta">Estados</span><h2>Respuesta del sistema</h2></div><span class="chip info">Escenarios interactivos</span></div>
+        <div class="state-controls" id="state-controls">
+          <button class="compact" data-state="loading" type="button">Cargando</button>
+          <button class="compact" data-state="empty" type="button">Vacío</button>
+          <button class="compact" data-state="processing" type="button">Procesamiento</button>
+          <button class="compact" data-state="crop" type="button">Crop incompleto</button>
+          <button class="compact" data-state="resolution" type="button">Resolución insuficiente</button>
+          <button class="compact" data-state="error" type="button">Error de validación</button>
+          <button class="compact" data-state="success" type="button">Guardado</button>
+          <button class="compact" data-state="conflict" type="button">Conflicto 409</button>
+          <button class="compact" data-state="unauthorized" type="button">Solo lectura 403</button>
+          <button class="compact" data-state="missing" type="button">Slug inexistente</button>
+        </div>
+        <div class="alert info" id="system-alert" role="status">Listo para editar. No hay cambios inválidos.</div>
+        <div class="small muted">Administrador: restore y archivo · Operador: lectura · Visitante: contenido publicado · Entidades: activo de media y tipo de bungalow.</div>
+      </section>
+    </main>
+
+    <dialog id="crop-dialog" aria-labelledby="crop-title">
+      <div class="dialog-head"><div><span class="meta">Ajustar hero</span><h2 id="crop-title">Recortes obligatorios</h2></div><button class="compact" type="button" data-close="crop-dialog" aria-label="Cerrar">Cerrar</button></div>
+      <div class="dialog-body crop-layout">
+        <div class="crop-canvas" aria-label="Área de recorte"><div class="crop-frame" id="crop-frame"></div></div>
+        <div class="crop-side">
+          <div class="segmented"><button class="primary compact" id="crop-desktop-tab" type="button">Desktop 16:9</button><button class="compact" id="crop-mobile-tab" type="button">Mobile 4:5</button></div>
+          <label>Zoom<input id="crop-zoom" type="range" min="1" max="2" step="0.1" value="1.2" /></label>
+          <div class="crop-preview" id="desktop-preview">Desktop pendiente</div>
+          <div class="crop-preview" id="mobile-preview">Mobile pendiente</div>
+          <div class="alert success">Resolución suficiente · source 3200 × 2133</div>
+          <button class="ghost" id="save-current-crop" type="button">Guardar recorte Desktop</button>
+        </div>
+      </div>
+      <div class="dialog-foot"><span class="small muted">Cancelar conserva el activo publicado.</span><button class="primary" id="apply-crops-btn" type="button" disabled>Aplicar recortes</button></div>
+    </dialog>
+
+    <dialog id="public-dialog" class="public-dialog" aria-labelledby="public-title">
+      <div class="public-hero"><span class="meta" style="color:rgba(255,255,255,.8)">Wakaya · 8 horas</span><h2 id="public-title" style="font-size:2rem">Full Day en la Laguna</h2><span>S/ 120</span></div>
+      <div class="dialog-body public-copy">
+        <p>Una jornada completa para recorrer el entorno tropical de Wakaya con kayak, guía local, almuerzo y pausas junto a la laguna.</p>
+        <div class="chips"><span class="chip info">Kayak</span><span class="chip info">Almuerzo</span><span class="chip info">Guía local</span></div>
+        <div class="booking-ref"><strong>Solicitud preparada</strong><span>Experiencia: Full Day en la Laguna</span><span class="mono small">requestedExperienceId: exp_02</span></div>
+      </div>
+      <div class="dialog-foot"><button class="ghost" type="button" data-close="public-dialog">Cerrar</button><a class="button-link primary" href="/es/contact?experience=paseo-laguna#booking-request">Consultar experiencia</a></div>
+    </dialog>
+
+    <div class="toast notify" id="toast" role="status">Notificación</div>
+
+    <script>
+      const experiences = [
+        { id: "exp_01", slug: "kayak-rio", title: { es: "Kayak en el Río", en: "Kayak on the River" }, duration: "2–3 h", price: "S/ 45", visible: true, order: 1 },
+        { id: "exp_02", slug: "paseo-laguna", title: { es: "Full Day en la Laguna", en: "Full Day at the Lagoon" }, duration: "8 h", price: "S/ 120", visible: true, order: 2 },
+        { id: "exp_03", slug: "avistamiento-aves", title: { es: "Avistamiento de Aves", en: "Bird Watching" }, duration: "3 h", price: "S/ 55", visible: true, order: 3 },
+        { id: "exp_04", slug: "gastronomia-local", title: { es: "Gastronomía Local", en: "Local Gastronomy" }, duration: "Abierto", price: "Desde S/ 35", visible: true, order: 4 },
+        { id: "exp_05", slug: "zona-juegos", title: { es: "Zona de Juegos", en: "Play Area" }, duration: "Libre", price: "Incluido", visible: true, order: 5 },
+        { id: "exp_06", slug: "fotografia-selva", title: { es: "Fotografía en la Selva", en: "Jungle Photography" }, duration: "4 h", price: "S/ 90", visible: true, order: 6 },
+        { id: "exp_07", slug: "bodas-celebraciones", title: { es: "Bodas & Celebraciones", en: "Weddings & Celebrations" }, duration: "A medida", price: "Cotizar", visible: false, order: 7 },
+        { id: "exp_08", slug: "piscina-relax", title: { es: "Piscina & Relax", en: "Pool & Relax" }, duration: "Todo el día", price: "Incluido", visible: true, order: 8 }
+      ];
+
+      const gallery = [
+        { id: "gallery_01", name: "Laguna al atardecer", alt: "Laguna de Wakaya al atardecer", a: "#25576b", b: "#c98b4a" },
+        { id: "gallery_02", name: "Piscina entre jardines", alt: "Piscina natural y jardines", a: "#1d6672", b: "#78a577" },
+        { id: "gallery_03", name: "Bungalow Familiar", alt: "Fachada del Bungalow Familiar", a: "#74563e", b: "#c39b63" },
+        { id: "gallery_04", name: "Kayak en la laguna", alt: "Kayak sobre la laguna", a: "#17495c", b: "#75a194" },
+        { id: "gallery_05", name: "Gastronomía amazónica", alt: "Plato de gastronomía local", a: "#6f4430", b: "#d29752" },
+        { id: "gallery_06", name: "Avistamiento de aves", alt: "Ave entre árboles de Wakaya", a: "#294f3c", b: "#91a65f" },
+        { id: "gallery_07", name: "Terraza Doble", alt: "Terraza de Bungalow Doble", a: "#3c5660", b: "#a67c54" },
+        { id: "gallery_08", name: "Bodas en Wakaya", alt: "Montaje de boda en jardines", a: "#65536d", b: "#d6a77b" },
+        { id: "gallery_09", name: "Jardines tropicales", alt: "Sendero entre jardines tropicales", a: "#285744", b: "#8bac68" },
+        { id: "gallery_10", name: "Bungalow Matrimonial", alt: "Interior del Bungalow Matrimonial", a: "#604a3d", b: "#be936e" },
+        { id: "gallery_11", name: "Zona de juegos", alt: "Zona de juegos para familias", a: "#315e6a", b: "#cf9a57" },
+        { id: "gallery_12", name: "Piscina natural", alt: "Piscina natural de Wakaya", a: "#176272", b: "#78aa98" },
+        { id: "gallery_13", name: "Aves al amanecer", alt: "Ave observada al amanecer", a: "#384f3b", b: "#c3a45f" },
+        { id: "gallery_14", name: "Fotografía en la selva", alt: "Ruta de fotografía entre vegetación", a: "#244f43", b: "#78936d" },
+        { id: "gallery_15", name: "Bungalow Triple", alt: "Terraza del Bungalow Triple", a: "#4f554c", b: "#b68b61" },
+        { id: "gallery_16", name: "Bungalow Doble", alt: "Dormitorio del Bungalow Doble", a: "#3b5664", b: "#b28a66" },
+        { id: "gallery_17", name: "Full Day en la Laguna", alt: "Visitantes durante el Full Day", a: "#1c5361", b: "#b48a52" },
+        { id: "gallery_18", name: "Atardecer en Wakaya", alt: "Atardecer sobre la laguna de Wakaya", a: "#3a5265", b: "#d48951" }
+      ];
+
+      const state = {
+        tab: "home",
+        locale: "es",
+        selectedExperience: "exp_02",
+        cropMode: "desktop",
+        assetCrops: {},
+        draftAsset: null,
+        draftSlot: "hero",
+        draftCrops: { desktop: false, mobile: false }
+      };
+      const byId = (id) => document.getElementById(id);
+
+      function notify(message) {
+        const toast = byId("toast");
+        toast.textContent = "Notificación: " + message;
+        toast.classList.add("is-visible");
+        window.clearTimeout(notify.timer);
+        notify.timer = window.setTimeout(() => toast.classList.remove("is-visible"), 2600);
+      }
+
+      function setTab(tab) {
+        state.tab = tab;
+        document.querySelectorAll("[role='tab']").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.tab === tab)));
+        document.querySelectorAll("[role='tabpanel']").forEach((panel) => { panel.hidden = panel.id !== "view-" + tab; });
+      }
+
+      function renderExperienceList(filter = "") {
+        const list = byId("experience-list");
+        list.innerHTML = "";
+        experiences
+          .filter((item) => (item.title.es + item.slug).toLowerCase().includes(filter.toLowerCase()))
+          .forEach((item) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "list-item" + (item.id === state.selectedExperience ? " is-active" : "");
+            button.innerHTML = `<span class="item-title">${item.title.es}</span><span class="item-meta"><span>Orden ${item.order} · ${item.visible ? "Visible" : "Oculta"}</span><span>${item.duration}</span></span>`;
+            button.addEventListener("click", () => selectExperience(item.id));
+            list.appendChild(button);
+          });
+      }
+
+      function selectExperience(id) {
+        state.selectedExperience = id;
+        const item = experiences.find((entry) => entry.id === id);
+        byId("experience-slug").textContent = item.slug;
+        byId("experience-heading").textContent = item.title[state.locale];
+        byId("experience-status").textContent = item.visible ? "Visible" : "Oculta";
+        byId("field-slug").value = item.slug;
+        byId("field-order").value = item.order;
+        byId("field-title").value = item.title[state.locale];
+        byId("field-duration").value = item.duration;
+        byId("field-price").value = item.price;
+        byId("art-title").textContent = item.title[state.locale];
+        renderSelectedAssetState();
+        renderExperienceList(byId("experience-search").value);
+      }
+
+      function selectedAssetKey() {
+        return "experience:" + state.selectedExperience;
+      }
+
+      function selectedAssetCrops() {
+        return state.assetCrops[selectedAssetKey()] || { desktop: false, mobile: false };
+      }
+
+      function renderSelectedAssetState() {
+        const crops = selectedAssetCrops();
+        byId("desktop-state").textContent = crops.desktop ? "Listo" : "Pendiente";
+        byId("mobile-state").textContent = crops.mobile ? "Listo" : "Pendiente";
+        const complete = crops.desktop && crops.mobile;
+        byId("crop-chip").textContent = complete ? "Recortes listos" : "Recortes pendientes";
+        byId("crop-chip").className = complete ? "chip success" : "chip warning";
+      }
+
+      function renderGallery() {
+        const grid = byId("gallery-grid");
+        grid.innerHTML = "";
+        gallery.forEach((item, index) => {
+          const article = document.createElement("article");
+          article.className = "gallery-item";
+          article.dataset.card = item.id;
+          article.innerHTML = `<div class="gallery-art" style="--tone-a:${item.a};--tone-b:${item.b}"></div><div><strong>${String(index + 1).padStart(2, "0")} · ${item.name}</strong><div class="small muted">${item.alt}</div></div><div class="gallery-actions"><button class="compact" data-up="${item.id}" type="button">Subir</button><button class="compact" data-down="${item.id}" type="button">Bajar</button><button class="compact" type="button">Editar alt</button></div>`;
+          grid.appendChild(article);
+        });
+        document.querySelectorAll("[data-up]").forEach((button) => button.addEventListener("click", () => moveGallery(button.dataset.up, -1)));
+        document.querySelectorAll("[data-down]").forEach((button) => button.addEventListener("click", () => moveGallery(button.dataset.down, 1)));
+      }
+
+      function moveGallery(id, direction) {
+        const index = gallery.findIndex((item) => item.id === id);
+        const target = index + direction;
+        if (target < 0 || target >= gallery.length) return;
+        [gallery[index], gallery[target]] = [gallery[target], gallery[index]];
+        renderGallery();
+        notify("Orden de galería actualizado");
+      }
+
+      function setSystemState(kind) {
+        const alert = byId("system-alert");
+        const states = {
+          loading: ["info", "Cargando contenido y preview…"],
+          empty: ["warning", "No hay experiencias que coincidan con la búsqueda."],
+          processing: ["info", "Procesamiento de media: generando WebP y variantes."],
+          crop: ["warning", "Crop incompleto: completa Desktop 16:9 y Mobile 4:5."],
+          resolution: ["error", "Resolución insuficiente: el activo de media no puede generar la variante requerida."],
+          error: ["error", "Error de validación: completa el resumen EN antes de publicar."],
+          success: ["success", "Guardado exitoso. La versión pública se actualizó."],
+          conflict: ["error", "Conflicto 409: la versión publicada cambió. Recarga antes de guardar."],
+          unauthorized: ["warning", "Acceso de solo lectura 403. Las acciones de edición están bloqueadas."],
+          missing: ["warning", "Slug inexistente: el popup no se abre y la página pública permanece estable."]
+        };
+        alert.className = "alert " + states[kind][0];
+        alert.textContent = states[kind][1];
+        notify(states[kind][1]);
+      }
+
+      function openExperiencePopup() {
+        const item = experiences.find((entry) => entry.id === state.selectedExperience);
+        const next = new URL(window.location.href);
+        next.searchParams.set("experience", item.slug);
+        history.pushState({ experience: item.slug }, "", next);
+        byId("public-title").textContent = item.title[state.locale];
+        byId("public-dialog").showModal();
+      }
+
+      function closePublicPopup(updateHistory = true) {
+        if (byId("public-dialog").open) byId("public-dialog").close();
+        if (updateHistory) {
+          const next = new URL(window.location.href);
+          next.searchParams.delete("experience");
+          history.pushState({}, "", next);
+        }
+      }
+
+      function syncPopupFromUrl() {
+        const slug = new URL(window.location.href).searchParams.get("experience");
+        if (!slug) {
+          closePublicPopup(false);
+          return;
+        }
+        const item = experiences.find((entry) => entry.slug === slug);
+        if (!item) {
+          setSystemState("missing");
+          closePublicPopup(false);
+          return;
+        }
+        state.selectedExperience = item.id;
+        selectExperience(item.id);
+        byId("public-title").textContent = item.title[state.locale];
+        if (!byId("public-dialog").open) byId("public-dialog").showModal();
+      }
+
+      function beginCrop(slot, fileName, existing = false) {
+        state.draftSlot = slot;
+        const key = slot === "hero" ? selectedAssetKey() : "gallery:" + fileName + ":" + Date.now();
+        const saved = existing ? (state.assetCrops[key] || { desktop: false, mobile: false }) : { desktop: false, mobile: false };
+        state.draftAsset = { key, fileName, existing };
+        state.draftCrops = { desktop: saved.desktop, mobile: slot === "gallery" ? true : saved.mobile };
+        state.cropMode = "desktop";
+        byId("crop-title").textContent = slot === "gallery" ? "Recorte fijo obligatorio" : "Recortes obligatorios";
+        byId("crop-desktop-tab").textContent = slot === "gallery" ? "Galería 4:3" : "Desktop 16:9";
+        byId("crop-mobile-tab").hidden = slot === "gallery";
+        byId("mobile-preview").hidden = slot === "gallery";
+        renderCrop();
+        byId("crop-dialog").showModal();
+      }
+
+      function cancelCrop() {
+        state.draftAsset = null;
+        state.draftCrops = { desktop: false, mobile: false };
+        byId("hero-file-input").value = "";
+        byId("gallery-file-input").value = "";
+        if (byId("crop-dialog").open) byId("crop-dialog").close();
+        notify("Carga cancelada; el contenido publicado no cambió");
+      }
+
+      function renderCrop() {
+        byId("crop-frame").classList.toggle("mobile", state.cropMode === "mobile");
+        byId("crop-desktop-tab").classList.toggle("primary", state.cropMode === "desktop");
+        byId("crop-mobile-tab").classList.toggle("primary", state.cropMode === "mobile");
+        byId("save-current-crop").textContent = "Guardar recorte " + (state.cropMode === "desktop" ? "Desktop" : "Mobile");
+        byId("desktop-preview").textContent = state.draftCrops.desktop ? (state.draftSlot === "gallery" ? "Galería lista · 1600×1200" : "Desktop listo · 1920×1080") : (state.draftSlot === "gallery" ? "Recorte pendiente" : "Desktop pendiente");
+        byId("mobile-preview").textContent = state.draftCrops.mobile ? "Mobile listo · 1080×1350" : "Mobile pendiente";
+        byId("desktop-preview").classList.toggle("done", state.draftCrops.desktop);
+        byId("mobile-preview").classList.toggle("done", state.draftCrops.mobile);
+        byId("apply-crops-btn").disabled = !(state.draftCrops.desktop && (state.draftSlot === "gallery" || state.draftCrops.mobile));
+      }
+
+      document.querySelectorAll("[role='tab']").forEach((button) => button.addEventListener("click", () => setTab(button.dataset.tab)));
+      document.querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", () => {
+        if (button.dataset.close === "public-dialog") closePublicPopup();
+        else if (button.dataset.close === "crop-dialog") cancelCrop();
+        else byId(button.dataset.close).close();
+      }));
+      byId("experience-search").addEventListener("input", (event) => renderExperienceList(event.target.value));
+      byId("add-experience-btn").addEventListener("click", () => {
+        const id = "exp_" + String(experiences.length + 1).padStart(2, "0");
+        experiences.push({ id, slug: "nueva-experiencia", title: { es: "Nueva experiencia", en: "New experience" }, duration: "Por definir", price: "Por definir", visible: false, order: experiences.length + 1 });
+        selectExperience(id);
+        setSystemState("empty");
+      });
+      byId("locale-tabs").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-locale]");
+        if (!button) return;
+        state.locale = button.dataset.locale;
+        document.querySelectorAll("#locale-tabs button").forEach((item) => item.classList.toggle("primary", item === button));
+        selectExperience(state.selectedExperience);
+      });
+      byId("toggle-experience-btn").addEventListener("click", () => {
+        const item = experiences.find((entry) => entry.id === state.selectedExperience);
+        item.visible = !item.visible;
+        byId("toggle-experience-btn").textContent = item.visible ? "Ocultar" : "Mostrar";
+        selectExperience(item.id);
+        notify(item.visible ? "Experiencia visible" : "Experiencia oculta");
+      });
+      byId("archive-experience-btn").addEventListener("click", () => {
+        const item = experiences.find((entry) => entry.id === state.selectedExperience);
+        item.visible = false;
+        item.title.es += " · archivada";
+        selectExperience(item.id);
+        setSystemState("success");
+      });
+      byId("save-experience-btn").addEventListener("click", () => {
+        const item = experiences.find((entry) => entry.id === state.selectedExperience);
+        item.title[state.locale] = byId("field-title").value;
+        item.duration = byId("field-duration").value;
+        item.price = byId("field-price").value;
+        item.order = Number(byId("field-order").value);
+        selectExperience(item.id);
+        const crops = selectedAssetCrops();
+        setSystemState(crops.desktop && crops.mobile ? "success" : "error");
+      });
+      byId("hero-file-input").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        byId("hero-file-state").textContent = file.name + " · temporal normalizado";
+        beginCrop("hero", file.name, false);
+      });
+      byId("gallery-file-input").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        beginCrop("gallery", file.name, false);
+      });
+      byId("open-crop-btn").addEventListener("click", () => beginCrop("hero", "activo-vigente.webp", true));
+      byId("crop-desktop-tab").addEventListener("click", () => { state.cropMode = "desktop"; renderCrop(); });
+      byId("crop-mobile-tab").addEventListener("click", () => { state.cropMode = "mobile"; renderCrop(); });
+      byId("save-current-crop").addEventListener("click", () => {
+        if (state.cropMode === "desktop") state.draftCrops.desktop = true; else state.draftCrops.mobile = true;
+        renderCrop();
+      });
+      byId("apply-crops-btn").addEventListener("click", () => {
+        if (!state.draftAsset) return;
+        state.assetCrops[state.draftAsset.key] = { ...state.draftCrops };
+        const wasGallery = state.draftSlot === "gallery";
+        if (!wasGallery) renderSelectedAssetState();
+        byId("crop-dialog").close();
+        state.draftAsset = null;
+        byId("hero-file-input").value = "";
+        byId("gallery-file-input").value = "";
+        notify(wasGallery ? "Recorte fijo aplicado; activo listo para la galería" : "Recortes Desktop y Mobile aplicados");
+      });
+      byId("open-public-btn").addEventListener("click", openExperiencePopup);
+      byId("public-preview-btn").addEventListener("click", openExperiencePopup);
+      byId("validate-btn").addEventListener("click", () => { const crops = selectedAssetCrops(); setSystemState(crops.desktop && crops.mobile ? "success" : "error"); });
+      byId("publish-btn").addEventListener("click", () => { const crops = selectedAssetCrops(); setSystemState(crops.desktop && crops.mobile ? "success" : "conflict"); });
+      byId("state-controls").addEventListener("click", (event) => { const button = event.target.closest("button[data-state]"); if (button) setSystemState(button.dataset.state); });
+      window.addEventListener("popstate", syncPopupFromUrl);
+      byId("public-dialog").addEventListener("click", (event) => { if (event.target === byId("public-dialog")) closePublicPopup(); });
+      byId("public-dialog").addEventListener("cancel", (event) => { event.preventDefault(); closePublicPopup(); });
+      byId("crop-dialog").addEventListener("cancel", (event) => { event.preventDefault(); cancelCrop(); });
+      document.addEventListener("keydown", (event) => { if (event.key === "Escape" && byId("public-dialog").open) closePublicPopup(); });
+
+      renderExperienceList();
+      renderGallery();
+      renderCrop();
+      renderSelectedAssetState();
+      syncPopupFromUrl();
+    </script>
+  </body>
+</html>

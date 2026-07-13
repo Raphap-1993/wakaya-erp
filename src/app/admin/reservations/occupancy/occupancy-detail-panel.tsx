@@ -18,6 +18,7 @@ export function OccupancyDetailPanel({
   weekLabel,
   selectedDay,
   selectedCellState,
+  surface = "card",
 }: {
   reservation: ReservationListItem | null;
   reservationsInCell: ReservationListItem[];
@@ -26,6 +27,7 @@ export function OccupancyDetailPanel({
   weekLabel: string;
   selectedDay: string | null;
   selectedCellState: string | null;
+  surface?: "card" | "plain";
 }) {
   const balanceCents = reservation ? Math.max((reservation.amountTotalCents ?? 0) - (reservation.amountPaidCents ?? 0), 0) : 0;
   const actions = validOccupancyActions(reservation);
@@ -46,14 +48,8 @@ export function OccupancyDetailPanel({
     selected: reservation?.id,
     date: selectedDay ?? undefined,
   });
-
-  return (
-    <aside className={styles.sectionCard}>
-      <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>Detalle diario</h2>
-      </div>
-
-      <div className={styles.stack}>
+  const content = (
+    <div className={styles.stack}>
         <div className={styles.kvGrid}>
           <div className={styles.kv}>
             <span className={styles.kvLabel}>Semana</span>
@@ -72,8 +68,8 @@ export function OccupancyDetailPanel({
             <span className={styles.kvValue}>{bungalow?.name ?? "Sin asignar"}</span>
           </div>
           <div className={styles.kv}>
-            <span className={styles.kvLabel}>Huésped</span>
-            <span className={styles.kvValue}>{reservation?.responsibleId ?? "No disponible"}</span>
+            <span className={styles.kvLabel}>Trazabilidad</span>
+            <span className={styles.kvValue}>Auditoría por sesión activa</span>
           </div>
           <div className={styles.kv}>
             <span className={styles.kvLabel}>Estadía</span>
@@ -178,6 +174,19 @@ export function OccupancyDetailPanel({
           )}
         </div>
       </div>
+  );
+
+  if (surface === "plain") {
+    return content;
+  }
+
+  return (
+    <aside className={styles.sectionCard}>
+      <div className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>Detalle diario</h2>
+      </div>
+
+      {content}
     </aside>
   );
 }

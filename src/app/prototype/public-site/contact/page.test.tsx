@@ -18,17 +18,29 @@ describe('PublicSiteContactPage', () => {
 
     expect(html).toContain('value="2026-08-05"');
     expect(html).toContain('value="2026-08-08"');
-    expect(html).toContain('<option value="3" selected="">3 huéspedes</option>');
-    expect(html).toContain(
-      '<option value="bungalow-matrimonial" selected="">Bungalow Matrimonial</option>',
-    );
+    expect(html).toContain('<option value="2" selected="">2 personas</option>');
+    expect(html).toContain('type="hidden" name="requestedBungalowType" value="bungalow-matrimonial"');
   });
 
-  it('exports metadata for the contact page SEO baseline', () => {
-    expect(contactPageModule.metadata).toMatchObject({
+  it('keeps the booking-request contract behind the Figma contact layout', async () => {
+    const html = renderToStaticMarkup(await PublicSiteContactPage({}));
+
+    expect(html).toContain('Contáctanos');
+    expect(html).toContain('Hablemos');
+    expect(html).toContain('Planifica tu estadía');
+    expect(html).toContain('action="/api/public/booking-requests"');
+    expect(html).toContain('method="post"');
+    expect(html).toContain('reservas@wakayaecolodge.com');
+    expect(html).toContain('Enviar solicitud');
+  });
+
+  it('exports metadata for the spanish contact route used by the prototype alias', async () => {
+    const metadata = await contactPageModule.generateMetadata();
+
+    expect(metadata).toMatchObject({
       title: 'Contacto y reservas | Wakaya Ecolodge',
       alternates: {
-        canonical: '/prototype/public-site/contact',
+        canonical: '/es/contact',
       },
     });
   });

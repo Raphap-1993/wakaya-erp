@@ -25,7 +25,7 @@ describe('BungalowDetailPage', () => {
     expect(metadata).toMatchObject({
       title: 'Bungalow Familiar | Wakaya Ecolodge',
       alternates: {
-        canonical: '/prototype/public-site/bungalows/bungalow-familiar',
+        canonical: '/es/bungalows/bungalow-familiar',
       },
     });
   });
@@ -47,9 +47,33 @@ describe('BungalowDetailPage', () => {
 
     expect(html).toContain('Bungalow Familiar');
     expect(html).toContain(
-      'href="/prototype/public-site/bungalows?category=bungalow-familiar&amp;checkIn=2026-07-10&amp;checkOut=2026-07-12&amp;guests=4"',
+      'href="/es/bungalows?category=bungalow-familiar&amp;checkIn=2026-07-10&amp;checkOut=2026-07-12&amp;guests=4"',
     );
-    expect(html).toContain('Cómo se coordina tu estadía');
+    expect(html).toContain('Lo que incluye');
+    expect(html).toContain('Servicios incluidos');
+    expect(html).toContain('Detalles del bungalow');
+  });
+
+  it('routes the detail CTA into the booking-request form context', async () => {
+    const html = renderToStaticMarkup(
+      await BungalowDetailPage({
+        params: Promise.resolve({
+          slug: 'bungalow-familiar',
+        }),
+        searchParams: Promise.resolve({
+          checkIn: '2030-07-10',
+          checkOut: '2030-07-12',
+          guests: '4',
+        }),
+      }),
+    );
+
+    expect(html).toContain('Enviar solicitud');
+    expect(html).toContain('action="/api/public/booking-requests"');
+    expect(html).toContain('name="requestedBungalowType" value="bungalow-family"');
+    expect(html).toContain('name="requestedCheckIn" value="2030-07-10"');
+    expect(html).toContain('name="requestedCheckOut" value="2030-07-12"');
+    expect(html).toContain('name="requestedGuests" value="4"');
   });
 
   it('delegates unknown slugs to notFound', async () => {

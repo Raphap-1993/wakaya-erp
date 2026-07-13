@@ -60,4 +60,45 @@ describe("middleware authn", () => {
       }),
     );
   });
+
+  it("authenticates a backoffice session from the persistent session cookie before checking OIDC", async () => {
+    vi.stubEnv("AUTH_DEV_BYPASS", "false");
+    vi.doMock("@/lib/backoffice-auth/store", () => ({
+      backofficeAuthStore: {
+        getSession: vi.fn().mockResolvedValue({
+          user: {
+            id: "backoffice-user-1",
+            email: "reservas@wakayaecolodge.com",
+            name: "Reservas Wakaya",
+            roles: ["admin"],
+            active: true,
+          },
+          session: {
+            id: "session-1",
+            userId: "backoffice-user-1",
+            expiresAt: "2099-07-01T00:00:00.000Z",
+          },
+        }),
+      },
+    }));
+
+    const { authenticate } = await import("./authn");
+    const request = new Request("http://localhost/admin/reservations", {
+      headers: {
+        cookie: "wakaya_backoffice_session=session-token-123",
+      },
+    });
+
+    const ctx = await authenticate(request);
+
+    expect(ctx.authenticated).toBe(true);
+    expect(ctx.subject).toBe("backoffice-user-1");
+    expect(ctx.roles).toEqual(["admin"]);
+    expect(ctx.claims).toEqual(
+      expect.objectContaining({
+        authMethod: "backoffice_session",
+        email: "reservas@wakayaecolodge.com",
+      }),
+    );
+  });
 });

@@ -1,28 +1,34 @@
 import type { ReservationPaymentStatus, ReservationStatus } from "@/lib/reservations/types";
+import { hasPermission } from "@/lib/rbac";
 
 export type MonitorFilterState = {
   status: string;
   channel: string;
-  responsibleId: string;
-  date: string;
-  startDate: string;
-  endDate: string;
 };
 
 export type MonitorPermissions = {
+  canWrite: boolean;
   canAssign: boolean;
   canApprove: boolean;
 };
 
+export function buildMonitorPermissions(roles: readonly string[]): MonitorPermissions {
+  return {
+    canWrite: hasPermission(roles, "reservation:write"),
+    canAssign: hasPermission(roles, "reservation:assign"),
+    canApprove: hasPermission(roles, "reservation:approve"),
+  };
+}
+
 export const STATUS_LABELS: Record<ReservationStatus, string> = {
-  pending_review: "Pending review",
-  ota_imported_confirmed: "OTA imported confirmed",
-  confirmed: "Confirmed",
-  assigned: "Assigned",
-  checked_in: "Checked in",
-  checked_out: "Checked out",
-  paid: "Paid",
-  cancelled: "Cancelled",
+  pending_review: "Pendiente de revisión",
+  ota_imported_confirmed: "OTA preaprobada",
+  confirmed: "Confirmada",
+  assigned: "Asignada",
+  checked_in: "Check-in",
+  checked_out: "Check-out",
+  paid: "Pagada",
+  cancelled: "Cancelada",
   no_show: "No show",
 };
 

@@ -1,5 +1,12 @@
 # Wakaya Design Split
 
+<!-- nav-guided:start -->
+## Navegacion guiada
+- Anterior: [Indice de documentacion](../../README.md)
+- Siguiente: [Indice de documentacion](../../README.md)
+<!-- nav-guided:end -->
+
+
 Date: 2026-05-29
 Status: Draft approved in conversation, pending final user review
 Topic: Visual direction and UX split for Wakaya public site and internal reservations monitor

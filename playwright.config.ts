@@ -5,10 +5,11 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
   fullyParallel: true,
+  workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3200',
     trace: 'on-first-retry',
   },
   projects: [
