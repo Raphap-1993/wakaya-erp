@@ -121,6 +121,72 @@ function createFailureLogger() {
 }
 
 describe("ContentMediaService", () => {
+  it("loads sorted metadata with one exact batch query", async () => {
+    const { storage } = createStorage();
+    const query = vi.fn().mockResolvedValue({
+      rows: [
+        { id: "asset_1", original_filename: "uno.jpg" },
+        { id: "asset_2", original_filename: "dos.png" },
+      ],
+      rowCount: 2,
+    });
+    const service = new ContentMediaService(storage, { query } as unknown as Pool);
+
+    const result = await service.listAssetMetadata(["asset_2", "asset_1", "asset_2"]);
+
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(query).toHaveBeenCalledWith(
+      "select id, original_filename from media_asset where id = any($1::text[]) order by id asc",
+      [["asset_1", "asset_2"]],
+    );
+    expect(result).toEqual([
+      { assetId: "asset_1", originalFilename: "uno.jpg" },
+      { assetId: "asset_2", originalFilename: "dos.png" },
+    ]);
+  });
+
+  it("returns no metadata when no pool is configured", async () => {
+    const { storage } = createStorage();
+
+    await expect(new ContentMediaService(storage, null).listAssetMetadata(["asset_1"]))
+      .resolves.toEqual([]);
+  });
+
+  it("skips the metadata query when no asset IDs are provided", async () => {
+    const { storage } = createStorage();
+    const query = vi.fn();
+
+    await expect(
+      new ContentMediaService(storage, { query } as unknown as Pool).listAssetMetadata([]),
+    ).resolves.toEqual([]);
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it("maps historical null filenames to an empty string", async () => {
+    const { storage } = createStorage();
+    const query = vi.fn().mockResolvedValue({
+      rows: [{ id: "asset_legacy", original_filename: null }],
+      rowCount: 1,
+    });
+    const service = new ContentMediaService(storage, { query } as unknown as Pool);
+
+    await expect(service.listAssetMetadata(["asset_legacy"])).resolves.toEqual([
+      { assetId: "asset_legacy", originalFilename: "" },
+    ]);
+  });
+
+  it("does not silence metadata query errors when a pool is configured", async () => {
+    const { storage } = createStorage();
+    const missingRelation = Object.assign(new Error("relation media_asset does not exist"), {
+      code: "42P01",
+    });
+    const query = vi.fn().mockRejectedValue(missingRelation);
+    const service = new ContentMediaService(storage, { query } as unknown as Pool);
+
+    await expect(service.listAssetMetadata(["asset_1"])).rejects.toBe(missingRelation);
+    expect(query).toHaveBeenCalledTimes(1);
+  });
+
   it("returns and persists the normalized original filename", async () => {
     const events: string[] = [];
     const { storage } = createStorage(events);

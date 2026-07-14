@@ -5,6 +5,7 @@ import type { Pool, PoolClient } from "pg";
 import { logger, type SafeLogger } from "@/lib/logger";
 import { getPool } from "@/lib/reservations/postgres";
 
+import type { AdminMediaMetadata } from "./admin-media-metadata";
 import { createFilesystemMediaStorage } from "./filesystem-media-storage";
 import {
   optimizeContentImage,
@@ -380,6 +381,26 @@ export class ContentMediaService {
     private readonly pool: Pool | null = hasDatabaseUrl() ? getPool() : null,
     private readonly failureLogger: MediaFailureLogger = logger,
   ) {}
+
+  async listAssetMetadata(assetIds: string[]): Promise<AdminMediaMetadata[]> {
+    const ids = [...new Set(assetIds)].sort();
+    if (!this.pool || ids.length === 0) {
+      return [];
+    }
+
+    const result = await this.pool.query<{
+      id: string;
+      original_filename: string | null;
+    }>(
+      "select id, original_filename from media_asset where id = any($1::text[]) order by id asc",
+      [ids],
+    );
+
+    return result.rows.map((row) => ({
+      assetId: row.id,
+      originalFilename: row.original_filename ?? "",
+    }));
+  }
 
   async createAsset(input: {
     file: File;
