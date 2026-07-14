@@ -81,7 +81,7 @@ jobs:
       DR_KUBECONFIG_VALUE: ${{ secrets.DR_KUBECONFIG }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
 

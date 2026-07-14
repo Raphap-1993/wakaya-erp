@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
       - run: node ci/scripts/check-template-instantiation.mjs --mode template --root .
@@ -57,7 +57,7 @@ jobs:
         working-directory: stacks/node-next/template
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - run: npm install
@@ -107,7 +107,7 @@ jobs:
         working-directory: stacks/quarkus-angular/template/frontend
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - run: npm install
@@ -140,7 +140,7 @@ jobs:
         working-directory: stacks/spring-react/template/frontend
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - run: npm install
