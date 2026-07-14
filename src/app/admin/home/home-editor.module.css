@@ -451,6 +451,75 @@
   color: #8a2b2b;
 }
 
+.validationAlert {
+  display: grid;
+  gap: 12px;
+}
+
+.validationList {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.validationItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(191, 102, 102, 0.2);
+}
+
+.validationMessage {
+  display: grid;
+  gap: 3px;
+}
+
+.validationMessage > span {
+  color: #713333;
+  font-size: 0.86rem;
+}
+
+.validationButton {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(154, 52, 52, 0.34);
+  background: #fffafa;
+  color: #7e2929;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.editor [data-validation-active="true"] {
+  scroll-margin-top: 32px;
+  color: #8a2b2b;
+}
+
+.editor [data-validation-active="true"] > input,
+.editor [data-validation-active="true"] > select,
+.editor [data-validation-active="true"] > textarea,
+.editor [data-validation-active="true"] label > input {
+  border-color: #b84343;
+  background: #fffafa;
+  box-shadow: 0 0 0 3px rgba(184, 67, 67, 0.14);
+  outline: none;
+}
+
+@media (max-width: 720px) {
+  .validationItem {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .validationButton {
+    width: 100%;
+  }
+}
+
 @media (max-width: 1380px) {
   .layout {
     grid-template-columns: 1fr;

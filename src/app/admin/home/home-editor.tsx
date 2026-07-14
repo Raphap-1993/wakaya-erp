@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 
@@ -31,6 +31,14 @@ import {
 } from "@/lib/home-content/types";
 
 import styles from "./home-editor.module.css";
+import {
+  countValidationIssuesForNode,
+  mapHomeValidationIssues,
+  validateHomeDocument,
+  type HomeValidationIssueInput,
+  type HomeValidationNode,
+  type HomeValidationTarget,
+} from "./home-validation";
 
 type HomeEditorProps = {
   initialItem: HomeContentRevisionRecord;
@@ -213,6 +221,20 @@ function isSectionComplete(section: HomeSection) {
 
 function describeCompletionState(isComplete: boolean) {
   return isComplete ? "Completo" : "Pendiente";
+}
+
+function describeValidationCount(count: number) {
+  return `Revisar · ${count} ${count === 1 ? "campo" : "campos"}`;
+}
+
+function validationIssueId(key: string) {
+  return `home-validation-issue-${key.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function isValidationIssueInput(value: unknown): value is HomeValidationIssueInput {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as { path?: unknown; message?: unknown };
+  return Array.isArray(candidate.path) && typeof candidate.message === "string";
 }
 
 function getPreviewTitle(document: HomeContentDocument, selected: SelectedNode) {
@@ -944,7 +966,7 @@ function ImageField({
   onUpload: (file: File, slot: string) => Promise<void>;
 }) {
   return (
-    <div className={`${styles.field} ${styles.fieldFull}`}>
+    <div className={`${styles.field} ${styles.fieldFull}`} data-validation-field={label}>
       <span>{label}</span>
       <span className={styles.metaPill}>{value ? "Imagen asociada" : "Sin imagen asociada"}</span>
       <label className={styles.uploadButton}>
@@ -1017,6 +1039,12 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
   const [editingSiteSettings, setEditingSiteSettings] = useState(false);
   const [utilityPanel, setUtilityPanel] = useState<"preview" | "history" | null>(null);
   const [feedback, setFeedback] = useState<{ kind: "success" | "error"; message: string } | null>(null);
+  const [validationAttempted, setValidationAttempted] = useState(false);
+  const [serverValidationResult, setServerValidationResult] = useState<{
+    documentFingerprint: string;
+    issues: HomeValidationTarget[];
+  } | null>(null);
+  const [pendingFocusTarget, setPendingFocusTarget] = useState<HomeValidationTarget | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
   const [baseDocument, setBaseDocument] = useState(() => JSON.stringify(initialItem.document));
@@ -1037,11 +1065,99 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
     () => [...document.sections].sort((left, right) => left.order - right.order),
     [document.sections],
   );
+  const clientValidationIssues = useMemo(
+    () => (validationAttempted ? validateHomeDocument(document) : []),
+    [document, validationAttempted],
+  );
+  const documentFingerprint = JSON.stringify(document);
+  const serverValidationIssues =
+    serverValidationResult?.documentFingerprint === documentFingerprint ? serverValidationResult.issues : [];
+  const validationIssues = clientValidationIssues.length > 0 ? clientValidationIssues : serverValidationIssues;
 
   const selectedIsComplete =
     selected.kind === "slide"
       ? (selectedSlide ? isSlideComplete(selectedSlide) : false)
       : (selectedSection ? isSectionComplete(selectedSection) : false);
+
+  useEffect(() => {
+    const root = window.document.getElementById("home-editor-fields");
+    if (!root) return;
+
+    const clearActiveField = () => {
+      root.querySelectorAll<HTMLElement>('[data-validation-active="true"]').forEach((element) => {
+        element.removeAttribute("data-validation-active");
+      });
+      root.querySelectorAll<HTMLElement>('[data-home-validation-control="true"]').forEach((element) => {
+        element.removeAttribute("data-home-validation-control");
+        element.removeAttribute("aria-invalid");
+        element.removeAttribute("aria-describedby");
+      });
+    };
+
+    clearActiveField();
+    if (!pendingFocusTarget) return;
+
+    const currentTarget = validationIssues.find((issue) => issue.key === pendingFocusTarget.key);
+    if (!currentTarget) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      let scope: ParentNode = root;
+
+      if (currentTarget.groupLabel.startsWith("CTA")) {
+        const ctaSection = Array.from(root.querySelectorAll("section")).find((section) => {
+          const heading = section.querySelector(":scope > div h3, :scope > div h4");
+          return heading?.textContent?.trim() === currentTarget.groupLabel;
+        });
+        if (ctaSection) scope = ctaSection;
+      }
+
+      if (currentTarget.groupLabel === "Opciones avanzadas") {
+        const advanced = root.querySelector<HTMLDetailsElement>("details");
+        if (advanced) {
+          advanced.open = true;
+          scope = advanced;
+        }
+      }
+
+      const candidates = Array.from(scope.querySelectorAll<HTMLElement>("label, [data-validation-field]")).filter(
+        (element) => {
+          const directLabel = Array.from(element.children).find((child) => child.tagName === "SPAN");
+          return directLabel?.textContent?.trim() === currentTarget.fieldLabel;
+        },
+      );
+      const field = candidates[currentTarget.focusOccurrence] ?? candidates[0];
+      const control = field?.querySelector<HTMLElement>("input, select, textarea, button");
+
+      if (!field || !control) return;
+
+      field.setAttribute("data-validation-active", "true");
+      control.setAttribute("data-home-validation-control", "true");
+      control.setAttribute("aria-invalid", "true");
+      control.setAttribute("aria-describedby", validationIssueId(currentTarget.key));
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+      control.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeLocale, editingSiteSettings, pendingFocusTarget, selected, validationIssues]);
+
+  function goToValidationTarget(target: HomeValidationTarget) {
+    if (target.node.kind === "settings") {
+      setEditingSiteSettings(true);
+    } else {
+      setSelected({ kind: target.node.kind, id: target.node.id });
+      setEditingSiteSettings(false);
+    }
+    if (target.locale) setActiveLocale(target.locale);
+    setPendingFocusTarget(target);
+  }
+
+  function nodeStatus(node: HomeValidationNode, isComplete: boolean) {
+    const count = countValidationIssuesForNode(validationIssues, node);
+    return count > 0 ? describeValidationCount(count) : describeCompletionState(isComplete);
+  }
 
   function updateSlide(slideId: string, mutate: (slide: HomeSlide) => void) {
     setDocument((current) =>
@@ -1146,8 +1262,17 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
   }
 
   async function publishChanges() {
-    setIsSaving(true);
     setFeedback(null);
+    setServerValidationResult(null);
+
+    const issues = validateHomeDocument(document);
+    if (issues.length > 0) {
+      setValidationAttempted(true);
+      goToValidationTarget(issues[0]);
+      return;
+    }
+
+    setIsSaving(true);
 
     try {
       const response = await fetch("/api/admin/home-content", {
@@ -1163,6 +1288,16 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       const body = await response.json();
 
       if (!response.ok) {
+        const serverIssues = Array.isArray(body.issues) ? body.issues.filter(isValidationIssueInput) : [];
+        if (serverIssues.length > 0) {
+          const mappedIssues = mapHomeValidationIssues(document, serverIssues);
+          if (mappedIssues.length > 0) {
+            setValidationAttempted(true);
+            setServerValidationResult({ documentFingerprint, issues: mappedIssues });
+            goToValidationTarget(mappedIssues[0]);
+            return;
+          }
+        }
         throw new Error(body.error ?? "publish_failed");
       }
 
@@ -1171,6 +1306,9 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       setCurrentVersion(body.item.revisionVersion);
       setRevisions(body.revisions);
       setBaseDocument(JSON.stringify(body.item.document));
+      setValidationAttempted(false);
+      setServerValidationResult(null);
+      setPendingFocusTarget(null);
       setFeedback({
         kind: "success",
         message: `Home publicado como versión ${body.item.revisionVersion}.`,
@@ -1210,6 +1348,9 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       setCurrentVersion(body.item.revisionVersion);
       setRevisions(body.revisions);
       setBaseDocument(JSON.stringify(body.item.document));
+      setValidationAttempted(false);
+      setServerValidationResult(null);
+      setPendingFocusTarget(null);
       setFeedback({
         kind: "success",
         message: `Restaurado y republicado como versión ${body.item.revisionVersion}.`,
@@ -1238,7 +1379,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
               <strong>Última publicación:</strong> {formatPublicationMeta(publishedRecord)}
             </span>
             <span>
-              <strong>Estado:</strong> {describeCompletionState(selectedIsComplete)}
+              <strong>Estado:</strong> {nodeStatus(selected, selectedIsComplete)}
             </span>
           </div>
 
@@ -1273,9 +1414,35 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
         </div>
       </section>
 
-      {feedback ? (
-        <div className={feedback.kind === "success" ? styles.successAlert : styles.errorAlert}>{feedback.message}</div>
-      ) : null}
+      <div id="home-validation-feedback" aria-live="polite">
+        {validationIssues.length > 0 ? (
+          <section className={`${styles.errorAlert} ${styles.validationAlert}`} role="alert">
+            <strong>
+              No se puede publicar. Corrige {validationIssues.length} {validationIssues.length === 1 ? "campo" : "campos"}.
+            </strong>
+            <ul className={styles.validationList}>
+              {validationIssues.map((issue) => (
+                <li className={styles.validationItem} id={validationIssueId(issue.key)} key={issue.key}>
+                  <span className={styles.validationMessage}>
+                    <strong>{issue.summaryLabel}</strong>
+                    <span>{issue.message}</span>
+                  </span>
+                  <button
+                    className={styles.validationButton}
+                    type="button"
+                    aria-label={`Ir al campo: ${issue.summaryLabel}`}
+                    onClick={() => goToValidationTarget(issue)}
+                  >
+                    Ir al campo
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : feedback ? (
+          <div className={feedback.kind === "success" ? styles.successAlert : styles.errorAlert}>{feedback.message}</div>
+        ) : null}
+      </div>
 
       <div className={styles.layout}>
         <aside className={styles.sidebar}>
@@ -1290,7 +1457,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                   key={slide.id}
                   title={slide.content.es.title}
                   subtitle={`Orden ${slide.order} · ${slide.visible ? "Visible" : "Oculto"}`}
-                  status={describeCompletionState(isSlideComplete(slide))}
+                  status={nodeStatus({ kind: "slide", id: slide.id }, isSlideComplete(slide))}
                   selected={selected.kind === "slide" && selected.id === slide.id}
                   onSelect={() => {
                     setSelected({ kind: "slide", id: slide.id });
@@ -1314,7 +1481,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                   key={section.id}
                   title={HOME_SECTION_LABELS[section.type]}
                   subtitle={`${getPreviewTitle(document, { kind: "section", id: section.id })} · ${section.visible ? "Visible" : "Oculta"}`}
-                  status={describeCompletionState(isSectionComplete(section))}
+                  status={nodeStatus({ kind: "section", id: section.id }, isSectionComplete(section))}
                   selected={selected.kind === "section" && selected.id === section.id}
                   onSelect={() => {
                     setSelected({ kind: "section", id: section.id });
@@ -1334,10 +1501,17 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
           >
             <strong>Configuración web</strong>
             <span>Ajustes generales</span>
+            {countValidationIssuesForNode(validationIssues, { kind: "settings", id: "navigation" }) > 0 ? (
+              <span>
+                {describeValidationCount(
+                  countValidationIssuesForNode(validationIssues, { kind: "settings", id: "navigation" }),
+                )}
+              </span>
+            ) : null}
           </button>
         </aside>
 
-        <section className={styles.editor}>
+        <section className={styles.editor} id="home-editor-fields">
           <div className={styles.editorHeader}>
             <div>
               <p className={styles.editorKicker}>
@@ -1348,7 +1522,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
             <span className={styles.metaPill}>
               {editingSiteSettings
                 ? "Menú público"
-                : `Estado · ${describeCompletionState(selectedIsComplete)}`}
+                : `Estado · ${nodeStatus(selected, selectedIsComplete)}`}
             </span>
           </div>
 

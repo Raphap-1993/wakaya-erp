@@ -60,6 +60,11 @@ describe("HomeEditor", () => {
     expect(html).toContain("Peso subtítulo");
     expect(html).toContain("Ajuste fino subtítulo (px)");
     expect(html).toContain("Peso exacto subtítulo");
+    expect(html).toContain('id="home-validation-feedback"');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('id="home-editor-fields"');
+    expect(html).not.toContain("No se puede publicar");
+    expect(html).not.toContain("Ir al campo");
     expect(html).not.toContain("Tamaño links menú");
     expect(html).not.toContain("Peso links menú");
     expect(html).not.toContain("Ajuste fino links menú (px)");
