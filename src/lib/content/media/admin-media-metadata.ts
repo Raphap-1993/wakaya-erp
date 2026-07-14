@@ -12,9 +12,10 @@ export type AdminMediaDescriptor = {
 };
 
 const MANAGED_MEDIA_PATTERN =
-  /^\/media\/assets\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9._-]+$/;
+  /^\/media\/assets\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9._-]+\.webp$/;
 const RAW_ASSET_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const FALLBACK_FILENAME = "imagen.webp";
+const BIDI_CONTROL_PATTERN = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/gu;
 
 export function extractManagedAssetId(value: string): string | null {
   return MANAGED_MEDIA_PATTERN.exec(value)?.[1] ?? null;
@@ -22,13 +23,24 @@ export function extractManagedAssetId(value: string): string | null {
 
 export function fallbackMediaFilename(value: string): string {
   const path = value.split(/[?#]/, 1)[0] ?? "";
-  const basename = path.split(/[\\/]/).at(-1) ?? "";
+  const encodedBasename = path.split(/[\\/]/u).at(-1) ?? "";
+  let decodedBasename = encodedBasename;
 
   try {
-    return decodeURIComponent(basename).trim() || FALLBACK_FILENAME;
+    decodedBasename = decodeURIComponent(encodedBasename);
   } catch {
-    return basename.trim() || FALLBACK_FILENAME;
+    // Preserve malformed percent sequences as readable fallback text.
   }
+
+  const basename = decodedBasename.split(/[\\/]/u).at(-1) ?? "";
+  const normalized = basename
+    .replace(/[\p{Cc}\p{Cs}]/gu, "")
+    .replace(BIDI_CONTROL_PATTERN, "")
+    .replace(/\s+/gu, " ")
+    .trim()
+    .normalize("NFC");
+
+  return normalized || FALLBACK_FILENAME;
 }
 
 export function collectAdminMediaAssetIds(values: string[]): string[] {
