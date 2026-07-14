@@ -79,13 +79,13 @@ const FIELD_LABELS: Record<string, string> = {
   name: "Nombre",
   order: "Orden",
   origin: "Origen",
-  paragraphs: "Párrafo",
+  paragraphs: "Párrafos (uno por línea)",
   price: "Precio",
-  quote: "Quote",
-  quoteSource: "Origen de la cita",
+  quote: "Cita",
+  quoteSource: "Fuente cita",
   roomLabel: "Label bungalow",
   scrollLabel: "Scroll label",
-  source: "Origen",
+  source: "Fuente",
   submitHint: "Hint submit",
   subtitle: "Subtítulo",
   subtitleSize: "Tamaño subtítulo",
@@ -187,11 +187,17 @@ function resolveGroup(path: Array<string | number>) {
   return "Contenido";
 }
 
-function resolveFieldLabel(path: Array<string | number>, message: string) {
+function resolveFieldLabel(document: HomeContentDocument, path: Array<string | number>, message: string) {
   if (message === "visible_slide_required" || path.join(".") === "slider.slides") return "Visible en home";
   if (path.includes("destination")) return path.includes("value") ? "Valor destino" : "Destino";
 
   const field = lastString(path);
+  if (field === "quote" && path.includes("items")) return "Testimonio";
+  if (field === "visibleCount" && path[0] === "sections" && typeof path[1] === "number") {
+    const section = document.sections[path[1]];
+    if (section?.type === "bungalows") return "Bungalows visibles";
+    if (section?.type === "experiences") return "Cards visibles";
+  }
   if (path[0] === "navigation") return NAVIGATION_FIELD_LABELS[field] ?? FIELD_LABELS[field] ?? "Configuración";
   return FIELD_LABELS[field] ?? "Campo requerido";
 }
@@ -238,7 +244,7 @@ export function mapHomeValidationIssues(
     const path = normalizedPath(issue.path) as Array<string | number>;
     const { node, nodeLabel } = resolveNode(document, path);
     const locale = path.includes("es") ? "es" : path.includes("en") ? "en" : undefined;
-    const fieldLabel = resolveFieldLabel(path, issue.message);
+    const fieldLabel = resolveFieldLabel(document, path, issue.message);
     const summaryLabel = [nodeLabel, locale === "es" ? "Español" : locale === "en" ? "English" : null, fieldLabel]
       .filter(Boolean)
       .join(" · ");

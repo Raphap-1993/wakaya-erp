@@ -240,7 +240,7 @@ function isValidationIssueInput(value: unknown): value is HomeValidationIssueInp
 function getPreviewTitle(document: HomeContentDocument, selected: SelectedNode) {
   if (selected.kind === "slide") {
     const slide = document.slider.slides.find((item) => item.id === selected.id);
-    return slide?.content.es.title ?? "Slide";
+    return slide?.content.es.title || slide?.content.en.title || "Slide";
   }
 
   const section = document.sections.find((item) => item.id === selected.id);
@@ -250,21 +250,21 @@ function getPreviewTitle(document: HomeContentDocument, selected: SelectedNode) 
 
   switch (section.type) {
     case "booking-band":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "stats":
       return "Cifras clave";
     case "story":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "bungalows":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "quote-band":
-      return section.content.quote.es;
+      return section.content.quote.es || HOME_SECTION_LABELS[section.type];
     case "experiences":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "testimonials":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "closing-cta":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
   }
 }
 
@@ -1124,11 +1124,16 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       const candidates = Array.from(scope.querySelectorAll<HTMLElement>("label, [data-validation-field]")).filter(
         (element) => {
           const directLabel = Array.from(element.children).find((child) => child.tagName === "SPAN");
-          return directLabel?.textContent?.trim() === currentTarget.fieldLabel;
+          return (
+            element.dataset.validationField === currentTarget.fieldLabel ||
+            directLabel?.textContent?.trim() === currentTarget.fieldLabel
+          );
         },
       );
       const field = candidates[currentTarget.focusOccurrence] ?? candidates[0];
-      const control = field?.querySelector<HTMLElement>("input, select, textarea, button");
+      const control = field?.matches("input, select, textarea, button, a")
+        ? field
+        : field?.querySelector<HTMLElement>("input, select, textarea, button, a");
 
       if (!field || !control) return;
 
@@ -2167,7 +2172,11 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <h3>Fuente de experiencias</h3>
                       <span className={styles.metaPill}>{selectedSection.experienceIds.length} asociadas</span>
                     </div>
-                    <Link className={styles.secondaryButton} href="/admin/content?tab=experiences">
+                    <Link
+                      className={styles.secondaryButton}
+                      href="/admin/content?tab=experiences"
+                      data-validation-field="Experiencias visibles"
+                    >
                       Gestionar experiencias
                     </Link>
                   </section>

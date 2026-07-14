@@ -509,6 +509,13 @@
   outline: none;
 }
 
+.editor a[data-validation-active="true"],
+.editor button[data-validation-active="true"] {
+  border-color: #b84343;
+  box-shadow: 0 0 0 3px rgba(184, 67, 67, 0.14);
+  outline: none;
+}
+
 @media (max-width: 720px) {
   .validationItem {
     align-items: stretch;

@@ -122,4 +122,29 @@ describe("HomeEditor", () => {
     expect(html).not.toContain("Quote ES");
     expect(html).not.toContain("Quote EN");
   });
+
+  it("keeps the structural section name visible when its required title is empty", () => {
+    const document = structuredClone(DEFAULT_HOME_CONTENT);
+    document.slider.slides = [];
+    document.sections = document.sections.filter((section) => section.type === "story");
+    const story = document.sections[0];
+    if (!story || story.type !== "story") throw new Error("story fixture missing");
+    story.content.title.es = "";
+
+    const html = renderToStaticMarkup(
+      <HomeEditor
+        initialItem={{
+          revisionVersion: 2,
+          document,
+          updatedAt: "2026-07-09T15:00:00.000Z",
+          updatedByUserId: "admin-user-1",
+          restoredFromVersion: null,
+          source: "published",
+        }}
+        initialRevisions={[]}
+      />,
+    );
+
+    expect(html).toContain("<h2>Historia</h2>");
+  });
 });

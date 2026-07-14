@@ -88,4 +88,42 @@ describe("home validation targets", () => {
       }),
     ]);
   });
+
+  it("keeps every invalid field so the summary can navigate them independently", () => {
+    const document = structuredClone(DEFAULT_HOME_CONTENT);
+    const story = document.sections.find((section) => section.type === "story");
+    if (!story || story.type !== "story") throw new Error("story fixture missing");
+    document.slider.slides[0].primaryCta.label.en = "";
+    story.content.title.es = "";
+
+    const issues = validateHomeDocument(document);
+
+    expect(issues).toHaveLength(2);
+    expect(issues.map((issue) => issue.summaryLabel)).toEqual([
+      "Wakaya Ecolodge · English · Label",
+      "Historia · Español · Título",
+    ]);
+  });
+
+  it("uses the exact visible labels for lists, testimonials and section counts", () => {
+    const document = structuredClone(DEFAULT_HOME_CONTENT);
+    const storyIndex = document.sections.findIndex((section) => section.type === "story");
+    const bungalowsIndex = document.sections.findIndex((section) => section.type === "bungalows");
+    const experiencesIndex = document.sections.findIndex((section) => section.type === "experiences");
+    const testimonialsIndex = document.sections.findIndex((section) => section.type === "testimonials");
+
+    const issues = mapHomeValidationIssues(document, [
+      { path: ["sections", storyIndex, "content", "paragraphs", "es", 0], message: "required" },
+      { path: ["sections", testimonialsIndex, "content", "items", 1, "quote", "en"], message: "required" },
+      { path: ["sections", bungalowsIndex, "content", "visibleCount"], message: "invalid" },
+      { path: ["sections", experiencesIndex, "content", "visibleCount"], message: "invalid" },
+    ]);
+
+    expect(issues.map((issue) => [issue.fieldLabel, issue.focusOccurrence])).toEqual([
+      ["Párrafos (uno por línea)", 0],
+      ["Testimonio", 1],
+      ["Bungalows visibles", 0],
+      ["Cards visibles", 0],
+    ]);
+  });
 });

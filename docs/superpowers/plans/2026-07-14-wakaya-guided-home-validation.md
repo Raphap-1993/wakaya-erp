@@ -22,7 +22,7 @@
 - Create: `src/app/admin/home/home-validation.ts`
 - Create: `src/app/admin/home/home-validation.test.ts`
 
-- [ ] **Step 1: Write the failing mapping tests**
+- [x] **Step 1: Write the failing mapping tests**
 
 Crear casos que modifiquen `DEFAULT_HOME_CONTENT` y exijan destinos con esta
 forma:
@@ -44,26 +44,26 @@ expect(validateHomeDocument(document)).toEqual(
 Agregar casos para CTA en inglés, estilo avanzado y `issues` del servidor con
 prefijo `document`.
 
-- [ ] **Step 2: Run the tests and verify RED**
+- [x] **Step 2: Run the tests and verify RED**
 
 Run: `npm test -- src/app/admin/home/home-validation.test.ts`
 
 Expected: FAIL porque `home-validation.ts` todavía no existe.
 
-- [ ] **Step 3: Implement the minimal pure adapter**
+- [x] **Step 3: Implement the minimal pure adapter**
 
 Definir `HomeValidationTarget`, `validateHomeDocument`,
 `mapHomeValidationIssues` y `countValidationIssuesForNode`. Usar
 `homeContentV2Schema.safeParse`, normalizar el prefijo `document`, resolver el
 índice a `slide.id`/`section.id` y traducir mensajes sin exponer paths.
 
-- [ ] **Step 4: Run the tests and verify GREEN**
+- [x] **Step 4: Run the tests and verify GREEN**
 
 Run: `npm test -- src/app/admin/home/home-validation.test.ts`
 
 Expected: PASS para rutas de sección, slide, idioma, CTA, estilo y servidor.
 
-- [ ] **Step 5: Commit the adapter**
+- [x] **Step 5: Commit the adapter**
 
 ```bash
 git add src/app/admin/home/home-validation.ts src/app/admin/home/home-validation.test.ts
@@ -77,52 +77,52 @@ git commit -m "feat: map home validation issues to editor fields"
 - Modify: `src/app/admin/home/home-editor.module.css`
 - Modify: `src/app/admin/home/home-editor.test.tsx`
 
-- [ ] **Step 1: Write the failing editor assertions**
+- [x] **Step 1: Write the failing editor assertions**
 
 Extender el test estático para exigir que el árbol inicial tenga una región de
 feedback preparada sin mostrar errores y que los botones/bloques mantengan
 nombres operativos. El comportamiento interactivo se cubre en Task 3.
 
-- [ ] **Step 2: Run the focused editor test and verify RED**
+- [x] **Step 2: Run the focused editor test and verify RED**
 
 Run: `npm test -- src/app/admin/home/home-editor.test.tsx`
 
 Expected: FAIL en las nuevas marcas del resumen/destinos de validación.
 
-- [ ] **Step 3: Add client preflight and derived issue state**
+- [x] **Step 3: Add client preflight and derived issue state**
 
 En `publishChanges`, ejecutar `validateHomeDocument(document)` antes de activar
 el estado de guardado. Si hay errores, hacer visible el resumen, navegar al
 primero y retornar sin `fetch`. Mientras el resumen esté visible, recalcular las
 incidencias con `useMemo` al cambiar el documento.
 
-- [ ] **Step 4: Render all issues and per-node counts**
+- [x] **Step 4: Render all issues and per-node counts**
 
 Mostrar `No se puede publicar. Corrige N campos.`, una fila por incidencia y
 `Ir al campo`. Reemplazar `Pendiente` por `Revisar · N campos` solo después de
 un intento de publicación. Mantener el feedback existente para éxito, media,
 red y conflicto.
 
-- [ ] **Step 5: Implement navigation and focus**
+- [x] **Step 5: Implement navigation and focus**
 
 `goToValidationTarget` debe seleccionar slide/sección/configuración, activar
 ES/EN, abrir `details` avanzado cuando aplique y enfocar el control. El control
 activo recibe `aria-invalid="true"`, `aria-describedby` y estilo rojo. Limpiar
 el marcado anterior antes de cambiar de destino.
 
-- [ ] **Step 6: Preserve server issues as fallback**
+- [x] **Step 6: Preserve server issues as fallback**
 
 Si un `PUT` responde error con `body.issues`, pasar esas rutas a
 `mapHomeValidationIssues`, mostrar el mismo resumen y navegar al primer destino.
 Solo usar `describeSaveError` cuando la respuesta no incluya incidencias.
 
-- [ ] **Step 7: Run focused tests and typecheck**
+- [x] **Step 7: Run focused tests and typecheck**
 
 Run: `npm test -- src/app/admin/home/home-validation.test.ts src/app/admin/home/home-editor.test.tsx && npm run typecheck`
 
 Expected: PASS y TypeScript sin errores.
 
-- [ ] **Step 8: Commit the editor behavior**
+- [x] **Step 8: Commit the editor behavior**
 
 ```bash
 git add src/app/admin/home/home-editor.tsx src/app/admin/home/home-editor.module.css src/app/admin/home/home-editor.test.tsx
@@ -136,7 +136,7 @@ git commit -m "feat: guide editors to invalid home fields"
 - Create: `docs/fase-6-qa/06.07-guided-home-validation-local-evidence.md`
 - Modify: `specs/010-content-editor-workbench/README.md`
 
-- [ ] **Step 1: Write the failing Playwright scenario**
+- [x] **Step 1: Write the failing Playwright scenario**
 
 Autenticar el backoffice, vaciar `Historia > Español > Título`, volver al slide,
 pulsar publicar y exigir:
@@ -149,7 +149,7 @@ await expect(page.getByLabel("Título")).toBeFocused();
 await expect(page.getByLabel("Título")).toHaveAttribute("aria-invalid", "true");
 ```
 
-- [ ] **Step 2: Run the scenario and verify RED before the UI implementation**
+- [x] **Step 2: Run the scenario and verify RED before the UI implementation**
 
 Run: `E2E_BASE_URL=http://localhost:3212 npx playwright test e2e/home-validation.spec.ts`
 
@@ -157,7 +157,7 @@ Expected before Task 2: FAIL porque el aviso sigue siendo genérico. Si Task 2 y
 está aplicado, verificar RED contra su commit padre o conservar la salida RED de
 Task 2 como evidencia TDD equivalente.
 
-- [ ] **Step 3: Run focused and full verification**
+- [x] **Step 3: Run focused and full verification**
 
 Run:
 
@@ -171,12 +171,12 @@ npm run build
 
 Expected: todas las verificaciones terminan con exit code 0.
 
-- [ ] **Step 4: Record evidence and stop before production**
+- [x] **Step 4: Record evidence and stop before production**
 
 Documentar comandos, resultados, captura local, riesgos residuales y rollback
 (`git revert` de los commits del incremento). Mantener producción bloqueada.
 
-- [ ] **Step 5: Commit QA and documentation**
+- [x] **Step 5: Commit QA and documentation**
 
 ```bash
 git add e2e/home-validation.spec.ts docs/fase-6-qa/06.07-guided-home-validation-local-evidence.md specs/010-content-editor-workbench docs/superpowers
