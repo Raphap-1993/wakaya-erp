@@ -51,6 +51,20 @@ describe("normalizeOriginalFilename", () => {
     );
   });
 
+  it("normalizes to NFC after removing an intervening control character", () => {
+    const normalized = normalizeOriginalFilename("Cafe\u0000\u0301.png", "image/png");
+
+    expect(normalized).toBe("Café.png");
+    expect(normalized).toBe(normalized.normalize("NFC"));
+  });
+
+  it("normalizes to NFC after removing an intervening bidi control", () => {
+    const normalized = normalizeOriginalFilename("Cafe\u202e\u0301.png", "image/png");
+
+    expect(normalized).toBe("Café.png");
+    expect(normalized).toBe(normalized.normalize("NFC"));
+  });
+
   it("uses a MIME-derived fallback when the filename becomes empty", () => {
     expect(normalizeOriginalFilename("\u0000", "image/webp")).toBe("imagen.webp");
   });

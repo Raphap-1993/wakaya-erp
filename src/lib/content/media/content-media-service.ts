@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 
 import type { Pool, PoolClient } from "pg";
 
+import { logger, type SafeLogger } from "@/lib/logger";
 import { getPool } from "@/lib/reservations/postgres";
 
 import { createFilesystemMediaStorage } from "./filesystem-media-storage";
@@ -15,6 +16,10 @@ import { normalizeOriginalFilename } from "./media-filename";
 import type { MediaStorage } from "./media-storage";
 
 export type ContentMediaSlot = "hero" | "detail" | "card" | "gallery";
+
+type MediaFailureLogger = Pick<SafeLogger, "error">;
+type SecondaryFailureOperation = "remove" | "rollback" | "release";
+type SecondaryFailurePhase = "after_commit" | "compensation" | "transaction_failed";
 
 type PersistedVariant = {
   storageKey: string;
@@ -145,12 +150,58 @@ async function writeVariant(
   };
 }
 
-async function cleanupWrittenMedia(storage: MediaStorage, writtenStoragePaths: string[][]) {
+function logSecondaryFailure(
+  failureLogger: MediaFailureLogger,
+  input: {
+    operation: SecondaryFailureOperation;
+    phase: SecondaryFailurePhase;
+    assetId: string;
+    storageKey?: string;
+    error: unknown;
+  },
+) {
+  try {
+    const rawErrorCode =
+      input.error && typeof input.error === "object" && "code" in input.error
+        ? (input.error as { code?: unknown }).code
+        : undefined;
+    const errorCode =
+      typeof rawErrorCode === "string" && /^[a-z0-9_.:-]{1,64}$/i.test(rawErrorCode)
+        ? rawErrorCode
+        : undefined;
+    const errorClass =
+      input.error instanceof Error ? input.error.constructor.name : typeof input.error;
+
+    failureLogger.error("media_secondary_failure", {
+      operation: input.operation,
+      phase: input.phase,
+      assetId: input.assetId,
+      ...(input.storageKey ? { storageKey: input.storageKey } : {}),
+      errorClass,
+      ...(errorCode ? { errorCode } : {}),
+    });
+  } catch {
+    // Observability must never replace the primary processing or persistence error.
+  }
+}
+
+async function cleanupWrittenMedia(
+  storage: MediaStorage,
+  writtenStoragePaths: string[][],
+  failureLogger: MediaFailureLogger,
+  assetId: string,
+) {
   for (const pathSegments of [...writtenStoragePaths].reverse()) {
     try {
       await storage.remove(pathSegments);
-    } catch {
-      // Best-effort compensation must preserve the original processing or persistence error.
+    } catch (error) {
+      logSecondaryFailure(failureLogger, {
+        operation: "remove",
+        phase: "compensation",
+        assetId,
+        storageKey: pathSegments.join("/"),
+        error,
+      });
     }
   }
 }
@@ -176,6 +227,7 @@ async function persistAsset(
     asset: PersistedAssetRow;
     variants: PersistedVariantRow[];
   },
+  failureLogger: MediaFailureLogger,
 ) {
   let client: PoolClient;
   try {
@@ -195,22 +247,41 @@ async function persistAsset(
   } catch (error) {
     failed = true;
     persistenceError = error;
-    await client.query("rollback").catch(() => undefined);
+    try {
+      await client.query("rollback");
+    } catch (rollbackError) {
+      logSecondaryFailure(failureLogger, {
+        operation: "rollback",
+        phase: "transaction_failed",
+        assetId: rows.asset.id,
+        error: rollbackError,
+      });
+    }
   }
 
   if (failed) {
     try {
       client.release();
-    } catch {
-      // Preserve the transaction error; storage compensation still has to run.
+    } catch (releaseError) {
+      logSecondaryFailure(failureLogger, {
+        operation: "release",
+        phase: "transaction_failed",
+        assetId: rows.asset.id,
+        error: releaseError,
+      });
     }
     throw toMediaPersistenceError(persistenceError);
   }
 
   try {
     client.release();
-  } catch {
-    // Commit already succeeded, so deleting the persisted asset would corrupt metadata.
+  } catch (releaseError) {
+    logSecondaryFailure(failureLogger, {
+      operation: "release",
+      phase: "after_commit",
+      assetId: rows.asset.id,
+      error: releaseError,
+    });
   }
 }
 
@@ -307,6 +378,7 @@ export class ContentMediaService {
   constructor(
     private readonly storage: MediaStorage = createFilesystemMediaStorage(),
     private readonly pool: Pool | null = hasDatabaseUrl() ? getPool() : null,
+    private readonly failureLogger: MediaFailureLogger = logger,
   ) {}
 
   async createAsset(input: {
@@ -354,36 +426,40 @@ export class ContentMediaService {
       }
 
       if (this.pool) {
-        await persistAsset(this.pool, {
-          asset: {
-            id: assetId,
-            storage_key: masterStored.storageKey,
-            checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
-            mime_type: input.file.type,
-            original_filename: originalFilename,
-            format: "webp",
-            width: optimized.master.width,
-            height: optimized.master.height,
-            byte_size: optimized.master.bytes,
-            status: "ready",
-            created_by: input.actorId ?? null,
+        await persistAsset(
+          this.pool,
+          {
+            asset: {
+              id: assetId,
+              storage_key: masterStored.storageKey,
+              checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
+              mime_type: input.file.type,
+              original_filename: originalFilename,
+              format: "webp",
+              width: optimized.master.width,
+              height: optimized.master.height,
+              byte_size: optimized.master.bytes,
+              status: "ready",
+              created_by: input.actorId ?? null,
+            },
+            variants: Object.entries(variants).map(([variantKey, variant]) => ({
+              id: `${assetId}_${variantKey}`,
+              asset_id: assetId,
+              slot: variantKey as MediaVariantKey,
+              storage_key: variant.storageKey,
+              format: "webp",
+              width: variant.width,
+              height: variant.height,
+              quality: variant.quality,
+              crop_spec:
+                (input.crops ?? buildFallbackCrops(input.slot))[
+                  variantKey as MediaVariantKey
+                ] ?? null,
+              byte_size: variant.bytes,
+            })),
           },
-          variants: Object.entries(variants).map(([variantKey, variant]) => ({
-            id: `${assetId}_${variantKey}`,
-            asset_id: assetId,
-            slot: variantKey as MediaVariantKey,
-            storage_key: variant.storageKey,
-            format: "webp",
-            width: variant.width,
-            height: variant.height,
-            quality: variant.quality,
-            crop_spec:
-              (input.crops ?? buildFallbackCrops(input.slot))[
-                variantKey as MediaVariantKey
-              ] ?? null,
-            byte_size: variant.bytes,
-          })),
-        });
+          this.failureLogger,
+        );
       }
 
       return {
@@ -403,7 +479,7 @@ export class ContentMediaService {
         },
       };
     } catch (error) {
-      await cleanupWrittenMedia(this.storage, writtenStoragePaths);
+      await cleanupWrittenMedia(this.storage, writtenStoragePaths, this.failureLogger, assetId);
       throw error;
     }
   }

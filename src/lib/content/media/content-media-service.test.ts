@@ -22,7 +22,7 @@ async function createPngFile(name: string) {
 
 function createStorage(
   events: string[] = [],
-  options: { failRemoveFor?: string; failWriteFor?: string } = {},
+  options: { failRemoveFor?: string; failWriteFor?: string; removeFailure?: Error } = {},
 ) {
   const write = vi.fn(async (pathSegments: string[]) => {
     events.push(`write:${pathSegments.at(-1)}`);
@@ -38,7 +38,7 @@ function createStorage(
   const remove = vi.fn(async (pathSegments: string[]) => {
     events.push(`remove:${pathSegments.at(-1)}`);
     if (pathSegments.at(-1) === options.failRemoveFor) {
-      throw new Error("storage_remove_failed");
+      throw options.removeFailure ?? new Error("storage_remove_failed");
     }
   });
   const storage = { write, read, remove } satisfies MediaStorage;
@@ -69,12 +69,16 @@ function createPool(options: {
   failOn?: "begin" | "asset" | "variant" | "commit";
   failure?: Error;
   connectFailure?: Error;
+  rollbackFailure?: Error;
   releaseFailure?: Error;
 } = {}) {
   const events = options.events ?? [];
   const query = vi.fn(async (sql: unknown) => {
     const operation = classifyQuery(sql);
     events.push(operation);
+    if (operation === "rollback" && options.rollbackFailure) {
+      throw options.rollbackFailure;
+    }
     if (operation === options.failOn) {
       throw options.failure ?? new Error("database_failure");
     }
@@ -108,12 +112,21 @@ function createPool(options: {
   };
 }
 
+function createFailureLogger() {
+  const error = vi.fn();
+  return {
+    logger: { error },
+    error,
+  };
+}
+
 describe("ContentMediaService", () => {
   it("returns and persists the normalized original filename", async () => {
     const events: string[] = [];
     const { storage } = createStorage(events);
     const { pool, query, release } = createPool({ events });
-    const service = new ContentMediaService(storage, pool);
+    const { logger, error: logError } = createFailureLogger();
+    const service = new ContentMediaService(storage, pool, logger);
     const file = await createPngFile("C:\\fakepath\\Selva   Wakaya.PNG");
 
     const result = await service.createAsset({
@@ -159,6 +172,7 @@ describe("ContentMediaService", () => {
       "release",
     ]);
     expect(release).toHaveBeenCalledOnce();
+    expect(logError).not.toHaveBeenCalled();
   });
 
   it("cleans the attempted key and previous writes when storage fails mid-pipeline", async () => {
@@ -202,11 +216,16 @@ describe("ContentMediaService", () => {
   it("does not remove committed media if releasing the client fails after commit", async () => {
     const events: string[] = [];
     const { storage, remove } = createStorage(events);
+    const releaseFailure = Object.assign(
+      new Error("release failed at /var/lib/postgresql after SELECT secret"),
+      { code: "RELEASE_FAILED" },
+    );
     const { pool } = createPool({
       events,
-      releaseFailure: new Error("release_failed"),
+      releaseFailure,
     });
-    const service = new ContentMediaService(storage, pool);
+    const { logger, error: logError } = createFailureLogger();
+    const service = new ContentMediaService(storage, pool, logger);
     const file = await createPngFile("selva.png");
 
     const result = await service.createAsset({ file, slot: "detail" });
@@ -214,6 +233,16 @@ describe("ContentMediaService", () => {
     expect(result.asset.status).toBe("ready");
     expect(events.slice(-2)).toEqual(["commit", "release"]);
     expect(remove).not.toHaveBeenCalled();
+    expect(logError).toHaveBeenCalledOnce();
+    expect(logError).toHaveBeenCalledWith("media_secondary_failure", {
+      operation: "release",
+      phase: "after_commit",
+      assetId: result.asset.id,
+      errorClass: "Error",
+      errorCode: "RELEASE_FAILED",
+    });
+    expect(JSON.stringify(logError.mock.calls)).not.toContain("/var/lib/postgresql");
+    expect(JSON.stringify(logError.mock.calls)).not.toContain("SELECT secret");
   });
 
   it("keeps filesystem-only uploads working when no pool is configured", async () => {
@@ -277,16 +306,33 @@ describe("ContentMediaService", () => {
 
   it("keeps cleanup best-effort and preserves the persistence cause if one removal fails", async () => {
     const events: string[] = [];
-    const { storage, remove } = createStorage(events, { failRemoveFor: "thumb.webp" });
+    const removeFailure = Object.assign(
+      new Error("remove failed at /tmp/private/assets/secret/thumb.webp"),
+      { code: "REMOVE_FAILED" },
+    );
+    const { storage, write, remove } = createStorage(events, {
+      failRemoveFor: "thumb.webp",
+      removeFailure,
+    });
     const persistenceError = Object.assign(new Error("duplicate key violates constraint"), {
       code: "23505",
+    });
+    const rollbackFailure = Object.assign(
+      new Error("rollback failed: SELECT * FROM media_asset"),
+      { code: "ROLLBACK_FAILED" },
+    );
+    const releaseFailure = Object.assign(new Error("release failed at /var/lib/postgresql"), {
+      code: "RELEASE_FAILED",
     });
     const { pool } = createPool({
       events,
       failOn: "variant",
       failure: persistenceError,
+      rollbackFailure,
+      releaseFailure,
     });
-    const service = new ContentMediaService(storage, pool);
+    const { logger, error: logError } = createFailureLogger();
+    const service = new ContentMediaService(storage, pool, logger);
     const file = await createPngFile("selva.png");
 
     let thrown: unknown;
@@ -301,6 +347,7 @@ describe("ContentMediaService", () => {
     });
     expect((thrown as Error).cause).toBe(persistenceError);
 
+    const assetId = write.mock.calls[0][0][1];
     expect(remove).toHaveBeenCalledTimes(3);
     expect(events.slice(-6)).toEqual([
       "variant",
@@ -310,6 +357,44 @@ describe("ContentMediaService", () => {
       "remove:detail.webp",
       "remove:master.webp",
     ]);
+    expect(logError.mock.calls).toEqual([
+      [
+        "media_secondary_failure",
+        {
+          operation: "rollback",
+          phase: "transaction_failed",
+          assetId,
+          errorClass: "Error",
+          errorCode: "ROLLBACK_FAILED",
+        },
+      ],
+      [
+        "media_secondary_failure",
+        {
+          operation: "release",
+          phase: "transaction_failed",
+          assetId,
+          errorClass: "Error",
+          errorCode: "RELEASE_FAILED",
+        },
+      ],
+      [
+        "media_secondary_failure",
+        {
+          operation: "remove",
+          phase: "compensation",
+          assetId,
+          storageKey: `assets/${assetId}/thumb.webp`,
+          errorClass: "Error",
+          errorCode: "REMOVE_FAILED",
+        },
+      ],
+    ]);
+    const serializedLogs = JSON.stringify(logError.mock.calls);
+    expect(serializedLogs).not.toContain("duplicate key");
+    expect(serializedLogs).not.toContain("SELECT * FROM media_asset");
+    expect(serializedLogs).not.toContain("/var/lib/postgresql");
+    expect(serializedLogs).not.toContain("/tmp/private");
   });
 
   it.each([

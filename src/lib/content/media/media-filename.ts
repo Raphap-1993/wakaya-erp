@@ -49,11 +49,11 @@ function preserveExtensionWithinLimit(filename: string) {
 export function normalizeOriginalFilename(filename: string, mimeType: string) {
   const basename = filename.split(/[\\/]/u).at(-1) ?? "";
   const normalized = basename
-    .normalize("NFC")
     .replace(/[\p{Cc}\p{Cs}]/gu, "")
     .replace(/[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/gu, "")
     .replace(/\s+/gu, " ")
-    .trim();
+    .trim()
+    .normalize("NFC");
 
   return preserveExtensionWithinLimit(normalized || fallbackFilename(mimeType));
 }
