@@ -13,10 +13,13 @@
 | RF-010-07 | Separar estilos globales | Configuración web fuera de las secciones |
 | RF-010-08 | Ocultar opciones técnicas | Ajustes avanzados plegados y sin IDs internos |
 | RF-010-09 | Preservar dominio | No cambia contenido público ni lógica de reservas |
+| RF-010-10 | Localizar errores de publicación | Resumen completo con bloque, idioma, campo y acción `Ir al campo` |
 
 ## Reglas
 
 - El editor sigue siendo estructurado y bilingüe.
 - Media, orden y visibilidad son compartidos entre idiomas.
 - La publicación conserva validación y revisión recuperable.
+- Una publicación inválida no envía la mutación; abre y enfoca el primer campo
+  inválido y conserva todos los errores navegables en el resumen.
 - No se permite HTML, CSS ni composición libre.

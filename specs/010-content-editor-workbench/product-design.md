@@ -13,6 +13,7 @@ pantalla diseñada alrededor del documento técnico y no de la tarea diaria.
 - Cambiar ES/EN sin duplicar estructura.
 - Reemplazar media y publicar con una acción clara.
 - Acceder a preview, historial o estilo fino solo cuando lo necesita.
+- Encontrar el bloque y campo exactos cuando una validación impide publicar.
 
 ## Decisión
 
@@ -38,3 +39,10 @@ No se implementa canvas, drag-and-drop libre, edición inline ni CMS externo.
 - Experiencias: colección y ficha.
 - Galería: colección de imágenes.
 - Bungalows: cinco fichas públicas; cupos permanecen fuera del editor.
+
+## Validación guiada
+
+Una publicación inválida muestra todos los errores en lenguaje operativo. Cada
+error identifica bloque, idioma y campo, permite `Ir al campo` y el sistema
+abre automáticamente el primero. La lista lateral muestra el número de campos
+por revisar sin exponer rutas o códigos técnicos.

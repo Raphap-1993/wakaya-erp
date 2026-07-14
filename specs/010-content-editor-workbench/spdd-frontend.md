@@ -28,7 +28,13 @@
 Publicado, cambios sin publicar, guardando, validación, conflicto de versión,
 sin elementos, permiso denegado, carga de media y error recuperable.
 
+En validación, el resumen enumera todas las incidencias con el patrón
+`Bloque · Idioma · Campo`, una acción `Ir al campo` y salto automático al
+primer error. La fila afectada muestra `Revisar · N campos`.
+
 ## Accesibilidad
 
 Botones con nombre explícito, `aria-expanded` para paneles, foco devuelto al
 disparador al cerrar, feedback anunciado y orden de tabulación predecible.
+El campo elegido recibe foco programático solo después de publicar con errores
+o usar `Ir al campo`, además de `aria-invalid` y asociación con su mensaje.

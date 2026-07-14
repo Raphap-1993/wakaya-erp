@@ -29,3 +29,13 @@ Comando: `npm test -- src/app/admin/content/content-hub.test.tsx src/app/admin/c
 
 Suite, typecheck, lint focalizado, build y Playwright autenticado. Registrar
 evidencia y detenerse antes de producción.
+
+## T-010-005 - Validación guiada del Home
+
+Red: tests exigen traducción de rutas Zod, resumen completo, conteo por bloque,
+ausencia de `PUT` inválido, navegación y foco accesible.
+Green: adaptador puro de incidencias, preflight local, lista `Ir al campo`, salto
+automático, estado lateral y marcado del control.
+Refactor: reutilizar el schema vigente y preservar errores de red/media/versión.
+
+Comando: `npm test -- src/app/admin/home/home-validation.test.ts src/app/admin/home/home-editor.test.tsx && npm run typecheck`
