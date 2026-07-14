@@ -8,7 +8,10 @@ function readLocalEnvValue(key: string) {
   return envLocal.match(new RegExp(`^${key}=(.+)$`, "m"))?.[1]?.trim().replace(/^['"]|['"]$/g, "") ?? "";
 }
 
-async function authenticateAdmin(page: import("@playwright/test").Page, next = "/admin/home") {
+async function authenticateAdmin(
+  page: import("@playwright/test").Page,
+  next = "/admin/content?tab=home",
+) {
   await page.goto(`/login?next=${encodeURIComponent(next)}`);
   if (new URL(page.url()).pathname !== "/login") return;
 
@@ -18,7 +21,7 @@ async function authenticateAdmin(page: import("@playwright/test").Page, next = "
   await page.getByLabel("Correo").fill(email);
   await page.getByLabel("Contraseña").fill(password);
   await page.getByRole("button", { name: "Ingresar" }).click();
-  await expect(page).toHaveURL(new RegExp(`${next}$`));
+  await expect(page).toHaveURL(new RegExp(`${next.replace(/[?]/g, "\\?")}$`));
 }
 
 test("crops, optimizes and publishes a Home hero through managed media", async ({ page }) => {
@@ -61,12 +64,20 @@ test("crops, optimizes and publishes a Home hero through managed media", async (
   const uploadResponse = await uploadResponsePromise;
   expect(uploadResponse.status()).toBe(201);
   const uploadBody = await uploadResponse.json();
+  expect(uploadBody.asset?.originalFilename).toBe("gallery01.jpg");
   const heroDesktopUrl = uploadBody.asset?.variants?.heroDesktop?.url as string | undefined;
   expect(heroDesktopUrl).toMatch(/^\/media\/assets\/.+\/heroDesktop\.webp$/);
   const storedMediaResponse = await page.request.get(heroDesktopUrl ?? "");
   expect(storedMediaResponse.status()).toBe(200);
   expect(storedMediaResponse.headers()["content-type"]).toContain("image/webp");
   await expect(page.getByText("Imagen optimizada y lista para publicar en el home.")).toBeVisible();
+
+  const filenameButton = page.getByRole("button", { name: "gallery01.jpg" });
+  await expect(filenameButton).toBeVisible();
+  await filenameButton.click();
+  const previewDialog = page.getByRole("dialog", { name: "Vista previa de imagen" });
+  await expect(previewDialog).toBeVisible();
+  await previewDialog.getByRole("button", { name: "Cerrar", exact: true }).click();
 
   const publishResponsePromise = page.waitForResponse(
     (response) => response.url().endsWith("/api/admin/home-content") && response.request().method() === "PUT",
@@ -76,6 +87,10 @@ test("crops, optimizes and publishes a Home hero through managed media", async (
   expect(publishResponse.status()).toBe(200);
   await expect(page.getByText(/^Home publicado como versión /)).toBeVisible();
   await expect(page.locator("#home-validation-feedback").getByRole("alert")).toHaveCount(0);
+
+  await page.reload();
+  await expect(page).toHaveURL(/\/admin\/content\?tab=home$/);
+  await expect(page.getByRole("button", { name: "gallery01.jpg" })).toBeVisible();
 
   const screenshotDirectory = path.join(process.cwd(), "output", "playwright");
   fs.mkdirSync(screenshotDirectory, { recursive: true });

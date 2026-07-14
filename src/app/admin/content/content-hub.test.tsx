@@ -1,12 +1,28 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { ContentHub } from "./content-hub";
+import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
+import { ContentHub, rememberMediaAsset } from "./content-hub";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
 }));
-vi.mock("@/app/admin/home/home-editor", () => ({ HomeEditor: () => <div>Mock home editor</div> }));
+vi.mock("@/app/admin/home/home-editor", () => ({
+  HomeEditor: ({
+    mediaMetadata,
+    onMediaAssetCreated,
+  }: {
+    mediaMetadata?: Record<string, { assetId: string; originalFilename: string }>;
+    onMediaAssetCreated?: (asset: ContentMediaAsset) => void;
+  }) => (
+    <div
+      data-home-media-metadata={JSON.stringify(mediaMetadata)}
+      data-home-media-callback={String(typeof onMediaAssetCreated === "function")}
+    >
+      Mock home editor
+    </div>
+  ),
+}));
 vi.mock("@/app/admin/content/corporate-content-editor", () => ({
   CorporateContentEditor: () => <div>Mock corporate editor</div>,
 }));
@@ -103,6 +119,62 @@ describe("ContentHub", () => {
     expect(html).toContain("Bungalows");
     expect(html).toContain(">Páginas</button>");
     expect(html).toContain("Mock home editor");
+  });
+
+  it("passes hydrated media metadata and the remember callback to Home", () => {
+    const html = renderToStaticMarkup(
+      <ContentHub
+        {...baseProps}
+        initialTab="home"
+        initialMediaMetadata={{
+          asset_home_01: {
+            assetId: "asset_home_01",
+            originalFilename: "Selva Wakaya.jpg",
+          },
+        }}
+      />,
+    );
+
+    expect(html).toContain("Selva Wakaya.jpg");
+    expect(html).toContain('data-home-media-callback="true"');
+  });
+
+  it("remembers a newly uploaded asset in a plain metadata map", () => {
+    const asset = {
+      id: "asset_home_02",
+      originalFilename: "gallery01.jpg",
+      status: "ready",
+      master: {
+        url: "/media/assets/asset_home_02/master.webp",
+        width: 2400,
+        height: 1600,
+        format: "webp",
+        quality: 95,
+        nearLossless: true,
+      },
+      variants: {},
+    } satisfies ContentMediaAsset;
+
+    expect(
+      rememberMediaAsset(
+        {
+          asset_home_01: {
+            assetId: "asset_home_01",
+            originalFilename: "Selva Wakaya.jpg",
+          },
+        },
+        asset,
+      ),
+    ).toEqual({
+      asset_home_01: {
+        assetId: "asset_home_01",
+        originalFilename: "Selva Wakaya.jpg",
+      },
+      asset_home_02: {
+        assetId: "asset_home_02",
+        originalFilename: "gallery01.jpg",
+      },
+    });
   });
 
   it("keeps public bungalow editing separate from aggregate capacity", () => {

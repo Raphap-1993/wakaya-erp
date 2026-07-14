@@ -5,6 +5,11 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { CropDialog } from "@/app/admin/content/media/crop-dialog";
+import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
+import {
+  resolveAdminMediaDescriptor,
+  type AdminMediaMetadataMap,
+} from "@/lib/content/media/admin-media-metadata";
 import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
 import {
   homeContentSectionSchema,
@@ -51,6 +56,8 @@ import {
 type HomeEditorProps = {
   initialItem: HomeContentRevisionRecord;
   initialRevisions: HomeContentRevisionRecord[];
+  mediaMetadata?: AdminMediaMetadataMap;
+  onMediaAssetCreated?: (asset: ContentMediaAsset) => void;
 };
 
 type SelectedNode =
@@ -977,20 +984,33 @@ function StructureRow({
 function ImageField({
   label,
   value,
+  mediaMetadata,
   slot,
   isUploading,
   onSelect,
 }: {
   label: string;
   value: string;
+  mediaMetadata: AdminMediaMetadataMap;
   slot: string;
   isUploading: boolean;
   onSelect: (file: File, slot: string) => void;
 }) {
+  const mediaDescriptor = value
+    ? resolveAdminMediaDescriptor(value, mediaMetadata)
+    : null;
+
   return (
     <div className={`${styles.field} ${styles.fieldFull}`} data-validation-field={label}>
       <span>{label}</span>
-      <span className={styles.metaPill}>{value ? "Imagen asociada" : "Sin imagen asociada"}</span>
+      {mediaDescriptor ? (
+        <MediaFilenamePreview
+          originalFilename={mediaDescriptor.originalFilename}
+          previewUrl={mediaDescriptor.previewUrl}
+        />
+      ) : (
+        <span className={styles.metaPill}>Sin imagen asociada</span>
+      )}
       <label className={styles.uploadButton}>
         <span>{isUploading ? "Subiendo..." : "Subir imagen"}</span>
         <input
@@ -1050,7 +1070,23 @@ function SelectedPreview({
   );
 }
 
-export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
+export function completeHomeMediaUpload(
+  asset: ContentMediaAsset,
+  mediaSlot: HomeMediaSlot,
+  onMediaAssetCreated: ((asset: ContentMediaAsset) => void) | undefined,
+  onComplete: (mediaUrl: string) => void,
+) {
+  const mediaUrl = resolveHomeMediaUrl(asset, mediaSlot);
+  onMediaAssetCreated?.(asset);
+  onComplete(mediaUrl);
+}
+
+export function HomeEditor({
+  initialItem,
+  initialRevisions,
+  mediaMetadata = {},
+  onMediaAssetCreated,
+}: HomeEditorProps) {
   const [document, setDocument] = useState<HomeContentDocument>(() => cloneDocument(initialItem.document));
   const [publishedRecord, setPublishedRecord] = useState(initialItem);
   const [currentVersion, setCurrentVersion] = useState(initialItem.revisionVersion);
@@ -1262,11 +1298,12 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
         throw new Error(body.error ?? "media_upload_failed");
       }
 
-      const mediaUrl = resolveHomeMediaUrl(
+      completeHomeMediaUpload(
         body.asset as ContentMediaAsset,
         intent.mediaSlot,
+        onMediaAssetCreated,
+        intent.onComplete,
       );
-      intent.onComplete(mediaUrl);
       setFeedback({
         kind: "success",
         message: "Imagen optimizada y lista para publicar en el home.",
@@ -1637,6 +1674,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                   <ImageField
                     label="Imagen"
                     value={selectedSlide.image}
+                    mediaMetadata={mediaMetadata}
                     slot={selectedSlide.id}
                     isUploading={uploadingSlot === selectedSlide.id}
                     onSelect={(file, slot) =>
@@ -1936,6 +1974,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <ImageField
                         label="Imagen"
                         value={selectedSection.content.image}
+                        mediaMetadata={mediaMetadata}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
                         onSelect={(file, slot) =>
@@ -2113,6 +2152,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <ImageField
                         label="Imagen"
                         value={selectedSection.content.image}
+                        mediaMetadata={mediaMetadata}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
                         onSelect={(file, slot) =>
@@ -2319,6 +2359,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <ImageField
                         label="Imagen"
                         value={selectedSection.content.image}
+                        mediaMetadata={mediaMetadata}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
                         onSelect={(file, slot) =>

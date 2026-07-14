@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { HomeEditor } from "@/app/admin/home/home-editor";
 import { CropDialog } from "@/app/admin/content/media/crop-dialog";
 import { CorporateContentEditor } from "@/app/admin/content/corporate-content-editor";
+import type { AdminMediaMetadataMap } from "@/lib/content/media/admin-media-metadata";
 import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
 import type {
   ExperienceRecord,
@@ -41,6 +42,7 @@ type ContentHubProps = {
   initialGallery: GalleryPublication;
   initialBungalows: HubBungalowItem[];
   initialBungalowId?: string;
+  initialMediaMetadata?: AdminMediaMetadataMap;
 };
 
 type Feedback = {
@@ -64,6 +66,19 @@ function blankLocaleContent() {
     ctaLabel: "",
     included: ["Incluido"],
     recommendations: ["Reservar"],
+  };
+}
+
+export function rememberMediaAsset(
+  current: AdminMediaMetadataMap,
+  asset: ContentMediaAsset,
+): AdminMediaMetadataMap {
+  return {
+    ...current,
+    [asset.id]: {
+      assetId: asset.id,
+      originalFilename: asset.originalFilename,
+    },
   };
 }
 
@@ -229,6 +244,7 @@ export function ContentHub({
   initialGallery,
   initialBungalows,
   initialBungalowId,
+  initialMediaMetadata = {},
 }: ContentHubProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
@@ -241,6 +257,9 @@ export function ContentHub({
   const [gallery, setGallery] = useState<GalleryPublication>(initialGallery);
   const [selectedGalleryId, setSelectedGalleryId] = useState<string>(initialGallery.items[0]?.id ?? "");
   const [bungalows, setBungalows] = useState<HubBungalowItem[]>(initialBungalows);
+  const [mediaMetadata, setMediaMetadata] = useState<AdminMediaMetadataMap>(
+    initialMediaMetadata,
+  );
   const [selectedBungalowId, setSelectedBungalowId] = useState<string>(deriveSelectedBungalowId(initialBungalows, initialBungalowId));
   const [uploadIntent, setUploadIntent] = useState<UploadIntent | null>(null);
   const uploadHandlerRef = useRef<((asset: ContentMediaAsset) => void) | null>(null);
@@ -261,6 +280,10 @@ export function ContentHub({
     [bungalows, selectedBungalowId],
   );
   const selectedBungalowLocale = selectedBungalow?.publicContent.localeContent[activeLocale] ?? null;
+
+  function handleMediaAssetCreated(asset: ContentMediaAsset) {
+    setMediaMetadata((current) => rememberMediaAsset(current, asset));
+  }
 
   function updateSelectedBungalow(
     updater: (current: BungalowPublicContent) => BungalowPublicContent,
@@ -540,7 +563,12 @@ export function ContentHub({
         ) : null}
 
         {activeTab === "home" ? (
-          <HomeEditor initialItem={initialHomeItem} initialRevisions={initialHomeRevisions} />
+          <HomeEditor
+            initialItem={initialHomeItem}
+            initialRevisions={initialHomeRevisions}
+            mediaMetadata={mediaMetadata}
+            onMediaAssetCreated={handleMediaAssetCreated}
+          />
         ) : null}
 
         {activeTab === "company" && initialCorporateItem ? (
