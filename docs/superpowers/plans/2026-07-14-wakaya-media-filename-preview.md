@@ -567,7 +567,7 @@ git commit -m "feat: show Home media filenames and previews"
 - Modify: `src/app/admin/bungalows/page.test.tsx`
 - Create: `e2e/content-media-filename-preview.spec.ts`
 
-- [ ] **Step 1: Write failing surface coverage tests**
+- [x] **Step 1: Write failing surface coverage tests**
 
 Agregar fixtures con metadata y probar cada tab:
 
@@ -591,7 +591,7 @@ Exigir por tab:
 Mantener el test de `/admin/bungalows/[id]` que demuestra redirect a
 `/admin/content?tab=bungalows&bungalowId=<id>`.
 
-- [ ] **Step 2: Run ContentHub tests and verify RED**
+- [x] **Step 2: Run ContentHub tests and verify RED**
 
 Run:
 
@@ -605,7 +605,7 @@ npm test -- \
 Expected: FAIL porque las superficies todavía muestran preview inline o texto
 genérico sin el componente compartido.
 
-- [ ] **Step 3: Integrate every ContentHub media surface**
+- [x] **Step 3: Integrate every ContentHub media surface**
 
 Modificar `AssetField` para recibir `mediaMetadata`, resolver `previewUrl` y
 mostrar `MediaFilenamePreview` en lugar de `Imagen asociada`.
@@ -621,7 +621,7 @@ queda cubierto por el componente común.
 Conservar las miniaturas inline existentes: el nuevo nombre/popup complementa
 la revisión visual y no elimina ordenar, quitar ni reemplazar.
 
-- [ ] **Step 4: Run ContentHub tests and verify GREEN**
+- [x] **Step 4: Run ContentHub tests and verify GREEN**
 
 Run:
 
@@ -634,7 +634,7 @@ npm test -- \
 
 Expected: todos PASS.
 
-- [ ] **Step 5: Write and run authenticated ContentHub E2E**
+- [x] **Step 5: Write and run authenticated ContentHub E2E**
 
 El E2E debe abrir Galería, pulsar `Agregar imagen`, seleccionar
 `public/images/wakaya/gallery/gallery01.jpg`, completar el recorte fijo y
@@ -659,7 +659,7 @@ E2E_BASE_URL=http://localhost:3212 npx playwright test e2e/content-media-filenam
 Expected: PASS con captura
 `output/playwright/content-media-filename-preview.png`.
 
-- [ ] **Step 6: Commit Task 5**
+- [x] **Step 6: Commit Task 5**
 
 ```bash
 git add src/app/admin/content src/app/admin/bungalows e2e/content-media-filename-preview.spec.ts
