@@ -156,17 +156,18 @@ async function cleanupWrittenMedia(storage: MediaStorage, writtenStoragePaths: s
 }
 
 function toMediaPersistenceError(error: unknown) {
+  const persistenceError = new Error("media_persistence_failed", { cause: error });
   if (
     error &&
     typeof error === "object" &&
     "code" in error &&
-    (error as { code?: string }).code === "42P01"
+    typeof (error as { code?: unknown }).code === "string"
   ) {
-    return Object.assign(new Error("media_persistence_failed", { cause: error }), {
-      code: "42P01",
+    return Object.assign(persistenceError, {
+      code: (error as { code: string }).code,
     });
   }
-  return error;
+  return persistenceError;
 }
 
 async function persistAsset(
@@ -176,7 +177,12 @@ async function persistAsset(
     variants: PersistedVariantRow[];
   },
 ) {
-  const client = await pool.connect();
+  let client: PoolClient;
+  try {
+    client = await pool.connect();
+  } catch (error) {
+    throw toMediaPersistenceError(error);
+  }
   let failed = false;
   let persistenceError: unknown;
   try {
@@ -198,7 +204,7 @@ async function persistAsset(
     } catch {
       // Preserve the transaction error; storage compensation still has to run.
     }
-    throw persistenceError;
+    throw toMediaPersistenceError(persistenceError);
   }
 
   try {
@@ -317,7 +323,6 @@ export class ContentMediaService {
       crops: input.crops ?? buildFallbackCrops(input.slot),
     });
     const writtenStoragePaths: string[][] = [];
-    let persistenceAttempted = false;
 
     try {
       const masterStored = await writeVariant(
@@ -349,7 +354,6 @@ export class ContentMediaService {
       }
 
       if (this.pool) {
-        persistenceAttempted = true;
         await persistAsset(this.pool, {
           asset: {
             id: assetId,
@@ -400,7 +404,7 @@ export class ContentMediaService {
       };
     } catch (error) {
       await cleanupWrittenMedia(this.storage, writtenStoragePaths);
-      throw persistenceAttempted ? toMediaPersistenceError(error) : error;
+      throw error;
     }
   }
 

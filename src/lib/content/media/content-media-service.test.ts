@@ -66,8 +66,9 @@ function classifyQuery(sql: unknown) {
 
 function createPool(options: {
   events?: string[];
-  failOn?: "asset" | "variant" | "commit";
+  failOn?: "begin" | "asset" | "variant" | "commit";
   failure?: Error;
+  connectFailure?: Error;
   releaseFailure?: Error;
 } = {}) {
   const events = options.events ?? [];
@@ -89,11 +90,18 @@ function createPool(options: {
     query,
     release,
   } as unknown as PoolClient;
+  const connect = vi.fn(async () => {
+    if (options.connectFailure) {
+      throw options.connectFailure;
+    }
+    return client;
+  });
 
   return {
     pool: {
-      connect: vi.fn(async () => client),
+      connect,
     } as unknown as Pool,
+    connect,
     query,
     release,
     events,
@@ -167,6 +175,28 @@ describe("ContentMediaService", () => {
       "detail.webp",
       "master.webp",
     ]);
+  });
+
+  it("does not canonicalize Sharp processing failures as database failures", async () => {
+    const { storage, write, remove } = createStorage();
+    const { pool, connect } = createPool();
+    const service = new ContentMediaService(storage, pool);
+    const invalidImage = new File([Buffer.from("not-an-image")], "invalid.png", {
+      type: "image/png",
+    });
+
+    let thrown: unknown;
+    try {
+      await service.createAsset({ file: invalidImage, slot: "detail" });
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(Error);
+    expect((thrown as Error).message).not.toBe("media_persistence_failed");
+    expect(connect).not.toHaveBeenCalled();
+    expect(write).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it("does not remove committed media if releasing the client fails after commit", async () => {
@@ -245,10 +275,12 @@ describe("ContentMediaService", () => {
     expect(release).toHaveBeenCalledOnce();
   });
 
-  it("keeps cleanup best-effort and preserves the persistence error if one removal fails", async () => {
+  it("keeps cleanup best-effort and preserves the persistence cause if one removal fails", async () => {
     const events: string[] = [];
     const { storage, remove } = createStorage(events, { failRemoveFor: "thumb.webp" });
-    const persistenceError = new Error("variant_insert_failed");
+    const persistenceError = Object.assign(new Error("duplicate key violates constraint"), {
+      code: "23505",
+    });
     const { pool } = createPool({
       events,
       failOn: "variant",
@@ -257,9 +289,17 @@ describe("ContentMediaService", () => {
     const service = new ContentMediaService(storage, pool);
     const file = await createPngFile("selva.png");
 
-    await expect(service.createAsset({ file, slot: "detail" })).rejects.toBe(
-      persistenceError,
-    );
+    let thrown: unknown;
+    try {
+      await service.createAsset({ file, slot: "detail" });
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toMatchObject({
+      message: "media_persistence_failed",
+      code: "23505",
+    });
+    expect((thrown as Error).cause).toBe(persistenceError);
 
     expect(remove).toHaveBeenCalledTimes(3);
     expect(events.slice(-6)).toEqual([
@@ -270,5 +310,87 @@ describe("ContentMediaService", () => {
       "remove:detail.webp",
       "remove:master.webp",
     ]);
+  });
+
+  it.each([
+    {
+      label: "connecting to the pool",
+      poolOptions: {
+        connectFailure: Object.assign(new Error("remaining connection slots are reserved"), {
+          code: "53300",
+        }),
+      },
+      expectedEvents: [
+        "write:master.webp",
+        "write:detail.webp",
+        "write:thumb.webp",
+        "remove:thumb.webp",
+        "remove:detail.webp",
+        "remove:master.webp",
+      ],
+    },
+    {
+      label: "starting the transaction",
+      poolOptions: {
+        failOn: "begin" as const,
+        failure: Object.assign(new Error("database is starting up"), { code: "57P03" }),
+      },
+      expectedEvents: [
+        "write:master.webp",
+        "write:detail.webp",
+        "write:thumb.webp",
+        "begin",
+        "rollback",
+        "release",
+        "remove:thumb.webp",
+        "remove:detail.webp",
+        "remove:master.webp",
+      ],
+    },
+    {
+      label: "committing the transaction",
+      poolOptions: {
+        failOn: "commit" as const,
+        failure: Object.assign(new Error("serialization failure"), { code: "40001" }),
+      },
+      expectedEvents: [
+        "write:master.webp",
+        "write:detail.webp",
+        "write:thumb.webp",
+        "begin",
+        "asset",
+        "variant",
+        "variant",
+        "commit",
+        "rollback",
+        "release",
+        "remove:thumb.webp",
+        "remove:detail.webp",
+        "remove:master.webp",
+      ],
+    },
+  ])("canonicalizes a database failure while $label", async ({ poolOptions, expectedEvents }) => {
+    const events: string[] = [];
+    const { storage, remove } = createStorage(events);
+    const { pool } = createPool({ events, ...poolOptions });
+    const service = new ContentMediaService(storage, pool);
+    const file = await createPngFile("selva.png");
+
+    let thrown: unknown;
+    try {
+      await service.createAsset({ file, slot: "detail" });
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toMatchObject({
+      message: "media_persistence_failed",
+      code: poolOptions.connectFailure?.code ?? poolOptions.failure?.code,
+    });
+    expect((thrown as Error).cause).toBe(
+      poolOptions.connectFailure ?? poolOptions.failure,
+    );
+    expect(remove).toHaveBeenCalledTimes(3);
+    expect(events).toEqual(expectedEvents);
   });
 });
