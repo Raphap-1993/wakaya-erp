@@ -347,7 +347,7 @@ git commit -m "feat: hydrate admin media metadata"
 - Create: `src/app/admin/content/media/media-filename-preview.test.tsx`
 - Create: `src/app/admin/content/media/media-filename-preview.module.css`
 
-- [ ] **Step 1: Write the failing component test**
+- [x] **Step 1: Write the failing component test**
 
 Usar render estático para exigir el estado cerrado:
 
@@ -364,13 +364,13 @@ expect(html).toContain('aria-haspopup="dialog"');
 expect(html).not.toContain('role="dialog"');
 ```
 
-- [ ] **Step 2: Run the component test and verify RED**
+- [x] **Step 2: Run the component test and verify RED**
 
 Run: `npm test -- src/app/admin/content/media/media-filename-preview.test.tsx`
 
 Expected: FAIL porque el componente no existe.
 
-- [ ] **Step 3: Implement the shared component**
+- [x] **Step 3: Implement the shared component**
 
 El API será:
 
@@ -397,13 +397,13 @@ y cerrar con `Escape`. El backdrop cierra solo si
 `event.target === event.currentTarget` y expone
 `data-testid="media-preview-backdrop"` para la prueba de navegador.
 
-- [ ] **Step 4: Run the component test and verify GREEN**
+- [x] **Step 4: Run the component test and verify GREEN**
 
 Run: `npm test -- src/app/admin/content/media/media-filename-preview.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit Task 3**
+- [x] **Step 5: Commit Task 3**
 
 ```bash
 git add src/app/admin/content/media/media-filename-preview.tsx src/app/admin/content/media/media-filename-preview.test.tsx src/app/admin/content/media/media-filename-preview.module.css
