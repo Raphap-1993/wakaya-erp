@@ -197,7 +197,7 @@ git commit -m "feat: persist original media filenames"
 - Modify: `src/app/admin/content/page.tsx`
 - Modify: `src/app/admin/content/page.test.tsx`
 
-- [ ] **Step 1: Write the failing resolver tests**
+- [x] **Step 1: Write the failing resolver tests**
 
 Definir el contrato:
 
@@ -229,13 +229,13 @@ expect(resolveAdminMediaDescriptor("/media/assets/asset_2/detail.webp", {
 });
 ```
 
-- [ ] **Step 2: Run the resolver test and verify RED**
+- [x] **Step 2: Run the resolver test and verify RED**
 
 Run: `npm test -- src/lib/content/media/admin-media-metadata.test.ts`
 
 Expected: FAIL porque el módulo no existe.
 
-- [ ] **Step 3: Implement the resolver helpers**
+- [x] **Step 3: Implement the resolver helpers**
 
 Implementar `extractManagedAssetId`, `fallbackMediaFilename`,
 `collectAdminMediaAssetIds`, `toAdminMediaMetadataMap` y
@@ -247,13 +247,13 @@ const MANAGED_MEDIA_PATTERN = /^\/media\/assets\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9._-
 
 El fallback nunca queda vacío: usa `imagen.webp`.
 
-- [ ] **Step 4: Run the resolver test and verify GREEN**
+- [x] **Step 4: Run the resolver test and verify GREEN**
 
 Run: `npm test -- src/lib/content/media/admin-media-metadata.test.ts`
 
 Expected: todos PASS.
 
-- [ ] **Step 5: Write the failing batch-query and page tests**
+- [x] **Step 5: Write the failing batch-query and page tests**
 
 El servicio debe consultar una vez:
 
@@ -270,7 +270,7 @@ El test de página debe mockear `contentMediaService.listAssetMetadata` y exigir
 que `ContentHub` reciba `initialMediaMetadata` con IDs encontrados en Home,
 Experiencias, Galería y Bungalows.
 
-- [ ] **Step 6: Run the batch-query and page tests and verify RED**
+- [x] **Step 6: Run the batch-query and page tests and verify RED**
 
 Run:
 
@@ -282,7 +282,7 @@ npm test -- \
 
 Expected: FAIL porque `listAssetMetadata` y la prop no existen.
 
-- [ ] **Step 7: Implement batch loading and page hydration**
+- [x] **Step 7: Implement batch loading and page hydration**
 
 En `ContentMediaService`:
 
@@ -320,7 +320,7 @@ Consultar una sola vez, convertir a mapa y pasar:
 Una falla `42P01` se trata como error de migración; no se silencia. Un entorno
 sin `DATABASE_URL` devuelve mapa vacío y usa fallback de URL.
 
-- [ ] **Step 8: Run Task 2 tests and verify GREEN**
+- [x] **Step 8: Run Task 2 tests and verify GREEN**
 
 Run:
 
@@ -333,7 +333,7 @@ npm test -- \
 
 Expected: todos PASS.
 
-- [ ] **Step 9: Commit Task 2**
+- [x] **Step 9: Commit Task 2**
 
 ```bash
 git add src/lib/content/media/admin-media-metadata.ts src/lib/content/media/admin-media-metadata.test.ts src/lib/content/media/content-media-service.ts src/lib/content/media/content-media-service.test.ts src/app/admin/content/page.tsx src/app/admin/content/page.test.tsx
