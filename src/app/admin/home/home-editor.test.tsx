@@ -49,6 +49,8 @@ describe("HomeEditor", () => {
     expect(html).not.toContain("Mobile");
     expect(html).toContain("Subir imagen");
     expect(html).toContain("Imagen asociada");
+    expect(html).toContain('accept="image/jpeg,image/png,image/webp"');
+    expect(html).not.toContain("Recortes obligatorios");
     expect(html).not.toContain("URL imagen");
     expect(html).not.toContain("Preview local");
     expect(html).not.toContain("Menú público");

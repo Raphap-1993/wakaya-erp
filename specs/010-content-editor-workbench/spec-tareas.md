@@ -39,3 +39,16 @@ automático, estado lateral y marcado del control.
 Refactor: reutilizar el schema vigente y preservar errores de red/media/versión.
 
 Comando: `npm test -- src/app/admin/home/home-validation.test.ts src/app/admin/home/home-editor.test.tsx && npm run typecheck`
+
+## T-010-006 - Media administrada del Home
+
+Red: el helper de media no existe y Playwright comprueba que elegir una imagen
+no abre los recortes obligatorios.
+Green: slides usan recortes `Desktop` y `Mobile`; Historia, Frase destacada y
+Cierre usan recorte fijo. El editor sube por `/api/admin/content/media`, asocia
+la variante WebP administrada y admite solo HTTP(S) o rutas internas
+`/media/...` al publicar.
+Refactor: reutilizar `CropDialog` y el pipeline compartido; no persistir URLs
+con host local ni mantener la subida legada del Home.
+
+Comando: `npm test -- src/lib/home-content/schema.test.ts src/app/admin/home/home-media-upload.test.ts src/app/admin/home/home-editor.test.tsx src/app/api/admin/content/media/route.test.ts && E2E_BASE_URL=http://localhost:3212 npx playwright test e2e/home-media-upload.spec.ts`

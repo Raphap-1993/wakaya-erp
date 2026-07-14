@@ -5,7 +5,7 @@
 
 <!-- nav-guided:start -->
 ## Navegacion guiada
-- Anterior: [Evidencia local de validación guiada del Home](../fase-6-qa/06.07-guided-home-validation-local-evidence.md)
+- Anterior: [Evidencia local de media administrada del Home](../fase-6-qa/06.08-home-media-crop-publication-local-evidence.md)
 - Siguiente: [Checklist de salida a produccion](07.00-checklist-salida-produccion.md)
 <!-- nav-guided:end -->
 

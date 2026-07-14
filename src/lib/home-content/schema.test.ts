@@ -118,4 +118,20 @@ describe("homeContentDocumentSchema", () => {
     expect(parsed.slider.slides[1].content.es.copy).toBeUndefined();
     expect(parsed.slider.slides[1].content.es.scrollLabel).toBeUndefined();
   });
+
+  it("accepts a managed same-origin media path for a Home image", () => {
+    const input = structuredClone(DEFAULT_HOME_CONTENT);
+    input.slider.slides[0].image = "/media/assets/asset_home_01/heroDesktop.webp";
+
+    expect(homeContentDocumentSchema.parse(input).slider.slides[0].image).toBe(
+      "/media/assets/asset_home_01/heroDesktop.webp",
+    );
+  });
+
+  it("rejects arbitrary relative paths that bypass managed media", () => {
+    const input = structuredClone(DEFAULT_HOME_CONTENT);
+    input.slider.slides[0].image = "/uploads/manual.jpg";
+
+    expect(() => homeContentDocumentSchema.parse(input)).toThrow("invalid_slide_image");
+  });
 });

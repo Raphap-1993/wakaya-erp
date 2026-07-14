@@ -16,6 +16,7 @@ Validar que Wakaya ERP cumple los criterios funcionales, tecnicos, de seguridad 
 - [Plan de pruebas](../../qa/fase-6-qa/plan-pruebas.md)
 - [Evidencia local del editor simple y cupos sin bloqueos](06.06-content-workbench-capacity-simplification-local-evidence.md)
 - [Evidencia local de validación guiada del Home](06.07-guided-home-validation-local-evidence.md)
+- [Evidencia local de recorte, optimización y publicación de imágenes del Home](06.08-home-media-crop-publication-local-evidence.md)
 - Evidencias de ejecucion en ../../qa/fase-6-qa/evidencias/
 - Defectos y resolucion en ../../qa/fase-6-qa/defectos.md cuando aplique.
 

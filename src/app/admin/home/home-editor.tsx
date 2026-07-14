@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { CropDialog } from "@/app/admin/content/media/crop-dialog";
+import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
 import {
   homeContentSectionSchema,
   homeContentSlideSchema,
@@ -32,6 +34,12 @@ import {
 
 import styles from "./home-editor.module.css";
 import {
+  buildHomeMediaUploadFormData,
+  resolveHomeMediaUrl,
+  type HomeMediaCropPayload,
+  type HomeMediaSlot,
+} from "./home-media-upload";
+import {
   countValidationIssuesForNode,
   mapHomeValidationIssues,
   validateHomeDocument,
@@ -51,6 +59,12 @@ type SelectedNode =
 
 type LocaleKey = "es" | "en";
 type PreviewMode = "desktop" | "mobile";
+type HomeUploadIntent = {
+  file: File;
+  fieldSlot: string;
+  mediaSlot: HomeMediaSlot;
+  onComplete: (mediaUrl: string) => void;
+};
 
 const LOCALE_LABELS: Record<LocaleKey, string> = {
   es: "Español",
@@ -133,6 +147,14 @@ function describeSaveError(message: string) {
       return "La imagen supera el tamaño máximo permitido.";
     case "media_dimensions_too_large":
       return "La imagen es demasiado grande para procesarla de forma segura.";
+    case "media_crop_required":
+      return "Completa todos los recortes obligatorios antes de aplicar la imagen.";
+    case "media_crop_invalid":
+      return "El recorte seleccionado no es válido. Ajusta la imagen e inténtalo otra vez.";
+    case "media_crop_too_small":
+      return "El recorte usa un área demasiado pequeña. Selecciona una zona más amplia.";
+    case "media_processing_failed":
+      return "No se pudo optimizar la imagen. Prueba con otro archivo JPG, PNG o WebP.";
     default:
       return message || "No se pudo publicar el home.";
   }
@@ -957,13 +979,13 @@ function ImageField({
   value,
   slot,
   isUploading,
-  onUpload,
+  onSelect,
 }: {
   label: string;
   value: string;
   slot: string;
   isUploading: boolean;
-  onUpload: (file: File, slot: string) => Promise<void>;
+  onSelect: (file: File, slot: string) => void;
 }) {
   return (
     <div className={`${styles.field} ${styles.fieldFull}`} data-validation-field={label}>
@@ -975,12 +997,12 @@ function ImageField({
           type="file"
           accept="image/jpeg,image/png,image/webp"
           disabled={isUploading}
-          onChange={async (event) => {
+          onChange={(event) => {
             const file = event.target.files?.[0];
             if (!file) {
               return;
             }
-            await onUpload(file, slot);
+            onSelect(file, slot);
             event.target.value = "";
           }}
         />
@@ -1047,6 +1069,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
   const [pendingFocusTarget, setPendingFocusTarget] = useState<HomeValidationTarget | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
+  const [uploadIntent, setUploadIntent] = useState<HomeUploadIntent | null>(null);
   const [baseDocument, setBaseDocument] = useState(() => JSON.stringify(initialItem.document));
 
   const selectedSlide =
@@ -1205,30 +1228,45 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
     );
   }
 
-  async function uploadImage(
+  function beginImageUpload(
     file: File,
-    slot: string,
+    fieldSlot: string,
+    mediaSlot: HomeMediaSlot,
     onComplete: (mediaUrl: string) => void,
   ) {
-    setUploadingSlot(slot);
+    setFeedback(null);
+    setUploadIntent({ file, fieldSlot, mediaSlot, onComplete });
+  }
+
+  async function uploadImageWithCrops(
+    intent: HomeUploadIntent,
+    crops: HomeMediaCropPayload,
+  ) {
+    setUploadingSlot(intent.fieldSlot);
     setFeedback(null);
 
     try {
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("slot", slot);
+      const formData = buildHomeMediaUploadFormData(
+        intent.file,
+        intent.mediaSlot,
+        crops,
+      );
 
-      const response = await fetch("/api/admin/home-content/media", {
+      const response = await fetch("/api/admin/content/media", {
         method: "POST",
         body: formData,
       });
-      const body = await response.json();
+      const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(body.error ?? "media_upload_failed");
       }
 
-      onComplete(body.media.url);
+      const mediaUrl = resolveHomeMediaUrl(
+        body.asset as ContentMediaAsset,
+        intent.mediaSlot,
+      );
+      intent.onComplete(mediaUrl);
       setFeedback({
         kind: "success",
         message: "Imagen optimizada y lista para publicar en el home.",
@@ -1240,6 +1278,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       });
     } finally {
       setUploadingSlot(null);
+      setUploadIntent(null);
     }
   }
 
@@ -1600,8 +1639,8 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                     value={selectedSlide.image}
                     slot={selectedSlide.id}
                     isUploading={uploadingSlot === selectedSlide.id}
-                    onUpload={(file, slot) =>
-                      uploadImage(file, slot, (mediaUrl) => {
+                    onSelect={(file, slot) =>
+                      beginImageUpload(file, slot, "hero", (mediaUrl) => {
                         updateSlide(selectedSlide.id, (slide) => void (slide.image = mediaUrl));
                       })
                     }
@@ -1899,8 +1938,8 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                         value={selectedSection.content.image}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
-                        onUpload={(file, slot) =>
-                          uploadImage(file, slot, (mediaUrl) => {
+                        onSelect={(file, slot) =>
+                          beginImageUpload(file, slot, "detail", (mediaUrl) => {
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "story") section.content.image = mediaUrl;
                             });
@@ -2076,8 +2115,8 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                         value={selectedSection.content.image}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
-                        onUpload={(file, slot) =>
-                          uploadImage(file, slot, (mediaUrl) => {
+                        onSelect={(file, slot) =>
+                          beginImageUpload(file, slot, "detail", (mediaUrl) => {
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "quote-band") section.content.image = mediaUrl;
                             });
@@ -2282,8 +2321,8 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                         value={selectedSection.content.image}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
-                        onUpload={(file, slot) =>
-                          uploadImage(file, slot, (mediaUrl) => {
+                        onSelect={(file, slot) =>
+                          beginImageUpload(file, slot, "detail", (mediaUrl) => {
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "closing-cta") section.content.image = mediaUrl;
                             });
@@ -2407,6 +2446,19 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
           </section>
         </div>
       ) : null}
+
+      <CropDialog
+        open={Boolean(uploadIntent)}
+        file={uploadIntent?.file ?? null}
+        slot={uploadIntent?.mediaSlot ?? "detail"}
+        onCancel={() => {
+          if (!uploadingSlot) setUploadIntent(null);
+        }}
+        onApply={async (crops) => {
+          if (!uploadIntent) return;
+          await uploadImageWithCrops(uploadIntent, crops);
+        }}
+      />
     </main>
   );
 }
