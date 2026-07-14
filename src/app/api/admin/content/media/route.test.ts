@@ -36,6 +36,7 @@ describe("POST /api/admin/content/media", () => {
     createAssetMock.mockResolvedValue({
       asset: {
         id: "asset_01",
+        originalFilename: "hero.jpg",
         status: "ready",
         master: { width: 3200, height: 2133, format: "webp", quality: 95, nearLossless: true },
         variants: {
@@ -73,6 +74,7 @@ describe("POST /api/admin/content/media", () => {
       }),
     );
     expect(body.asset.id).toBe("asset_01");
+    expect(body.asset.originalFilename).toBe("hero.jpg");
   });
 
   it("rejects hero uploads without the mobile crop", async () => {

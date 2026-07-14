@@ -17,6 +17,7 @@ const standardCrop: MediaCropSpec = {
 
 const asset: ContentMediaAsset = {
   id: "asset_home_01",
+  originalFilename: "wakaya-home.jpg",
   status: "ready",
   master: {
     url: "/media/assets/asset_home_01/master.webp",

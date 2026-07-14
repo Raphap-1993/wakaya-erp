@@ -11,6 +11,7 @@ import {
   type MediaCropSpec,
   type MediaVariantKey,
 } from "./image-optimizer";
+import { normalizeOriginalFilename } from "./media-filename";
 import type { MediaStorage } from "./media-storage";
 
 export type ContentMediaSlot = "hero" | "detail" | "card" | "gallery";
@@ -26,6 +27,7 @@ type PersistedVariant = {
 
 export type ContentMediaAsset = {
   id: string;
+  originalFilename: string;
   status: "ready";
   master: {
     url: string;
@@ -43,6 +45,7 @@ type PersistedAssetRow = {
   storage_key: string;
   checksum_sha256: string;
   mime_type: string;
+  original_filename: string;
   format: "webp";
   width: number;
   height: number;
@@ -166,13 +169,14 @@ async function insertAsset(client: Pick<PoolClient, "query">, row: PersistedAsse
   await client.query(
     `
       insert into media_asset (
-        id, storage_key, checksum_sha256, mime_type, format, width, height, byte_size, status, created_by
+        id, storage_key, checksum_sha256, mime_type, original_filename, format, width, height, byte_size, status, created_by
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       on conflict (id) do update
       set storage_key = excluded.storage_key,
           checksum_sha256 = excluded.checksum_sha256,
           mime_type = excluded.mime_type,
+          original_filename = excluded.original_filename,
           format = excluded.format,
           width = excluded.width,
           height = excluded.height,
@@ -186,6 +190,7 @@ async function insertAsset(client: Pick<PoolClient, "query">, row: PersistedAsse
       row.storage_key,
       row.checksum_sha256,
       row.mime_type,
+      row.original_filename,
       row.format,
       row.width,
       row.height,
@@ -262,6 +267,7 @@ export class ContentMediaService {
     actorId?: string | null;
   }): Promise<{ asset: ContentMediaAsset }> {
     const assetId = `asset_${randomUUID().replace(/-/g, "")}`;
+    const originalFilename = normalizeOriginalFilename(input.file.name, input.file.type);
     const checksumSource = Buffer.from(await input.file.arrayBuffer());
     const optimized = await optimizeContentImage(input.file, {
       requiredVariants: resolveSlotVariants(input.slot),
@@ -301,6 +307,7 @@ export class ContentMediaService {
           storage_key: masterStored.storageKey,
           checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
           mime_type: input.file.type,
+          original_filename: originalFilename,
           format: "webp",
           width: optimized.master.width,
           height: optimized.master.height,
@@ -320,22 +327,13 @@ export class ContentMediaService {
           crop_spec: (input.crops ?? buildFallbackCrops(input.slot))[variantKey as MediaVariantKey] ?? null,
           byte_size: variant.bytes,
         })),
-      }).catch((error: unknown) => {
-        if (
-          error &&
-          typeof error === "object" &&
-          "code" in error &&
-          (error as { code?: string }).code === "42P01"
-        ) {
-          return;
-        }
-        throw error;
       });
     }
 
     return {
       asset: {
         id: assetId,
+        originalFilename,
         status: "ready",
         master: {
           url: masterStored.url,
