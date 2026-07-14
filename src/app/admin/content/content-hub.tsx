@@ -8,8 +8,12 @@ import { useRouter } from "next/navigation";
 
 import { HomeEditor } from "@/app/admin/home/home-editor";
 import { CropDialog } from "@/app/admin/content/media/crop-dialog";
+import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
 import { CorporateContentEditor } from "@/app/admin/content/corporate-content-editor";
-import type { AdminMediaMetadataMap } from "@/lib/content/media/admin-media-metadata";
+import {
+  resolveAdminMediaDescriptor,
+  type AdminMediaMetadataMap,
+} from "@/lib/content/media/admin-media-metadata";
 import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
 import type {
   ExperienceRecord,
@@ -80,6 +84,15 @@ export function rememberMediaAsset(
       originalFilename: asset.originalFilename,
     },
   };
+}
+
+export function applyContentHubMediaAsset(
+  asset: ContentMediaAsset,
+  onMediaAssetCreated: (createdAsset: ContentMediaAsset) => void,
+  onApplyAsset: (createdAsset: ContentMediaAsset) => void,
+) {
+  onMediaAssetCreated(asset);
+  onApplyAsset(asset);
 }
 
 function createDraftExperience(nextOrder: number): ExperienceRecord {
@@ -191,17 +204,21 @@ function TabButton({
 function AssetField({
   label,
   slot,
-  assetId,
   previewUrl,
+  mediaMetadata,
   onUploadSelected,
 }: {
   label: string;
   slot: "hero" | "gallery" | "card" | "detail";
-  assetId: string | null;
   previewUrl: string;
+  mediaMetadata: AdminMediaMetadataMap;
   onUploadSelected: (file: File, slot: "hero" | "gallery" | "card" | "detail") => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const usablePreviewUrl = previewUrl.trim();
+  const descriptor = usablePreviewUrl
+    ? resolveAdminMediaDescriptor(usablePreviewUrl, mediaMetadata)
+    : null;
 
   return (
     <div className={styles.previewCard}>
@@ -212,11 +229,23 @@ function AssetField({
           className={styles.secondaryButton}
           onClick={() => inputRef.current?.click()}
         >
-          {assetId ? "Reemplazar" : "Subir imagen"}
+          {usablePreviewUrl ? "Reemplazar" : "Subir imagen"}
         </button>
       </div>
-      {previewUrl ? <img className={styles.previewImage} src={previewUrl} alt={label} /> : null}
-      <div className={styles.listItemMeta}>{assetId ? "Imagen asociada" : "Sin imagen asociada"}</div>
+      {descriptor ? (
+        // eslint-disable-next-line @next/next/no-img-element -- Preview administrativa de una variante runtime ya optimizada.
+        <img className={styles.previewImage} src={descriptor.previewUrl} alt={label} />
+      ) : null}
+      {descriptor ? (
+        <div className={styles.mediaFilename}>
+          <MediaFilenamePreview
+            originalFilename={descriptor.originalFilename}
+            previewUrl={descriptor.previewUrl}
+          />
+        </div>
+      ) : (
+        <div className={styles.listItemMeta}>Sin imagen asociada</div>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -910,8 +939,8 @@ export function ContentHub({
                 <AssetField
                   label="Cover / card"
                   slot="card"
-                  assetId={selectedExperience.cardAssetId}
                   previewUrl={assetPreviewUrl(selectedExperience.cardAssetId, "card")}
+                  mediaMetadata={mediaMetadata}
                   onUploadSelected={(file, slot) =>
                     beginUpload(file, slot, (asset) => {
                       setExperiences((current) =>
@@ -925,8 +954,8 @@ export function ContentHub({
                 <AssetField
                   label="Hero"
                   slot="hero"
-                  assetId={selectedExperience.heroAssetId}
                   previewUrl={assetPreviewUrl(selectedExperience.heroAssetId, "hero")}
+                  mediaMetadata={mediaMetadata}
                   onUploadSelected={(file, slot) =>
                     beginUpload(file, slot, (asset) => {
                       setExperiences((current) =>
@@ -1022,8 +1051,8 @@ export function ContentHub({
                     <AssetField
                       label="Imagen"
                       slot="gallery"
-                      assetId={selectedGalleryItem.assetId || null}
                       previewUrl={assetPreviewUrl(selectedGalleryItem.assetId, "gallery")}
+                      mediaMetadata={mediaMetadata}
                       onUploadSelected={(file, slot) =>
                         beginUpload(file, slot, (asset) => {
                           setGallery((current) => ({
@@ -1374,11 +1403,11 @@ export function ContentHub({
                       <AssetField
                         label="Hero"
                         slot="hero"
-                        assetId={selectedBungalow.publicContent.heroAssetId ?? null}
                         previewUrl={
                           assetPreviewUrl(selectedBungalow.publicContent.heroAssetId, "hero") ||
                           selectedBungalow.publicContent.heroImageUrl
                         }
+                        mediaMetadata={mediaMetadata}
                         onUploadSelected={(file, slot) =>
                           beginUpload(file, slot, (asset) => {
                             updateSelectedBungalow((current) => ({
@@ -1403,69 +1432,102 @@ export function ContentHub({
                         </div>
                         {selectedBungalow.publicContent.galleryAssetIds?.length ? (
                           <div className={styles.assetGrid}>
-                            {selectedBungalow.publicContent.galleryAssetIds.map((assetId, index) => (
-                              <div key={assetId} className={styles.previewCard}>
-                                <img
-                                  className={styles.previewImage}
-                                  src={assetPreviewUrl(assetId, "gallery")}
-                                  alt={`Galería ${index + 1}`}
-                                />
-                                <div className={styles.listItemMeta}>Imagen {index + 1}</div>
-                                <div className={styles.inlineActions}>
-                                  <button
-                                    type="button"
-                                    className={styles.ghostButton}
-                                    disabled={index === 0}
-                                    onClick={() =>
-                                      updateSelectedBungalow((current) => {
-                                        const next = [...(current.galleryAssetIds ?? [])];
-                                        [next[index - 1], next[index]] = [next[index], next[index - 1]];
-                                        return { ...current, galleryAssetIds: next };
-                                      })
-                                    }
-                                  >
-                                    Subir orden
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={styles.ghostButton}
-                                    disabled={index === (selectedBungalow.publicContent.galleryAssetIds?.length ?? 1) - 1}
-                                    onClick={() =>
-                                      updateSelectedBungalow((current) => {
-                                        const next = [...(current.galleryAssetIds ?? [])];
-                                        [next[index], next[index + 1]] = [next[index + 1], next[index]];
-                                        return { ...current, galleryAssetIds: next };
-                                      })
-                                    }
-                                  >
-                                    Bajar orden
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={styles.ghostButton}
-                                    onClick={() =>
-                                      updateSelectedBungalow((current) => ({
-                                        ...current,
-                                        galleryAssetIds: (current.galleryAssetIds ?? []).filter(
-                                          (currentAssetId) => currentAssetId !== assetId,
-                                        ),
-                                      }))
-                                    }
-                                  >
-                                    Quitar
-                                  </button>
+                            {selectedBungalow.publicContent.galleryAssetIds.map((assetId, index) => {
+                              const previewUrl = assetPreviewUrl(assetId, "gallery");
+                              const descriptor = resolveAdminMediaDescriptor(
+                                previewUrl,
+                                mediaMetadata,
+                              );
+
+                              return (
+                                <div key={assetId} className={styles.previewCard}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element -- Preview administrativa de una variante runtime ya optimizada. */}
+                                  <img
+                                    className={styles.previewImage}
+                                    src={descriptor.previewUrl}
+                                    alt={`Galería ${index + 1}`}
+                                  />
+                                  <div className={styles.listItemMeta}>Imagen {index + 1}</div>
+                                  <div className={styles.mediaFilename}>
+                                    <MediaFilenamePreview
+                                      originalFilename={descriptor.originalFilename}
+                                      previewUrl={descriptor.previewUrl}
+                                    />
+                                  </div>
+                                  <div className={styles.inlineActions}>
+                                    <button
+                                      type="button"
+                                      className={styles.ghostButton}
+                                      disabled={index === 0}
+                                      onClick={() =>
+                                        updateSelectedBungalow((current) => {
+                                          const next = [...(current.galleryAssetIds ?? [])];
+                                          [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                                          return { ...current, galleryAssetIds: next };
+                                        })
+                                      }
+                                    >
+                                      Subir orden
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={styles.ghostButton}
+                                      disabled={index === (selectedBungalow.publicContent.galleryAssetIds?.length ?? 1) - 1}
+                                      onClick={() =>
+                                        updateSelectedBungalow((current) => {
+                                          const next = [...(current.galleryAssetIds ?? [])];
+                                          [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                                          return { ...current, galleryAssetIds: next };
+                                        })
+                                      }
+                                    >
+                                      Bajar orden
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={styles.ghostButton}
+                                      onClick={() =>
+                                        updateSelectedBungalow((current) => ({
+                                          ...current,
+                                          galleryAssetIds: (current.galleryAssetIds ?? []).filter(
+                                            (currentAssetId) => currentAssetId !== assetId,
+                                          ),
+                                        }))
+                                      }
+                                    >
+                                      Quitar
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : selectedBungalow.publicContent.galleryUrls.length ? (
                           <div className={styles.assetGrid}>
-                            {selectedBungalow.publicContent.galleryUrls.map((url, index) => (
-                              <div key={url} className={styles.previewCard}>
-                                <img className={styles.previewImage} src={url} alt={`Galería legacy ${index + 1}`} />
-                                <div className={styles.listItemMeta}>Media legacy {index + 1}</div>
-                              </div>
-                            ))}
+                            {selectedBungalow.publicContent.galleryUrls.map((url, index) => {
+                              const descriptor = resolveAdminMediaDescriptor(
+                                url,
+                                mediaMetadata,
+                              );
+
+                              return (
+                                <div key={url} className={styles.previewCard}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element -- Compatibilidad visual con media legacy externa. */}
+                                  <img
+                                    className={styles.previewImage}
+                                    src={descriptor.previewUrl}
+                                    alt={`Galería legacy ${index + 1}`}
+                                  />
+                                  <div className={styles.listItemMeta}>Media legacy {index + 1}</div>
+                                  <div className={styles.mediaFilename}>
+                                    <MediaFilenamePreview
+                                      originalFilename={descriptor.originalFilename}
+                                      previewUrl={descriptor.previewUrl}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : (
                           <p className={styles.muted}>Aún no hay imágenes cargadas para la galería de este bungalow.</p>
@@ -1520,7 +1582,11 @@ export function ContentHub({
           if (!uploadIntent || !uploadHandlerRef.current) return;
           try {
             const asset = await uploadWithCrops(uploadIntent.file, uploadIntent.slot, crops);
-            uploadHandlerRef.current(asset);
+            applyContentHubMediaAsset(
+              asset,
+              handleMediaAssetCreated,
+              uploadHandlerRef.current,
+            );
             setFeedback({ kind: "success", message: "Imagen procesada y asociada." });
           } catch (error) {
             setFeedback({
