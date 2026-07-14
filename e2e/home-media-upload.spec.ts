@@ -12,6 +12,37 @@ type HomeContentApiBody = {
   };
 };
 
+// Local-only command: E2E_BASE_URL=http://localhost:3212 E2E_MUTATION_ALLOWED=1 npx playwright test e2e/home-media-upload.spec.ts --project=chromium
+
+function assertLocalMutationTarget() {
+  const rawBaseUrl = process.env.E2E_BASE_URL ?? "http://localhost:3200";
+  let target: URL;
+  try {
+    target = new URL(rawBaseUrl);
+  } catch {
+    throw new Error(
+      `Refusing mutating Home E2E with invalid E2E_BASE_URL: ${rawBaseUrl}`,
+    );
+  }
+
+  const allowedHosts = new Set(["localhost", "127.0.0.1"]);
+  const allowedPorts = new Set(["3212"]);
+  if (
+    !allowedHosts.has(target.hostname) ||
+    !allowedPorts.has(target.port)
+  ) {
+    throw new Error(
+      `Refusing mutating Home E2E outside localhost/127.0.0.1:3212: ${rawBaseUrl}`,
+    );
+  }
+
+  if (process.env.E2E_MUTATION_ALLOWED !== "1") {
+    throw new Error(
+      "Set E2E_MUTATION_ALLOWED=1 to authorize the local mutating Home E2E.",
+    );
+  }
+}
+
 function readLocalEnvValue(key: string) {
   const envLocal = fs.readFileSync(path.join(process.cwd(), ".env.local"), "utf8");
   return envLocal.match(new RegExp(`^${key}=(.+)$`, "m"))?.[1]?.trim().replace(/^['"]|['"]$/g, "") ?? "";
@@ -63,6 +94,7 @@ async function restoreHomeContent(
 }
 
 test("crops, optimizes and publishes a Home hero through managed media", async ({ page }) => {
+  assertLocalMutationTarget();
   await page.setViewportSize({ width: 1600, height: 1000 });
   const originalFilename = `home-${randomUUID()}.jpg`;
   await authenticateAdmin(page);
