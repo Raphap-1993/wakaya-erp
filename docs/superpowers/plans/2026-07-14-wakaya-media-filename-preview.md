@@ -421,7 +421,7 @@ git commit -m "feat: add accessible media preview dialog"
 - Modify: `e2e/home-media-upload.spec.ts`
 - Create: `e2e/media-filename-preview.spec.ts`
 
-- [ ] **Step 1: Write the failing Home tests**
+- [x] **Step 1: Write the failing Home tests**
 
 Actualizar el fixture de media con:
 
@@ -469,7 +469,7 @@ Después de comprobar la imagen válida, interceptar su URL de preview con 404,
 recargar el editor, abrir el popup y exigir `No se pudo cargar la imagen`. Esto
 prueba el error controlado sin alterar la referencia persistida.
 
-- [ ] **Step 2: Run Home tests and verify RED**
+- [x] **Step 2: Run Home tests and verify RED**
 
 Run:
 
@@ -482,7 +482,7 @@ npm test -- \
 
 Expected: FAIL por props, metadata y componente aún no integrados.
 
-- [ ] **Step 3: Integrate Home with the shared metadata map**
+- [x] **Step 3: Integrate Home with the shared metadata map**
 
 Extender props:
 
@@ -524,7 +524,7 @@ function rememberMediaAsset(asset: ContentMediaAsset) {
 
 Y pasarlo a `HomeEditor`. Esto conserva el nombre al cambiar de tab sin recargar.
 
-- [ ] **Step 4: Run Home unit tests and verify GREEN**
+- [x] **Step 4: Run Home unit tests and verify GREEN**
 
 Run:
 
@@ -537,7 +537,7 @@ npm test -- \
 
 Expected: todos PASS.
 
-- [ ] **Step 5: Apply the local migration and run Home Playwright**
+- [x] **Step 5: Apply the local migration and run Home Playwright**
 
 Run:
 
@@ -551,7 +551,7 @@ E2E_BASE_URL=http://localhost:3212 npx playwright test \
 Expected: crop, POST 201, nombre `gallery01.jpg`, popup, recarga, publicación
 PUT 200 y vista pública aprobados.
 
-- [ ] **Step 6: Commit Task 4**
+- [x] **Step 6: Commit Task 4**
 
 ```bash
 git add src/app/admin/home src/app/admin/content/content-hub.tsx src/app/admin/content/content-hub.test.tsx e2e/home-media-upload.spec.ts e2e/media-filename-preview.spec.ts
