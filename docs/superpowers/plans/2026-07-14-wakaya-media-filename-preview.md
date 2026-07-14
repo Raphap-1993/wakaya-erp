@@ -20,7 +20,7 @@
 - Modify: `src/lib/content/media/content-media-service.ts`
 - Create: `src/lib/content/media/content-media-service.test.ts`
 
-- [ ] **Step 1: Write the failing filename tests**
+- [x] **Step 1: Write the failing filename tests**
 
 Crear casos que exijan basename, caracteres de control, fallback y límite de
 180 caracteres sin perder extensión:
@@ -52,13 +52,13 @@ describe("normalizeOriginalFilename", () => {
 });
 ```
 
-- [ ] **Step 2: Run the filename test and verify RED**
+- [x] **Step 2: Run the filename test and verify RED**
 
 Run: `npm test -- src/lib/content/media/media-filename.test.ts`
 
 Expected: FAIL porque `media-filename.ts` no existe.
 
-- [ ] **Step 3: Implement the minimal normalizer**
+- [x] **Step 3: Implement the minimal normalizer**
 
 Crear:
 
@@ -89,13 +89,13 @@ export function normalizeOriginalFilename(fileName: string, mimeType: string) {
 }
 ```
 
-- [ ] **Step 4: Run the filename test and verify GREEN**
+- [x] **Step 4: Run the filename test and verify GREEN**
 
 Run: `npm test -- src/lib/content/media/media-filename.test.ts`
 
 Expected: 4/4 PASS.
 
-- [ ] **Step 5: Write the failing migration and service tests**
+- [x] **Step 5: Write the failing migration and service tests**
 
 El test de migración debe leer el SQL y exigir una columna aditiva nullable:
 
@@ -114,7 +114,7 @@ expect(String(insertAssetCall?.[0])).toContain("original_filename");
 expect(insertAssetCall?.[1]).toContain("Selva Wakaya.png");
 ```
 
-- [ ] **Step 6: Run the migration and service tests and verify RED**
+- [x] **Step 6: Run the migration and service tests and verify RED**
 
 Run:
 
@@ -126,7 +126,7 @@ npm test -- \
 
 Expected: FAIL por migración ausente y `originalFilename` inexistente.
 
-- [ ] **Step 7: Add the migration and service contract**
+- [x] **Step 7: Add the migration and service contract**
 
 Crear la migración:
 
@@ -165,7 +165,7 @@ Devolver `originalFilename` dentro de `asset`. Si existe pool, no ocultar errore
 `42P01`: una base configurada sin migración debe fallar, no crear metadata
 incompleta.
 
-- [ ] **Step 8: Run Task 1 tests and verify GREEN**
+- [x] **Step 8: Run Task 1 tests and verify GREEN**
 
 Run:
 
@@ -180,7 +180,7 @@ npm test -- \
 Expected: todos PASS; actualizar fixtures de `ContentMediaAsset` con
 `originalFilename` cuando TypeScript lo exija.
 
-- [ ] **Step 9: Commit Task 1**
+- [x] **Step 9: Commit Task 1**
 
 ```bash
 git add db/migrations/013_media_original_filename.sql src/lib/content/media src/app/api/admin/content/media/route.test.ts
