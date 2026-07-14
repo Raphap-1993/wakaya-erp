@@ -9,6 +9,27 @@ import type { GalleryPublication } from "@/lib/content/types";
 const GALLERY_ROUTE = "/admin/content?tab=gallery";
 const GALLERY_API = "/api/admin/content/gallery";
 
+// Local-only command: E2E_BASE_URL=http://localhost:3212 E2E_MUTATION_ALLOWED=1 npx playwright test e2e/content-media-filename-preview.spec.ts --project=chromium
+
+function assertLocalMutationTarget() {
+  const rawBaseUrl = process.env.E2E_BASE_URL ?? "http://localhost:3200";
+  const target = new URL(rawBaseUrl);
+  const allowedHosts = new Set(["localhost", "127.0.0.1"]);
+  const allowedPorts = new Set(["3212"]);
+
+  if (!allowedHosts.has(target.hostname) || !allowedPorts.has(target.port)) {
+    throw new Error(
+      `Refusing mutating Gallery E2E outside localhost/127.0.0.1:3212: ${rawBaseUrl}`,
+    );
+  }
+
+  if (process.env.E2E_MUTATION_ALLOWED !== "1") {
+    throw new Error(
+      "Set E2E_MUTATION_ALLOWED=1 to authorize the local mutating Gallery E2E.",
+    );
+  }
+}
+
 function readLocalEnvValue(key: string) {
   const envLocal = fs.readFileSync(
     path.join(process.cwd(), ".env.local"),
@@ -67,6 +88,7 @@ async function restoreGallery(page: Page, initial: GalleryPublication) {
 test("uploads, persists and previews a uniquely named global Gallery image", async ({
   page,
 }) => {
+  assertLocalMutationTarget();
   await page.setViewportSize({ width: 1600, height: 1000 });
   const runId = randomUUID();
   const originalFilename = `galeria-${runId}.jpg`;
@@ -74,6 +96,7 @@ test("uploads, persists and previews a uniquely named global Gallery image", asy
 
   await authenticateAdmin(page);
   const initialGallery = await readGallery(page);
+  let primaryError: unknown;
 
   try {
     expect(
@@ -82,12 +105,13 @@ test("uploads, persists and previews a uniquely named global Gallery image", asy
         .count(),
     ).toBe(0);
 
-    await page.getByRole("button", { name: "Agregar imagen", exact: true }).click();
     const newGalleryItem = page.getByRole("button", {
       name: /Imagen sin título Orden \d+/,
     });
-    await expect(newGalleryItem).toBeVisible();
-    await newGalleryItem.click();
+    const galleryItemCountBefore = await newGalleryItem.count();
+    await page.getByRole("button", { name: "Agregar imagen", exact: true }).click();
+    await expect(newGalleryItem).toHaveCount(galleryItemCountBefore + 1);
+    await newGalleryItem.last().click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.getByRole("button", { name: "Subir imagen", exact: true }).click();
@@ -165,6 +189,14 @@ test("uploads, persists and previews a uniquely named global Gallery image", asy
     await page
       .getByRole("button", { name: new RegExp(`Galería río ${copySuffix}`) })
       .click();
+    await page.getByRole("button", { name: "EN", exact: true }).click();
+    await expect(page.getByLabel("Alt", { exact: true })).toHaveValue(
+      `River ${copySuffix}`,
+    );
+    await expect(page.getByLabel("Caption", { exact: true })).toHaveValue(
+      `River gallery ${copySuffix}`,
+    );
+    await page.getByRole("button", { name: "ES", exact: true }).click();
     const persistedFilenameButton = page.getByRole("button", {
       name: originalFilename,
       exact: true,
@@ -206,7 +238,30 @@ test("uploads, persists and previews a uniquely named global Gallery image", asy
       .click({ position: { x: 5, y: 5 } });
     await expect(dialog).toHaveCount(0);
     await expect(persistedFilenameButton).toBeFocused();
+  } catch (error) {
+    primaryError = error;
+    throw error;
   } finally {
-    await restoreGallery(page, initialGallery);
+    let cleanupError: unknown;
+    try {
+      await restoreGallery(page, initialGallery);
+    } catch (error) {
+      cleanupError = error;
+    }
+
+    try {
+      await page.unrouteAll({ behavior: "wait" });
+      await page.reload();
+      await expect(page).toHaveURL(/\/admin\/content\?tab=gallery$/);
+    } catch (error) {
+      cleanupError ??= error;
+    }
+
+    if (cleanupError && !primaryError) {
+      throw cleanupError;
+    }
+    if (cleanupError && primaryError) {
+      console.error("Gallery E2E cleanup failed after the primary error", cleanupError);
+    }
   }
 });
