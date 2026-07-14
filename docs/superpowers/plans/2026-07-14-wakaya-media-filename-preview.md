@@ -543,7 +543,7 @@ Run:
 
 ```bash
 npm run migrate
-E2E_BASE_URL=http://localhost:3212 npx playwright test \
+E2E_BASE_URL=http://localhost:3212 E2E_MUTATION_ALLOWED=1 npx playwright test \
   e2e/home-media-upload.spec.ts \
   e2e/media-filename-preview.spec.ts
 ```
@@ -653,7 +653,7 @@ el E2E de Galería prueba el comportamiento compartido dentro de `ContentHub`.
 Run:
 
 ```bash
-E2E_BASE_URL=http://localhost:3212 npx playwright test e2e/content-media-filename-preview.spec.ts
+E2E_BASE_URL=http://localhost:3212 E2E_MUTATION_ALLOWED=1 npx playwright test e2e/content-media-filename-preview.spec.ts
 ```
 
 Expected: PASS con captura
@@ -676,7 +676,7 @@ git commit -m "feat: unify public media filename previews"
 - Modify: `docs/fase-7-deploy/README.md`
 - Modify: `docs/superpowers/plans/2026-07-14-wakaya-media-filename-preview.md`
 
-- [ ] **Step 1: Record TDD and surface evidence**
+- [x] **Step 1: Record TDD and surface evidence**
 
 Agregar `T-010-007 - Nombre y popup de media pública` con Red, Green, Refactor
 y comandos. Crear evidencia 06.09 con:
@@ -691,7 +691,7 @@ y comandos. Crear evidencia 06.09 con:
 
 Actualizar navegación 06.08 → 06.09 → Fase 7.
 
-- [ ] **Step 2: Run focused verification**
+- [x] **Step 2: Run focused verification**
 
 Run:
 
@@ -719,18 +719,18 @@ git diff --check
 
 Expected: código 0 en cada comando.
 
-- [ ] **Step 3: Run the complete regression suite**
+- [x] **Step 3: Run the complete regression suite**
 
 Run: `npm test`
 
 Expected: cero fallos; omisiones existentes documentadas, no nuevas.
 
-- [ ] **Step 4: Run authenticated browser verification**
+- [x] **Step 4: Run authenticated browser verification**
 
 Run:
 
 ```bash
-E2E_BASE_URL=http://localhost:3212 npx playwright test \
+E2E_BASE_URL=http://localhost:3212 E2E_MUTATION_ALLOWED=1 npx playwright test \
   e2e/home-media-upload.spec.ts \
   e2e/home-validation.spec.ts \
   e2e/media-filename-preview.spec.ts \
@@ -739,32 +739,32 @@ E2E_BASE_URL=http://localhost:3212 npx playwright test \
 
 Expected: cero fallos y capturas visuales presentes.
 
-- [ ] **Step 5: Rebuild and restore localhost:3212**
+- [x] **Step 5: Rebuild and restore localhost:3212**
 
 Detener únicamente el proceso que escucha 3212, ejecutar:
 
 ```bash
 npm run build
-npm run dev -- --port 3212
+npm run start -- --port 3212
 curl -sS -o /dev/null -w '%{http_code}\n' http://localhost:3212/api/health
 ```
 
 Expected: build con código 0, servidor `Ready` y health `200`. Restaurar
 `next-env.d.ts` si `next dev` cambia la referencia a `.next/dev/types`.
 
-- [ ] **Step 6: Re-run the critical E2E after the rebuild**
+- [x] **Step 6: Re-run the critical E2E after the rebuild**
 
 Run:
 
 ```bash
-E2E_BASE_URL=http://localhost:3212 npx playwright test \
+E2E_BASE_URL=http://localhost:3212 E2E_MUTATION_ALLOWED=1 npx playwright test \
   e2e/home-media-upload.spec.ts \
   e2e/content-media-filename-preview.spec.ts
 ```
 
 Expected: ambos PASS contra el servidor reiniciado.
 
-- [ ] **Step 7: Complete the plan and commit evidence**
+- [x] **Step 7: Complete the plan and commit evidence**
 
 Marcar todos los checkbox como completados y ejecutar:
 
@@ -772,6 +772,22 @@ Marcar todos los checkbox como completados y ejecutar:
 git add specs/010-content-editor-workbench/spec-tareas.md docs/fase-6-qa docs/fase-7-deploy/README.md docs/superpowers/plans/2026-07-14-wakaya-media-filename-preview.md
 git commit -m "test: verify media filename previews locally"
 ```
+
+## Evidence and limitations (Task 6)
+
+- Evidencia detallada: [`docs/fase-6-qa/06.09-media-filename-preview-local-evidence.md`](../../fase-6-qa/06.09-media-filename-preview-local-evidence.md).
+- `npm test`: 153 archivos aprobados, 2 omitidos; 502 pruebas aprobadas, 3 omitidas.
+- Focalizado: 9 archivos y 77 pruebas aprobados; `npm run typecheck` y `git diff --check` con código 0.
+- ESLint sobre las rutas modificadas sin `crop-dialog.tsx`: código 0. El comando por directorios conserva el error preexistente `crop-dialog.tsx:74` (`react-hooks/set-state-in-effect`), presente también en el padre.
+- Playwright autenticado local con `E2E_MUTATION_ALLOWED=1`: suite completa 4/4; después de `npm run build`, E2E crítico 2/2; health `localhost:3212/api/health` HTTP 200.
+- Servidor compilado dejado para validación manual: PID `91431`, cwd `.worktrees/media-filename-preview`, comando `npm run start -- --port 3212`.
+- Capturas: `output/playwright/home-media-filename-preview-success.png`,
+  `home-media-filename-preview-error.png`, `content-media-filename-preview.png`,
+  `home-media-crop-publication.png` y `guided-home-validation.png`.
+- Límite local: los E2E restauran contenido, pero no eliminan activos binarios;
+  quedaron activos huérfanos locales no bloqueantes en `.data/wakaya-media/`
+  (33 directorios/99 archivos observados y 76 filas `media_asset`). No hay
+  cambios de producción ni deploy.
 
 ## Self-review
 
