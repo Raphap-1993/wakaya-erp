@@ -8,4 +8,5 @@ export type StoredBinary = {
 export interface MediaStorage {
   write(pathSegments: string[], buffer: Buffer): Promise<StoredBinary>;
   read(pathSegments: string[]): Promise<Buffer>;
+  remove(pathSegments: string[]): Promise<void>;
 }

@@ -1,5 +1,5 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { mkdir, readFile, rm, rmdir, writeFile } from "node:fs/promises";
+import { dirname, join, resolve, sep } from "node:path";
 
 import { DEFAULT_MEDIA_STORAGE_PATH, type MediaStorage, type StoredBinary } from "./media-storage";
 
@@ -36,6 +36,33 @@ class FilesystemMediaStorage implements MediaStorage {
   async read(pathSegments: string[]) {
     const safePath = sanitizePathSegments(pathSegments);
     return readFile(join(this.rootPath, ...safePath));
+  }
+
+  async remove(pathSegments: string[]) {
+    const safePath = sanitizePathSegments(pathSegments);
+    const absolutePath = join(this.rootPath, ...safePath);
+    await rm(absolutePath, { force: true });
+
+    let directory = dirname(absolutePath);
+    while (directory !== this.rootPath && directory.startsWith(`${this.rootPath}${sep}`)) {
+      try {
+        await rmdir(directory);
+      } catch (error) {
+        const code =
+          error && typeof error === "object" && "code" in error
+            ? (error as { code?: string }).code
+            : undefined;
+        if (code === "ENOENT") {
+          directory = dirname(directory);
+          continue;
+        }
+        if (code === "ENOTEMPTY") {
+          break;
+        }
+        throw error;
+      }
+      directory = dirname(directory);
+    }
   }
 }
 

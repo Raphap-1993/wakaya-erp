@@ -130,8 +130,11 @@ async function writeVariant(
   buffer: Buffer,
   quality: number,
   dimensions: { width: number; height: number },
+  writtenStoragePaths: string[][],
 ): Promise<PersistedVariant> {
-  const stored = await storage.write(buildStorageKey(assetId, fileName), buffer);
+  const pathSegments = buildStorageKey(assetId, fileName);
+  writtenStoragePaths.push(pathSegments);
+  const stored = await storage.write(pathSegments, buffer);
   return {
     storageKey: stored.storageKey,
     url: toUrl(stored.storageKey),
@@ -142,6 +145,30 @@ async function writeVariant(
   };
 }
 
+async function cleanupWrittenMedia(storage: MediaStorage, writtenStoragePaths: string[][]) {
+  for (const pathSegments of [...writtenStoragePaths].reverse()) {
+    try {
+      await storage.remove(pathSegments);
+    } catch {
+      // Best-effort compensation must preserve the original processing or persistence error.
+    }
+  }
+}
+
+function toMediaPersistenceError(error: unknown) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    (error as { code?: string }).code === "42P01"
+  ) {
+    return Object.assign(new Error("media_persistence_failed", { cause: error }), {
+      code: "42P01",
+    });
+  }
+  return error;
+}
+
 async function persistAsset(
   pool: Pool,
   rows: {
@@ -150,6 +177,8 @@ async function persistAsset(
   },
 ) {
   const client = await pool.connect();
+  let failed = false;
+  let persistenceError: unknown;
   try {
     await client.query("begin");
     await insertAsset(client, rows.asset);
@@ -158,10 +187,24 @@ async function persistAsset(
     }
     await client.query("commit");
   } catch (error) {
-    await client.query("rollback");
-    throw error;
-  } finally {
+    failed = true;
+    persistenceError = error;
+    await client.query("rollback").catch(() => undefined);
+  }
+
+  if (failed) {
+    try {
+      client.release();
+    } catch {
+      // Preserve the transaction error; storage compensation still has to run.
+    }
+    throw persistenceError;
+  }
+
+  try {
     client.release();
+  } catch {
+    // Commit already succeeded, so deleting the persisted asset would corrupt metadata.
   }
 }
 
@@ -273,79 +316,92 @@ export class ContentMediaService {
       requiredVariants: resolveSlotVariants(input.slot),
       crops: input.crops ?? buildFallbackCrops(input.slot),
     });
+    const writtenStoragePaths: string[][] = [];
+    let persistenceAttempted = false;
 
-    const masterStored = await writeVariant(
-      this.storage,
-      assetId,
-      "master.webp",
-      optimized.master.buffer,
-      optimized.master.quality,
-      optimized.master,
-    );
-
-    const variants: Partial<Record<MediaVariantKey, PersistedVariant>> = {};
-    for (const [variantKey, artifact] of Object.entries(optimized.variants) as Array<
-      [MediaVariantKey, (typeof optimized.variants)[MediaVariantKey]]
-    >) {
-      if (!artifact) {
-        continue;
-      }
-      variants[variantKey] = await writeVariant(
+    try {
+      const masterStored = await writeVariant(
         this.storage,
         assetId,
-        `${variantKey}.webp`,
-        artifact.buffer,
-        artifact.quality,
-        artifact,
+        "master.webp",
+        optimized.master.buffer,
+        optimized.master.quality,
+        optimized.master,
+        writtenStoragePaths,
       );
-    }
 
-    if (this.pool) {
-      await persistAsset(this.pool, {
+      const variants: Partial<Record<MediaVariantKey, PersistedVariant>> = {};
+      for (const [variantKey, artifact] of Object.entries(optimized.variants) as Array<
+        [MediaVariantKey, (typeof optimized.variants)[MediaVariantKey]]
+      >) {
+        if (!artifact) {
+          continue;
+        }
+        variants[variantKey] = await writeVariant(
+          this.storage,
+          assetId,
+          `${variantKey}.webp`,
+          artifact.buffer,
+          artifact.quality,
+          artifact,
+          writtenStoragePaths,
+        );
+      }
+
+      if (this.pool) {
+        persistenceAttempted = true;
+        await persistAsset(this.pool, {
+          asset: {
+            id: assetId,
+            storage_key: masterStored.storageKey,
+            checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
+            mime_type: input.file.type,
+            original_filename: originalFilename,
+            format: "webp",
+            width: optimized.master.width,
+            height: optimized.master.height,
+            byte_size: optimized.master.bytes,
+            status: "ready",
+            created_by: input.actorId ?? null,
+          },
+          variants: Object.entries(variants).map(([variantKey, variant]) => ({
+            id: `${assetId}_${variantKey}`,
+            asset_id: assetId,
+            slot: variantKey as MediaVariantKey,
+            storage_key: variant.storageKey,
+            format: "webp",
+            width: variant.width,
+            height: variant.height,
+            quality: variant.quality,
+            crop_spec:
+              (input.crops ?? buildFallbackCrops(input.slot))[
+                variantKey as MediaVariantKey
+              ] ?? null,
+            byte_size: variant.bytes,
+          })),
+        });
+      }
+
+      return {
         asset: {
           id: assetId,
-          storage_key: masterStored.storageKey,
-          checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
-          mime_type: input.file.type,
-          original_filename: originalFilename,
-          format: "webp",
-          width: optimized.master.width,
-          height: optimized.master.height,
-          byte_size: optimized.master.bytes,
+          originalFilename,
           status: "ready",
-          created_by: input.actorId ?? null,
+          master: {
+            url: masterStored.url,
+            width: optimized.master.width,
+            height: optimized.master.height,
+            format: "webp",
+            quality: 95,
+            nearLossless: true,
+          },
+          variants,
         },
-        variants: Object.entries(variants).map(([variantKey, variant]) => ({
-          id: `${assetId}_${variantKey}`,
-          asset_id: assetId,
-          slot: variantKey as MediaVariantKey,
-          storage_key: variant.storageKey,
-          format: "webp",
-          width: variant.width,
-          height: variant.height,
-          quality: variant.quality,
-          crop_spec: (input.crops ?? buildFallbackCrops(input.slot))[variantKey as MediaVariantKey] ?? null,
-          byte_size: variant.bytes,
-        })),
-      });
+      };
+    } catch (error) {
+      await cleanupWrittenMedia(this.storage, writtenStoragePaths);
+      throw persistenceAttempted ? toMediaPersistenceError(error) : error;
     }
-
-    return {
-      asset: {
-        id: assetId,
-        originalFilename,
-        status: "ready",
-        master: {
-          url: masterStored.url,
-          width: optimized.master.width,
-          height: optimized.master.height,
-          format: "webp",
-          quality: 95,
-          nearLossless: true,
-        },
-        variants,
-      },
-    };
   }
 
   async createCompatibilityHomeMedia(input: {
