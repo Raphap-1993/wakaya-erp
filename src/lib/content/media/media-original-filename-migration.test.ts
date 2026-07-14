@@ -14,12 +14,11 @@ describe("media original filename migration", () => {
       return;
     }
 
-    const sql = readFileSync(migrationPath, "utf8");
-    const statement = sql.match(
-      /alter\s+table(?:\s+if\s+exists)?\s+media_asset\s+add\s+column\s+if\s+not\s+exists\s+original_filename\s+text\s*;/i,
-    )?.[0];
+    const normalizedSql = readFileSync(migrationPath, "utf8").replace(/\s+/g, " ").trim();
 
-    expect(statement).toBeDefined();
-    expect(statement).not.toMatch(/\bnot\s+null\b/i);
+    expect(normalizedSql).toBe(
+      "alter table media_asset add column if not exists original_filename text;",
+    );
+    expect(normalizedSql).not.toMatch(/alter\s+table\s+if\s+exists/i);
   });
 });

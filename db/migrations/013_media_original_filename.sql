@@ -1,2 +1,2 @@
-alter table if exists media_asset
+alter table media_asset
   add column if not exists original_filename text;
