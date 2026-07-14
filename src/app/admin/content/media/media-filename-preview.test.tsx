@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import {
   Children,
   isValidElement,
@@ -10,9 +12,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   MediaFilenamePreview,
   MediaFilenamePreviewDialog,
-  addMediaPreviewKeydownListener,
   isMediaPreviewEscapeKey,
-  resolveMediaPreviewImageState,
+  scheduleMediaPreviewFailureReset,
   scheduleMediaPreviewTriggerFocus,
 } from "./media-filename-preview";
 
@@ -40,6 +41,16 @@ function findElement(
 }
 
 describe("MediaFilenamePreview", () => {
+  it("usa un outline de foco opaco y legible contra superficies blancas", () => {
+    const stylesheet = readFileSync(
+      new URL("./media-filename-preview.module.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(stylesheet).toContain("outline: 3px solid #234462;");
+    expect(stylesheet).not.toMatch(/outline:\s*3px solid rgba\(/);
+  });
+
   it("muestra el nombre completo como trigger de dialogo en el estado cerrado", () => {
     const html = renderToStaticMarkup(
       <MediaFilenamePreview
@@ -79,27 +90,42 @@ describe("MediaFilenamePreview", () => {
     expect(html).toContain("Cerrar");
   });
 
-  it.each([
-    { previewUrl: "", imageFailed: false },
-    { previewUrl: "/media/assets/asset_1/detail.webp", imageFailed: true },
-  ])(
-    "muestra un error amigable sin imagen rota",
-    ({ previewUrl, imageFailed }) => {
+  it("muestra un error amigable sin imagen rota", () => {
+    const previewUrl = "/media/assets/asset_1/detail.webp";
+    const html = renderToStaticMarkup(
+      <MediaFilenamePreviewDialog
+        originalFilename="Selva Wakaya.JPG"
+        previewUrl={previewUrl}
+        imageFailed={true}
+        titleId="media-preview-title"
+        closeButtonRef={{ current: null }}
+        onClose={() => undefined}
+        onImageError={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("No se pudo cargar la imagen");
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain(previewUrl);
+  });
+
+  it.each(["", "  \n\t  "])(
+    "muestra estado no interactivo cuando previewUrl está vacía",
+    (previewUrl) => {
       const html = renderToStaticMarkup(
-        <MediaFilenamePreviewDialog
+        <MediaFilenamePreview
           originalFilename="Selva Wakaya.JPG"
           previewUrl={previewUrl}
-          imageFailed={imageFailed}
-          titleId="media-preview-title"
-          closeButtonRef={{ current: null }}
-          onClose={() => undefined}
-          onImageError={() => undefined}
         />,
       );
 
-      expect(html).toContain("No se pudo cargar la imagen");
+      expect(html).toContain("Selva Wakaya.JPG");
+      expect(html).toContain('title="Selva Wakaya.JPG"');
+      expect(html).toContain("Sin imagen asociada");
+      expect(html).not.toContain("<button");
       expect(html).not.toContain("<img");
-      expect(html).not.toContain(previewUrl ? previewUrl : 'src=""');
+      expect(html).not.toContain('aria-haspopup="dialog"');
+      expect(html).not.toContain('role="dialog"');
     },
   );
 
@@ -180,57 +206,75 @@ describe("MediaFilenamePreview", () => {
     expect(isMediaPreviewEscapeKey({ key: "Enter" })).toBe(false);
   });
 
-  it("instala y limpia el listener que cierra con Escape y contiene Tab", () => {
-    let listener: ((event: KeyboardEvent) => void) | undefined;
-    const addEventListener = vi.fn(
-      (_type: "keydown", next: (event: KeyboardEvent) => void) => {
-        listener = next;
-      },
-    );
-    const removeEventListener = vi.fn();
-    const onEscape = vi.fn();
+  it("maneja Escape y Tab desde el backdrop sin propagar el evento", () => {
+    const onClose = vi.fn();
     const focusClose = vi.fn();
-    const preventDefault = vi.fn();
+    const view = MediaFilenamePreviewDialog({
+      originalFilename: "Selva Wakaya.JPG",
+      previewUrl: "/media/assets/asset_1/detail.webp",
+      imageFailed: false,
+      titleId: "media-preview-title",
+      closeButtonRef: {
+        current: { focus: focusClose } as unknown as HTMLButtonElement,
+      },
+      onClose,
+      onImageError: () => undefined,
+    });
+    const onKeyDown = view.props.onKeyDown as
+      | ((event: {
+          key: string;
+          shiftKey?: boolean;
+          preventDefault: () => void;
+          stopPropagation: () => void;
+        }) => void)
+      | undefined;
 
-    const cleanup = addMediaPreviewKeydownListener(
-      { addEventListener, removeEventListener },
-      onEscape,
-      { current: { focus: focusClose } },
-    );
+    expect(onKeyDown).toBeTypeOf("function");
 
-    expect(addEventListener).toHaveBeenCalledOnce();
-    listener?.({ key: "Escape" } as KeyboardEvent);
-    expect(onEscape).toHaveBeenCalledOnce();
+    const escapeEvent = {
+      key: "Escape",
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    };
+    onKeyDown?.(escapeEvent);
+    expect(escapeEvent.preventDefault).toHaveBeenCalledOnce();
+    expect(escapeEvent.stopPropagation).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledOnce();
 
-    listener?.({ key: "Tab", preventDefault } as unknown as KeyboardEvent);
-    expect(preventDefault).toHaveBeenCalledOnce();
+    const tabEvent = {
+      key: "Tab",
+      shiftKey: true,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    };
+    onKeyDown?.(tabEvent);
+    expect(tabEvent.preventDefault).toHaveBeenCalledOnce();
+    expect(tabEvent.stopPropagation).toHaveBeenCalledOnce();
     expect(focusClose).toHaveBeenCalledOnce();
-
-    cleanup();
-    expect(removeEventListener).toHaveBeenCalledWith("keydown", listener);
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it("resetea un error cuando cambia la URL sin desmontar el controlador", () => {
-    const failedState = {
-      previewUrl: "/media/assets/asset_1/detail.webp",
-      imageFailed: true,
-    };
+    const setImageState = vi.fn();
+    let callback: FrameRequestCallback | undefined;
+    const requestFrame = vi.fn((next: FrameRequestCallback) => {
+      callback = next;
+      return 9;
+    });
 
-    expect(
-      resolveMediaPreviewImageState(
-        failedState,
-        "/media/assets/asset_2/detail.webp",
-      ),
-    ).toEqual({
+    const frameId = scheduleMediaPreviewFailureReset(
+      "/media/assets/asset_2/detail.webp",
+      setImageState,
+      requestFrame,
+    );
+
+    expect(frameId).toBe(9);
+    expect(setImageState).not.toHaveBeenCalled();
+    callback?.(0);
+    expect(setImageState).toHaveBeenCalledWith({
       previewUrl: "/media/assets/asset_2/detail.webp",
       imageFailed: false,
     });
-    expect(
-      resolveMediaPreviewImageState(
-        failedState,
-        "/media/assets/asset_1/detail.webp",
-      ),
-    ).toBe(failedState);
   });
 
   it("devuelve el foco al trigger en el siguiente animation frame", () => {

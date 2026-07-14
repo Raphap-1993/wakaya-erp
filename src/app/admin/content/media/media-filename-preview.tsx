@@ -31,17 +31,6 @@ type MediaPreviewImageState = {
   imageFailed: boolean;
 };
 
-type MediaPreviewKeydownTarget = {
-  addEventListener: (
-    type: "keydown",
-    listener: (event: KeyboardEvent) => void,
-  ) => void;
-  removeEventListener: (
-    type: "keydown",
-    listener: (event: KeyboardEvent) => void,
-  ) => void;
-};
-
 export function shouldCloseMediaPreviewFromBackdrop({
   target,
   currentTarget,
@@ -56,36 +45,51 @@ export function isMediaPreviewEscapeKey({ key }: { key: string }) {
   return key === "Escape";
 }
 
-export function resolveMediaPreviewImageState(
-  state: MediaPreviewImageState,
+export function scheduleMediaPreviewFailureReset(
   previewUrl: string,
+  setImageState: (state: MediaPreviewImageState) => void,
+  requestFrame?: RequestFrame,
 ) {
-  return state.previewUrl === previewUrl
-    ? state
-    : { previewUrl, imageFailed: false };
+  const resetFailure = () => {
+    setImageState({ previewUrl, imageFailed: false });
+  };
+
+  if (requestFrame) {
+    return requestFrame(resetFailure);
+  }
+
+  if (
+    typeof window !== "undefined" &&
+    typeof window.requestAnimationFrame === "function"
+  ) {
+    return window.requestAnimationFrame(resetFailure);
+  }
+
+  resetFailure();
+  return null;
 }
 
-export function addMediaPreviewKeydownListener(
-  target: MediaPreviewKeydownTarget,
-  onEscape: () => void,
+export function handleMediaPreviewDialogKeyDown(
+  event: {
+    key: string;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  },
+  onClose: () => void,
   closeButtonRef: FocusTargetRef,
 ) {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (isMediaPreviewEscapeKey(event)) {
-      onEscape();
-      return;
-    }
+  if (isMediaPreviewEscapeKey(event)) {
+    event.preventDefault();
+    event.stopPropagation();
+    onClose();
+    return;
+  }
 
-    if (event.key === "Tab") {
-      event.preventDefault();
-      closeButtonRef.current?.focus();
-    }
-  };
-
-  target.addEventListener("keydown", handleKeyDown);
-  return () => {
-    target.removeEventListener("keydown", handleKeyDown);
-  };
+  if (event.key === "Tab") {
+    event.preventDefault();
+    event.stopPropagation();
+    closeButtonRef.current?.focus();
+  }
 }
 
 export function scheduleMediaPreviewTriggerFocus(
@@ -132,6 +136,9 @@ export function MediaFilenamePreviewDialog({
     <div
       className={styles.backdrop}
       data-testid="media-preview-backdrop"
+      onKeyDown={(event) =>
+        handleMediaPreviewDialogKeyDown(event, onClose, closeButtonRef)
+      }
       onClick={(event) => {
         if (shouldCloseMediaPreviewFromBackdrop(event)) {
           onClose();
@@ -191,23 +198,41 @@ export function MediaFilenamePreview({
   originalFilename,
   previewUrl,
 }: MediaFilenamePreviewProps) {
+  const usablePreviewUrl = previewUrl.trim();
+
+  if (!usablePreviewUrl) {
+    return (
+      <span className={styles.unavailable} title={originalFilename}>
+        <span className={styles.unavailableFilename}>{originalFilename}</span>
+        <span className={styles.unavailableState}>Sin imagen asociada</span>
+      </span>
+    );
+  }
+
+  return (
+    <MediaFilenamePreviewController
+      originalFilename={originalFilename}
+      previewUrl={usablePreviewUrl}
+    />
+  );
+}
+
+function MediaFilenamePreviewController({
+  originalFilename,
+  previewUrl,
+}: MediaFilenamePreviewProps) {
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const restoreFrameRef = useRef<number | null>(null);
+  const previousPreviewUrlRef = useRef(previewUrl);
   const [open, setOpen] = useState(false);
   const [imageState, setImageState] = useState<MediaPreviewImageState>({
     previewUrl,
     imageFailed: false,
   });
-  const resolvedImageState = resolveMediaPreviewImageState(
-    imageState,
-    previewUrl,
-  );
-
-  if (resolvedImageState !== imageState) {
-    setImageState(resolvedImageState);
-  }
+  const imageFailed =
+    imageState.previewUrl === previewUrl && imageState.imageFailed;
 
   const closeDialog = useCallback(() => {
     setOpen(false);
@@ -227,6 +252,25 @@ export function MediaFilenamePreview({
   }, []);
 
   useEffect(() => {
+    if (previousPreviewUrlRef.current === previewUrl) {
+      return;
+    }
+
+    previousPreviewUrlRef.current = previewUrl;
+    const frameId = scheduleMediaPreviewFailureReset(previewUrl, setImageState);
+
+    return () => {
+      if (
+        frameId !== null &&
+        typeof window !== "undefined" &&
+        typeof window.cancelAnimationFrame === "function"
+      ) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
+  }, [previewUrl]);
+
+  useEffect(() => {
     if (!open) {
       return;
     }
@@ -242,14 +286,6 @@ export function MediaFilenamePreview({
       }
     };
   }, [open]);
-
-  useEffect(() => {
-    if (!open || typeof window === "undefined") {
-      return;
-    }
-
-    return addMediaPreviewKeydownListener(window, closeDialog, closeButtonRef);
-  }, [closeDialog, open]);
 
   useEffect(
     () => () => {
@@ -285,7 +321,7 @@ export function MediaFilenamePreview({
         <MediaFilenamePreviewDialog
           originalFilename={originalFilename}
           previewUrl={previewUrl}
-          imageFailed={resolvedImageState.imageFailed}
+          imageFailed={imageFailed}
           titleId={titleId}
           closeButtonRef={closeButtonRef}
           onClose={closeDialog}

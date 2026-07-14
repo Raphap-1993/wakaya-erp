@@ -19,6 +19,27 @@
   white-space: nowrap;
 }
 
+.unavailable {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: baseline;
+  gap: 8px;
+  color: #526b82;
+  font-size: 0.9rem;
+}
+
+.unavailableFilename {
+  min-width: 0;
+  overflow: hidden;
+  color: #234462;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unavailableState {
+  flex: 0 0 auto;
+}
+
 .trigger:hover,
 .closeButton:hover {
   border-color: rgba(63, 118, 171, 0.56);
@@ -27,7 +48,7 @@
 
 .trigger:focus-visible,
 .closeButton:focus-visible {
-  outline: 3px solid rgba(63, 118, 171, 0.32);
+  outline: 3px solid #234462;
   outline-offset: 2px;
 }
 
