@@ -83,10 +83,36 @@ describe("style governance", () => {
       return [...source.matchAll(/font-family:\s*([^;]+);/g)]
         .filter((match) => {
           const value = match[1].trim();
-          return value !== "var(--wakaya-font-sans)" && value !== "inherit";
+          return (
+            value !== "var(--wakaya-font-sans)" &&
+            value !== "var(--wakaya-font-public-display)" &&
+            value !== "var(--wakaya-font-public-body)" &&
+            value !== "inherit"
+          );
         })
         .map((match) => `${filePath}:${match[0]}`);
     });
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("defines the approved public typography and eco-lodge palette", () => {
+    const globals = readStyle("src/app/globals.css");
+    const publicTheme = readStyle("src/components/public-site/public-site-theme.module.css");
+
+    expect(globals).toContain('--wakaya-font-public-display: "Lora Variable"');
+    expect(globals).toContain('--wakaya-font-public-body: "Montserrat Variable"');
+    expect(globals).toContain("--wakaya-eco-green: #295331;");
+    expect(globals).toContain("--wakaya-palm-lime: #b6ce87;");
+    expect(globals).toContain("--wakaya-sand-beige: #eee9dd;");
+    expect(publicTheme).toContain("--wakaya-font-sans: var(--wakaya-font-public-body);");
+    expect(publicTheme).toContain("font-family: var(--wakaya-font-public-display);");
+  });
+
+  it("removes the retired gold accents from public-site styles", () => {
+    const publicStyleFiles = collectStyleFiles("src/components/public-site");
+    const retiredGolds = /#(?:c49840|d5ad62|ddb25a|efad1a|d7930b|ba802b|c5924e)/i;
+    const offenders = publicStyleFiles.filter((filePath) => retiredGolds.test(readStyle(filePath)));
 
     expect(offenders).toEqual([]);
   });

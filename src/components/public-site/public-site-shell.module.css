@@ -84,7 +84,7 @@
 }
 
 .prototypeBrandSubtitle {
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: 11px;
   letter-spacing: 0.38em;
@@ -115,7 +115,7 @@
 }
 
 .prototypeNavLinkActive {
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
 }
 
 .prototypeActions {
@@ -161,8 +161,8 @@
 }
 
 .prototypeLocaleLinkActive {
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .prototypeCta {
@@ -171,10 +171,10 @@
   justify-content: center;
   min-height: 42px;
   padding: 0 20px;
-  border: 1px solid #c49840;
+  border: 1px solid var(--wakaya-palm-lime);
   border-radius: 0;
-  background: rgba(196, 148, 64, 0.18);
-  color: #ddb25a;
+  background: rgba(182, 206, 135, 0.18);
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: var(--nav-cta-size, 14px);
   font-weight: var(--nav-cta-weight, 560);
@@ -187,8 +187,8 @@
 }
 
 .prototypeCta:hover {
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .prototypeMenuButton {
@@ -270,8 +270,8 @@
   justify-content: center;
   width: 100%;
   min-height: 56px;
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
   border-radius: 0;
   font-family: var(--wakaya-font-sans);
   font-size: var(--nav-cta-size, 15px);
@@ -327,7 +327,7 @@
 
 .prototypeFooterSubbrand,
 .prototypeFooterHeading {
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: 11px;
   letter-spacing: 0.3em;
@@ -374,8 +374,8 @@
 }
 
 .prototypeFooterFeatureCard:hover {
-  border-color: rgba(196, 148, 64, 0.55);
-  background: rgba(196, 148, 64, 0.08);
+  border-color: rgba(182, 206, 135, 0.55);
+  background: rgba(182, 206, 135, 0.08);
   transform: translateY(-1px);
 }
 
@@ -385,8 +385,8 @@
   justify-content: center;
   width: 42px;
   height: 42px;
-  border: 1px solid rgba(196, 148, 64, 0.32);
-  color: #ddb25a;
+  border: 1px solid rgba(182, 206, 135, 0.32);
+  color: var(--wakaya-palm-lime);
 }
 
 .prototypeFooterFeatureIcon svg {
@@ -470,8 +470,8 @@
 .prototypeFooterNewsletter button {
   width: 46px;
   border: 0;
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 18px;
 }

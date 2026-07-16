@@ -22,8 +22,8 @@
   width: 100vw;
   margin: -28px calc(50% - 50vw) 0;
   overflow: clip;
-  background: #f3ede0;
-  color: #0d1b0e;
+  background: var(--wakaya-sand-beige);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .sectionShell {
@@ -44,11 +44,11 @@
 }
 
 .sectionEyebrow {
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
 }
 
 .sectionEyebrowOnDark {
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
 }
 
 .sectionHead,
@@ -84,12 +84,12 @@
 }
 
 .inlineLink {
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
 }
 
 .inlineLinkOnDark,
 .roomGridLink {
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
 }
 
 .inlineLink:hover,
@@ -106,7 +106,7 @@
   position: relative;
   min-height: 100svh;
   overflow: hidden;
-  background: #0d1b0e;
+  background: var(--wakaya-eco-green-deep);
 }
 
 .heroSlide {
@@ -168,7 +168,7 @@
 .heroKicker {
   display: inline-block;
   margin-bottom: 24px;
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: var(--hero-eyebrow-size, 14px);
   font-weight: var(--hero-eyebrow-weight, 500);
@@ -237,8 +237,8 @@
 
 .primaryButton,
 .requestSubmit {
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .requestSubmit {
@@ -340,7 +340,7 @@
 }
 
 .heroDotActive {
-  background: #c49840;
+  background: var(--wakaya-palm-lime);
 }
 
 .requestBandWrap {
@@ -366,7 +366,7 @@
 }
 
 .requestBandIntro strong {
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-heading-compact-size, calc(1.35rem + 2px));
   font-weight: var(--home-heading-weight, 590);
@@ -416,7 +416,7 @@
   min-height: 18px;
   border: none;
   background: transparent;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-input-size, 16px);
   font-weight: var(--home-body-weight, 500);
@@ -471,7 +471,7 @@
 }
 
 .statsSection {
-  background: #1c3425;
+  background: var(--wakaya-eco-green);
 }
 
 .statsStrip {
@@ -489,7 +489,7 @@
 
 .statsItem strong {
   display: block;
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-heading-stat-size, calc(clamp(2.2rem, 4vw, 3.2rem) + 2px));
   font-weight: var(--home-heading-weight, 590);
@@ -507,7 +507,7 @@
 }
 
 .storySection {
-  background: #f3ede0;
+  background: var(--wakaya-sand-beige);
 }
 
 .storySection .sectionShell {
@@ -535,7 +535,7 @@
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  background: #1c3425;
+  background: var(--wakaya-eco-green);
 }
 
 .storyQuoteCard {
@@ -544,14 +544,14 @@
   bottom: -24px;
   max-width: 220px;
   padding: 24px;
-  background: #1c3425;
+  background: var(--wakaya-eco-green);
   color: #fff;
   box-shadow: 0 24px 50px rgba(13, 27, 14, 0.24);
 }
 
 .storyQuoteMark {
   display: block;
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: 56px;
   line-height: 0.8;
@@ -577,7 +577,7 @@
 }
 
 .roomSection {
-  background: #0d1b0e;
+  background: var(--wakaya-eco-green-deep);
 }
 
 .roomSection .sectionShell {
@@ -599,13 +599,13 @@
 }
 
 .roomGridCard {
-  background: #0d1b0e;
+  background: var(--wakaya-eco-green-deep);
 }
 
 .roomGridMedia {
   position: relative;
   overflow: hidden;
-  background: #1a2e1a;
+  background: var(--wakaya-eco-green-deep);
 }
 
 .roomGridMedia img {
@@ -634,8 +634,8 @@
 .roomGridPriceBadge span {
   display: inline-flex;
   padding: 8px 12px;
-  background: rgba(196, 148, 64, 0.94);
-  color: #0d1b0e;
+  background: rgba(182, 206, 135, 0.94);
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-label-size, 12px);
   font-weight: var(--home-label-weight, 520);
@@ -650,7 +650,7 @@
 
 .roomGridEyebrow {
   margin: 0 0 10px;
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-eyebrow-size, 15px);
   font-weight: var(--home-eyebrow-weight, 520);
@@ -751,7 +751,7 @@
 }
 
 .experienceSection {
-  background: #f3ede0;
+  background: var(--wakaya-sand-beige);
 }
 
 .experienceSection .sectionShell {
@@ -774,7 +774,7 @@
 .experienceMedia {
   position: relative;
   overflow: hidden;
-  background: #1a2e1a;
+  background: var(--wakaya-eco-green-deep);
 }
 
 .experienceMedia img {
@@ -793,8 +793,8 @@
   top: 16px;
   right: 16px;
   padding: 8px 10px;
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-label-size, 12px);
   font-weight: var(--home-label-weight, 520);
@@ -820,7 +820,7 @@
 
 .experienceBody h3 {
   margin: 0 0 12px;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-heading-feature-size, calc(1.7rem + 2px));
   font-weight: var(--home-heading-weight, 590);
@@ -832,7 +832,7 @@
 }
 
 .testimonialSection {
-  background: #1c3425;
+  background: var(--wakaya-eco-green);
 }
 
 .testimonialSection .sectionShell {
@@ -853,7 +853,7 @@
 }
 
 .testimonialStars {
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
   font-size: var(--home-label-size, 14px);
   font-weight: var(--home-label-weight, 520);
   letter-spacing: 0.14em;

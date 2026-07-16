@@ -1,29 +1,57 @@
 .page {
-  --bg: #f7f1e7;
-  --surface: rgba(255, 252, 247, 0.9);
-  --surface-strong: #fffcf7;
-  --surface-soft: rgba(255, 248, 239, 0.9);
-  --line: rgba(69, 52, 35, 0.12);
-  --text: #17362f;
+  --wakaya-font-sans: var(--wakaya-font-public-body);
+  --wakaya-accent: var(--wakaya-palm-lime);
+  --font-playfair-display: var(--wakaya-font-public-display);
+  --font-jost: var(--wakaya-font-public-body);
+  --font-dm-mono: var(--wakaya-font-public-body);
+  --bg: var(--wakaya-sand-beige);
+  --surface: rgba(248, 245, 237, 0.92);
+  --surface-strong: var(--wakaya-sand-light);
+  --surface-soft: rgba(238, 233, 221, 0.9);
+  --line: rgba(41, 83, 49, 0.16);
+  --text: var(--wakaya-eco-green-deep);
   --muted: #6e6256;
   --muted-strong: #4d463f;
-  --accent: #efad1a;
-  --accent-deep: #d7930b;
-  --accent-soft: rgba(239, 173, 26, 0.14);
-  --forest: #28473e;
-  --shadow-soft: 0 24px 70px rgba(47, 33, 19, 0.08);
-  --shadow-card: 0 18px 36px rgba(32, 21, 13, 0.08);
+  --accent: var(--wakaya-palm-lime);
+  --accent-deep: var(--wakaya-palm-lime-deep);
+  --accent-soft: rgba(182, 206, 135, 0.2);
+  --forest: var(--wakaya-eco-green);
+  --shadow-soft: 0 24px 70px rgba(23, 59, 38, 0.09);
+  --shadow-card: 0 18px 36px rgba(23, 59, 38, 0.08);
   --radius-xl: 0px;
   --radius-lg: 0px;
   --radius-md: 0px;
   --radius-sm: 0px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(244, 183, 58, 0.18), transparent 24%),
-    radial-gradient(circle at top right, rgba(54, 95, 82, 0.12), transparent 26%),
-    linear-gradient(180deg, #fbf6ef 0%, var(--bg) 40%, #f2eadf 100%);
+    radial-gradient(circle at top left, rgba(182, 206, 135, 0.2), transparent 24%),
+    radial-gradient(circle at top right, rgba(41, 83, 49, 0.14), transparent 26%),
+    linear-gradient(180deg, var(--wakaya-sand-light) 0%, var(--bg) 45%, #e5dfd1 100%);
   color: var(--text);
   font-family: var(--wakaya-font-sans);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+
+.page.page :global(h1),
+.page.page :global(h2),
+.page.page :global(h3),
+.page.page :global(h4),
+.page.page :global(h5),
+.page.page :global(h6) {
+  font-family: var(--wakaya-font-public-display);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.page :global(p),
+.page :global(a),
+.page :global(button),
+.page :global(input),
+.page :global(select),
+.page :global(textarea),
+.page :global(label) {
+  font-family: var(--wakaya-font-public-body);
 }
 
 .shell {
@@ -64,7 +92,7 @@
   width: 48px;
   height: 48px;
   border-radius: 0;
-  background: linear-gradient(135deg, #456557 0%, #c5924e 100%);
+  background: linear-gradient(135deg, #456557 0%, var(--wakaya-palm-lime) 100%);
   color: #fff;
   font-size: 28px;
   font-weight: 700;
@@ -247,7 +275,7 @@
 .sectionSubtitle {
   display: block;
   margin-bottom: 10px;
-  color: #ba802b;
+  color: var(--wakaya-lime-ink);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -1487,7 +1515,7 @@
 .roomEyebrow {
   display: block;
   margin-bottom: 10px;
-  color: #ba802b;
+  color: var(--wakaya-lime-ink);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -1798,7 +1826,7 @@
   margin-top: 34px;
   padding: 28px;
   border-radius: 0;
-  background: #17362f;
+  background: var(--wakaya-eco-green-deep);
   box-shadow: 0 24px 48px rgba(24, 53, 47, 0.16);
 }
 

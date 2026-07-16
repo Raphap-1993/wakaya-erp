@@ -14,7 +14,7 @@
   overflow: hidden;
   border-radius: 0;
   padding: 42px;
-  background-color: #18332c;
+  background-color: var(--wakaya-eco-green);
   color: #fff;
   box-shadow: var(--shadow-soft, 0 24px 70px rgba(47, 33, 19, 0.18));
   isolation: isolate;

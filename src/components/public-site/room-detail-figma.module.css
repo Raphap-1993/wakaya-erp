@@ -23,7 +23,7 @@
 
 .breadcrumbRow a:hover,
 .breadcrumbRow button:hover {
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
 }
 
 .storyHeader {
@@ -33,7 +33,7 @@
 .storyKicker {
   display: block;
   margin-bottom: 8px;
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
   font-family: var(--wakaya-font-sans);
   font-size: 12px;
   letter-spacing: 0.35em;
@@ -42,7 +42,7 @@
 
 .storyTitle {
   margin: 0 0 10px;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2.75rem, 5vw, 4.3rem) + 2px);
   font-weight: 700;
@@ -62,7 +62,7 @@
 .starRow {
   display: inline-flex;
   gap: 2px;
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
   font-size: 13px;
   line-height: 1;
 }
@@ -77,7 +77,7 @@
   width: 8px;
   height: 8px;
   border-radius: 0;
-  background: #c49840;
+  background: var(--wakaya-palm-lime);
 }
 
 .highlightRow {
@@ -94,7 +94,7 @@
   padding: 9px 14px;
   background: rgba(28, 52, 37, 0.08);
   border: 1px solid rgba(28, 52, 37, 0.15);
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: 14px;
 }
@@ -103,7 +103,7 @@
   width: 6px;
   height: 6px;
   border-radius: 0;
-  background: #c49840;
+  background: var(--wakaya-palm-lime);
 }
 
 .section {
@@ -118,7 +118,7 @@
 
 .sectionTitle {
   margin: 0 0 18px;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(2rem + 2px);
   font-weight: 700;
@@ -155,7 +155,7 @@
 }
 
 .amenityCard:hover {
-  border-color: #c49840;
+  border-color: var(--wakaya-palm-lime);
   box-shadow: 0 10px 24px rgba(32, 21, 13, 0.08);
   transform: translateY(-1px);
 }
@@ -166,16 +166,16 @@
   width: 40px;
   height: 40px;
   margin-bottom: 12px;
-  background: #f3ede0;
-  color: #c49840;
+  background: var(--wakaya-sand-beige);
+  color: var(--wakaya-lime-ink);
   transition:
     background 160ms ease,
     color 160ms ease;
 }
 
 .amenityCard:hover .amenityIconWrap {
-  background: #1c3425;
-  color: #c49840;
+  background: var(--wakaya-eco-green);
+  color: var(--wakaya-palm-lime);
 }
 
 .amenityIconWrap svg {
@@ -211,8 +211,8 @@
   flex: 0 0 auto;
   width: 20px;
   height: 20px;
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .includedItemCheck svg {
@@ -221,7 +221,7 @@
 }
 
 .includedItem span {
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   line-height: 1.45;
@@ -241,7 +241,7 @@
 }
 
 .detailCardIcon {
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
 }
 
 .detailCardIcon svg {
@@ -251,7 +251,7 @@
 }
 
 .detailCardValue {
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(1.25rem + 2px);
   line-height: 1.15;
@@ -296,15 +296,15 @@
   place-items: center;
   width: 36px;
   height: 36px;
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 13px;
   font-weight: 700;
 }
 
 .reviewName {
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   font-weight: 700;
@@ -334,7 +334,7 @@
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #1a2e1a;
+  background: var(--wakaya-eco-green-deep);
 }
 
 .galleryViewport img {
@@ -404,7 +404,7 @@
 
 .galleryDotActive {
   width: 16px;
-  background: #c49840;
+  background: var(--wakaya-palm-lime);
 }
 
 .galleryThumbs {
@@ -418,7 +418,7 @@
   overflow: hidden;
   aspect-ratio: 16 / 9;
   border: 0;
-  background: #1a2e1a;
+  background: var(--wakaya-eco-green-deep);
   opacity: 0.6;
   transition:
     opacity 160ms ease,
@@ -438,7 +438,7 @@
 
 .galleryThumbActive {
   opacity: 1;
-  box-shadow: inset 0 0 0 2px #c49840;
+  box-shadow: inset 0 0 0 2px var(--wakaya-palm-lime);
 }
 
 .requestCard {
@@ -457,7 +457,7 @@
 }
 
 .requestPrice {
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: calc(2rem + 2px);
   line-height: 1;
@@ -533,7 +533,7 @@
   width: 100%;
   border: 0;
   background: transparent;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   outline: none;
@@ -557,16 +557,16 @@
   height: 28px;
   border: 1px solid #e8e2d4;
   background: transparent;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
 }
 
 .requestStepper button:hover {
-  background: #f3ede0;
+  background: var(--wakaya-sand-beige);
 }
 
 .requestStepper button:disabled,
 .requestStepper button:disabled:hover {
-  background: #f7f3ea;
+  background: var(--wakaya-sand-light);
   color: #b7ad9a;
   cursor: not-allowed;
 }
@@ -574,7 +574,7 @@
 .requestSummary {
   margin-bottom: 16px;
   overflow: hidden;
-  background: #f3ede0;
+  background: var(--wakaya-sand-beige);
   padding: 16px;
 }
 
@@ -595,13 +595,13 @@
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid #e8e2d4;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-size: 16px;
   font-weight: 700;
 }
 
 .requestSummaryTotal strong {
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: calc(1.15rem + 2px);
   font-weight: 700;
@@ -615,7 +615,7 @@
   min-height: 56px;
   border: 0;
   color: #fff;
-  background: #1c3425;
+  background: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   font-weight: 700;
@@ -628,8 +628,8 @@
 }
 
 .requestButton:hover {
-  background: #c49840;
-  color: #0d1b0e;
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .requestButtonDisabled,
@@ -653,7 +653,7 @@
 .requestDialogPanel {
   width: min(100%, 700px);
   border: 1px solid rgba(232, 226, 212, 0.9);
-  background: linear-gradient(180deg, #faf7f1 0%, #f3ede0 100%);
+  background: linear-gradient(180deg, #faf7f1 0%, var(--wakaya-sand-beige) 100%);
   box-shadow: 0 32px 90px rgba(8, 16, 11, 0.28);
   padding: clamp(24px, 4vw, 40px);
 }
@@ -665,7 +665,7 @@
 
 .requestDialogKicker {
   margin: 0 0 12px;
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
   font-family: var(--wakaya-font-sans);
   font-size: 12px;
   letter-spacing: 0.24em;
@@ -674,7 +674,7 @@
 
 .requestDialogTitle {
   margin: 0;
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2.5rem, 6vw, 4rem) + 2px);
   font-weight: 700;
@@ -690,7 +690,7 @@
 .requestDialogCopy,
 .requestDialogStatus {
   margin: 0;
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   line-height: 1.7;
 }
@@ -711,8 +711,8 @@
   display: grid;
   gap: 6px;
   padding: 18px;
-  border: 1px solid rgba(196, 152, 64, 0.28);
-  background: rgba(196, 152, 64, 0.08);
+  border: 1px solid rgba(182, 206, 135, 0.28);
+  background: rgba(182, 206, 135, 0.08);
 }
 
 .requestDialogWhatsappLabel {
@@ -725,7 +725,7 @@
 }
 
 .requestDialogWhatsappPhoneLink {
-  color: #0d1b0e;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 20px;
   font-weight: 700;
@@ -733,13 +733,13 @@
 }
 
 .requestDialogWhatsappPhoneLink:hover {
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
   text-decoration: underline;
 }
 
 .requestDialogWhatsappPrompt {
   margin: 0;
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   line-height: 1.6;
@@ -761,7 +761,7 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  border: 1px solid #1c3425;
+  border: 1px solid var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: 14px;
   font-weight: 700;
@@ -775,19 +775,19 @@
 
 .requestDialogWhatsappButton {
   background: transparent;
-  color: #1c3425;
+  color: var(--wakaya-eco-green);
 }
 
 .requestDialogClose {
-  background: #1c3425;
-  color: #f7f3ea;
+  background: var(--wakaya-eco-green);
+  color: var(--wakaya-sand-light);
 }
 
 .requestDialogWhatsappButton:hover,
 .requestDialogClose:hover {
-  border-color: #c49840;
-  background: #c49840;
-  color: #0d1b0e;
+  border-color: var(--wakaya-palm-lime);
+  background: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green-deep);
 }
 
 .requestError {
@@ -815,13 +815,13 @@
   flex: 0 0 auto;
   width: 12px;
   height: 12px;
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
 }
 
 .calloutBox {
   margin-top: 16px;
   padding: 16px;
-  background: #1c3425;
+  background: var(--wakaya-eco-green);
   color: #fff;
 }
 
@@ -841,7 +841,7 @@
 .calloutLabelRow svg {
   width: 13px;
   height: 13px;
-  color: #c49840;
+  color: var(--wakaya-palm-lime);
 }
 
 .calloutPhone {

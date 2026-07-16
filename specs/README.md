@@ -13,6 +13,7 @@
 - [008-corporate-content](008-corporate-content/README.md) - contenido corporativo administrable y versionado
 - [009-bungalow-capacity](009-bungalow-capacity/README.md) - cupos físicos por categoría y disponibilidad por reservas confirmadas
 - [010-content-editor-workbench](010-content-editor-workbench/README.md) - edición diaria estructurada de contenido público
+- [011-public-visual-identity](011-public-visual-identity/README.md) - identidad pública Lora/Montserrat y paleta ecolodge
 
 ## Secuencia vigente del incremento de contenido e inventario
 1. `006-public-content-hub`: diseño/prototipo, contenido, media y publicación.

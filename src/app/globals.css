@@ -1,9 +1,21 @@
+@import "@fontsource-variable/lora";
+@import "@fontsource-variable/montserrat";
+
 :root {
   color-scheme: light;
   --wakaya-font-sans: "Avenir Next", "Inter", "Segoe UI", sans-serif;
+  --wakaya-font-public-display: "Lora Variable", "Lora", Georgia, serif;
+  --wakaya-font-public-body: "Montserrat Variable", "Montserrat", "Avenir Next", sans-serif;
   --font-playfair-display: var(--wakaya-font-sans);
   --font-jost: var(--wakaya-font-sans);
   --font-dm-mono: var(--wakaya-font-sans);
+  --wakaya-eco-green: #295331;
+  --wakaya-eco-green-deep: #173b26;
+  --wakaya-palm-lime: #b6ce87;
+  --wakaya-palm-lime-deep: #90ad55;
+  --wakaya-lime-ink: #536c2c;
+  --wakaya-sand-beige: #eee9dd;
+  --wakaya-sand-light: #f8f5ed;
   --wakaya-bg: #f7f1e7;
   --wakaya-surface: rgba(255, 252, 247, 0.9);
   --wakaya-text: #17362f;

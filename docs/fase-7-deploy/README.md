@@ -5,7 +5,7 @@
 
 <!-- nav-guided:start -->
 ## Navegacion guiada
-- Anterior: [Evidencia local del CRUD y persistencia de media](../fase-6-qa/06.10-content-media-crud-persistence-evidence.md)
+- Anterior: [Evidencia local de identidad visual pública](../fase-6-qa/06.11-public-visual-identity-evidence.md)
 - Siguiente: [Checklist de salida a produccion](07.00-checklist-salida-produccion.md)
 <!-- nav-guided:end -->
 

@@ -3,7 +3,7 @@
   width: 100vw;
   margin: -28px calc(50% - 50vw) 56px;
   overflow: clip;
-  background: #183126;
+  background: var(--wakaya-eco-green);
 }
 
 .heroMedia {
@@ -46,7 +46,7 @@
 
 .heroMeta {
   margin-bottom: 14px;
-  color: #d5ad62;
+  color: var(--wakaya-palm-lime);
   font-family: var(--wakaya-font-sans);
   font-size: 12px;
   letter-spacing: 0.22em;
@@ -148,7 +148,7 @@
   bottom: 16px;
   padding: 10px 14px;
   background: rgba(249, 239, 220, 0.94);
-  color: #0f2418;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   letter-spacing: 0.02em;
@@ -171,7 +171,7 @@
 .roomTitleWrap h2,
 .roomTitleWrap h3 {
   margin: 0 0 6px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2rem, 3vw, 2.5rem) + 2px);
   font-weight: 700;
@@ -191,7 +191,7 @@
 }
 
 .priceValue {
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(2rem + 2px);
   line-height: 1;
@@ -225,8 +225,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #f6efe2;
-  color: #143126;
+  background: var(--wakaya-sand-light);
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: 14px;
   line-height: 1.4;
@@ -236,7 +236,7 @@
   width: 6px;
   height: 6px;
   border-radius: 0;
-  background: #c49840;
+  background: var(--wakaya-palm-lime);
 }
 
 .buttonLink {
@@ -245,8 +245,8 @@
   justify-content: center;
   min-height: 50px;
   padding: 0 18px;
-  border: 1px solid #153527;
-  background: #153527;
+  border: 1px solid var(--wakaya-eco-green);
+  background: var(--wakaya-eco-green);
   color: #fffaf4;
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
@@ -261,8 +261,8 @@
 
 .buttonLink:hover {
   transform: translateY(-1px);
-  background: #0f2418;
-  border-color: #0f2418;
+  background: var(--wakaya-eco-green-deep);
+  border-color: var(--wakaya-eco-green-deep);
 }
 
 .buttonLinkDisabled,
@@ -276,12 +276,12 @@
 
 .buttonLinkLight {
   background: #fffdfa;
-  color: #143126;
+  color: var(--wakaya-eco-green);
   border-color: #e4dccf;
 }
 
 .buttonLinkLight:hover {
-  background: #f6efe2;
+  background: var(--wakaya-sand-light);
   border-color: #d9c8aa;
 }
 
@@ -348,7 +348,7 @@
   width: 8px;
   height: 8px;
   border-radius: 0;
-  background: #c49840;
+  background: var(--wakaya-palm-lime);
 }
 
 .experienceTitleRow {
@@ -363,14 +363,14 @@
   flex: 0 0 auto;
   width: 34px;
   height: 34px;
-  background: #f2eadc;
-  color: #c49840;
+  background: var(--wakaya-sand-beige);
+  color: var(--wakaya-lime-ink);
   font-size: 17px;
 }
 
 .experienceTitle {
   margin: 0;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(1.8rem + 2px);
   font-weight: 700;
@@ -399,7 +399,7 @@
 
 .ctaTitle {
   margin: 0 0 6px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2rem, 3vw, 2.8rem) + 2px);
   font-weight: 700;
@@ -498,7 +498,7 @@
 .experienceDialogEyebrow,
 .selectionBannerLabel {
   display: inline-block;
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
   font-family: var(--wakaya-font-sans);
   font-size: 12px;
   letter-spacing: 0.22em;
@@ -508,7 +508,7 @@
 .experienceDialogTitle,
 .selectionBannerTitle {
   margin: 10px 0 8px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2.2rem, 3.2vw, 3.2rem) + 1px);
   font-weight: 700;
@@ -551,7 +551,7 @@
 .experienceGalleryTile {
   aspect-ratio: 1 / 0.86;
   overflow: hidden;
-  background: #e8ddca;
+  background: var(--wakaya-sand-beige);
 }
 
 .experienceGalleryTile img {
@@ -576,7 +576,7 @@
 
 .experienceDialogPanelTitle {
   margin: 0 0 10px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   letter-spacing: 0.08em;
@@ -621,7 +621,7 @@
 .storyDate {
   display: block;
   margin-bottom: 12px;
-  color: #c49840;
+  color: var(--wakaya-lime-ink);
   font-family: var(--wakaya-font-sans);
   font-size: 12px;
   letter-spacing: 0.22em;
@@ -630,7 +630,7 @@
 
 .storyTitle {
   margin: 0 0 14px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2.4rem, 4vw, 3.4rem) + 2px);
   font-weight: 700;
@@ -673,14 +673,14 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  background: #f2eadc;
-  color: #c49840;
+  background: var(--wakaya-sand-beige);
+  color: var(--wakaya-lime-ink);
   font-size: 20px;
 }
 
 .valueTitle {
   margin: 0;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(1.8rem + 2px);
   font-weight: 700;
@@ -710,7 +710,7 @@
 
 .contactCardTitle {
   margin: 0 0 10px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(clamp(2rem, 3vw, 2.6rem) + 2px);
   font-weight: 700;
@@ -743,15 +743,15 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  background: #f2eadc;
-  color: #c49840;
+  background: var(--wakaya-sand-beige);
+  color: var(--wakaya-lime-ink);
   font-size: 17px;
 }
 
 .contactDetailLabel {
   display: block;
   margin-bottom: 2px;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   font-weight: 700;
@@ -781,7 +781,7 @@
 }
 
 .field label {
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 15px;
   font-weight: 700;
@@ -796,7 +796,7 @@
   border: 1px solid #ddd4c6;
   border-radius: 0;
   background: #fff;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: 16px;
   box-sizing: border-box;
@@ -812,8 +812,8 @@
 .field textarea:focus,
 .field select:focus {
   outline: none;
-  border-color: #c49840;
-  box-shadow: 0 0 0 3px rgba(196, 152, 64, 0.12);
+  border-color: var(--wakaya-palm-lime);
+  box-shadow: 0 0 0 3px rgba(182, 206, 135, 0.12);
 }
 
 .hiddenField {
@@ -854,7 +854,7 @@
 }
 
 .formAvailabilityLabel {
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -875,7 +875,7 @@
   padding: 12px 14px;
   border: 1px solid #ddd4c6;
   background: #fff;
-  color: #143126;
+  color: var(--wakaya-eco-green);
   font-family: var(--wakaya-font-sans);
   font-size: 14px;
   text-align: left;
@@ -883,7 +883,7 @@
 }
 
 .formAvailabilityButton:hover {
-  border-color: #c49840;
+  border-color: var(--wakaya-palm-lime);
 }
 
 .formSuccessCard {
@@ -907,7 +907,7 @@
 
 .cardTitleCompact {
   margin: 0;
-  color: #102318;
+  color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: calc(1.9rem + 2px);
   font-weight: 700;
