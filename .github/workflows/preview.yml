@@ -37,7 +37,7 @@ jobs:
       PR_NUMBER: ${{ github.event.number }}
       IMAGE_TAG: pr-${{ github.event.number }}-${{ github.sha }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '20'
