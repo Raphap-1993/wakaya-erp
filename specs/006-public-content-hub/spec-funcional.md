@@ -28,6 +28,10 @@ Permitir que un editor mantenga contenido público ES/EN y media desde una sola 
 | RF-006-11 | Operar ES/EN sin duplicar estructura | Idiomas comparten slug, orden, estado y media |
 | RF-006-12 | Mantener compatibilidad | URLs admin legadas redirigen; lectores legados funcionan durante el corte |
 | RF-006-13 | Persistir la experiencia solicitada | Booking request guarda `requestedExperienceId` y el detalle lo muestra |
+| RF-006-14 | Quitar o reemplazar media administrada | La referencia se elimina o reemplaza en BD después de publicar el módulo |
+| RF-006-15 | Eliminar activos sin uso | Metadata y archivos optimizados se eliminan sin romper referencias vigentes o revisiones |
+| RF-006-16 | Impedir falsos positivos de persistencia | Producción rechaza cargas si PostgreSQL o el storage durable no están configurados |
+| RF-006-17 | Crear y eliminar slides del Home | El borrador permite agregar hasta 8 slides y conserva al menos uno al eliminar |
 
 ## Reglas de negocio
 - `slug` de experiencia es único, minúsculo y no cambia al editar traducciones.
@@ -54,6 +58,12 @@ Permitir que un editor mantenga contenido público ES/EN y media desde una sola 
 - Variantes WebP usan calidad 84-88.
 - Experiencia ES/EN abre por URL compartible y su CTA llega al formulario.
 - Home, galería y bungalow público no dependen de un deploy por cambio editorial.
+- Experiencias, galería y bungalows muestran acciones explícitas para reemplazar
+  y quitar media; la galería permite eliminar el item completo.
+- Una carga exitosa en producción siempre tiene metadata en PostgreSQL y
+  variantes WebP en el storage persistente configurado.
+- Home permite crear y eliminar slides; cada cambio solo se vuelve público al
+  ejecutar `Publicar cambios` y queda cubierto por la revisión recuperable.
 
 ## Fuera de alcance
 - page builder, HTML/CSS libre, DAM general, álbumes múltiples y workflow editorial multinivel.

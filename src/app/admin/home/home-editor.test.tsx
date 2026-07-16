@@ -49,6 +49,8 @@ describe("HomeEditor", () => {
     expect(html).not.toContain("Desktop");
     expect(html).not.toContain("Mobile");
     expect(html).toContain("Subir imagen");
+    expect(html).toContain("Agregar slide");
+    expect(html).toContain("Eliminar slide");
     expect(html).toContain("gallery01.jpg");
     expect(html).not.toContain("Imagen asociada");
     expect(html).toContain('accept="image/jpeg,image/png,image/webp"');

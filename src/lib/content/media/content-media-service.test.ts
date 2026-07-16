@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 import { ContentMediaService } from "./content-media-service";
 import type { MediaStorage } from "./media-storage";
 
+const mutableEnv = process.env as Record<string, string | undefined>;
+
 async function createPngFile(name: string) {
   const buffer = await sharp({
     create: {
@@ -121,6 +123,60 @@ function createFailureLogger() {
 }
 
 describe("ContentMediaService", () => {
+  it("rejects production uploads before writing when durable persistence is not configured", async () => {
+    const restoreNodeEnv = process.env.NODE_ENV;
+    const restoreDatabaseUrl = process.env.DATABASE_URL;
+    const restoreStoragePath = process.env.WAKAYA_MEDIA_STORAGE_PATH;
+    const { storage, write } = createStorage();
+
+    mutableEnv.NODE_ENV = "production";
+    delete mutableEnv.DATABASE_URL;
+    delete mutableEnv.WAKAYA_MEDIA_STORAGE_PATH;
+
+    try {
+      const service = new ContentMediaService(storage);
+      const file = await createPngFile("selva.png");
+
+      await expect(service.createAsset({ file, slot: "detail" })).rejects.toThrow(
+        "media_persistence_not_configured",
+      );
+      expect(write).not.toHaveBeenCalled();
+    } finally {
+      if (restoreNodeEnv) mutableEnv.NODE_ENV = restoreNodeEnv;
+      else delete mutableEnv.NODE_ENV;
+      if (restoreDatabaseUrl) mutableEnv.DATABASE_URL = restoreDatabaseUrl;
+      else delete mutableEnv.DATABASE_URL;
+      if (restoreStoragePath) mutableEnv.WAKAYA_MEDIA_STORAGE_PATH = restoreStoragePath;
+      else delete mutableEnv.WAKAYA_MEDIA_STORAGE_PATH;
+    }
+  });
+
+  it("rejects production uploads when media points to the release filesystem", async () => {
+    const restoreNodeEnv = process.env.NODE_ENV;
+    const restoreDatabaseUrl = process.env.DATABASE_URL;
+    const restoreStoragePath = process.env.WAKAYA_MEDIA_STORAGE_PATH;
+
+    mutableEnv.NODE_ENV = "production";
+    mutableEnv.DATABASE_URL = "postgres://configured-at-runtime";
+    mutableEnv.WAKAYA_MEDIA_STORAGE_PATH = ".data/wakaya-media";
+
+    try {
+      const service = new ContentMediaService();
+      const file = await createPngFile("selva.png");
+
+      await expect(service.createAsset({ file, slot: "detail" })).rejects.toThrow(
+        "media_storage_not_configured",
+      );
+    } finally {
+      if (restoreNodeEnv) mutableEnv.NODE_ENV = restoreNodeEnv;
+      else delete mutableEnv.NODE_ENV;
+      if (restoreDatabaseUrl) mutableEnv.DATABASE_URL = restoreDatabaseUrl;
+      else delete mutableEnv.DATABASE_URL;
+      if (restoreStoragePath) mutableEnv.WAKAYA_MEDIA_STORAGE_PATH = restoreStoragePath;
+      else delete mutableEnv.WAKAYA_MEDIA_STORAGE_PATH;
+    }
+  });
+
   it("loads sorted metadata with one exact batch query", async () => {
     const { storage } = createStorage();
     const query = vi.fn().mockResolvedValue({
@@ -543,5 +599,75 @@ describe("ContentMediaService", () => {
     );
     expect(remove).toHaveBeenCalledTimes(3);
     expect(events).toEqual(expectedEvents);
+  });
+
+  it("deletes unreferenced asset metadata and every stored variant", async () => {
+    const { storage, remove } = createStorage();
+    const query = vi.fn(async (sql: unknown) => {
+      const normalized = String(sql).replace(/\s+/g, " ").trim().toLowerCase();
+      if (normalized === "begin" || normalized === "commit" || normalized === "rollback") {
+        return { rows: [], rowCount: 0 };
+      }
+      if (normalized.startsWith("select id, storage_key from media_asset")) {
+        return { rows: [{ id: "asset_01", storage_key: "assets/asset_01/master.webp" }], rowCount: 1 };
+      }
+      if (normalized.startsWith("select exists")) {
+        return { rows: [{ in_use: false }], rowCount: 1 };
+      }
+      if (normalized.startsWith("select storage_key from media_variant")) {
+        return {
+          rows: [
+            { storage_key: "assets/asset_01/detail.webp" },
+            { storage_key: "assets/asset_01/thumb.webp" },
+          ],
+          rowCount: 2,
+        };
+      }
+      if (normalized.startsWith("delete from media_asset")) {
+        return { rows: [], rowCount: 1 };
+      }
+      throw new Error(`unexpected_query:${normalized}`);
+    }) as unknown as PoolClient["query"];
+    const release = vi.fn();
+    const pool = {
+      connect: vi.fn(async () => ({ query, release }) as unknown as PoolClient),
+    } as unknown as Pool;
+
+    const result = await new ContentMediaService(storage, pool).deleteAsset("asset_01");
+
+    expect(result).toEqual({ deleted: true, assetId: "asset_01", cleanupPending: false });
+    expect(remove.mock.calls.map(([segments]) => segments.join("/"))).toEqual([
+      "assets/asset_01/detail.webp",
+      "assets/asset_01/thumb.webp",
+      "assets/asset_01/master.webp",
+    ]);
+    expect(release).toHaveBeenCalledOnce();
+  });
+
+  it("refuses to delete an asset that is still referenced", async () => {
+    const { storage, remove } = createStorage();
+    const query = vi.fn(async (sql: unknown) => {
+      const normalized = String(sql).replace(/\s+/g, " ").trim().toLowerCase();
+      if (normalized === "begin" || normalized === "rollback") {
+        return { rows: [], rowCount: 0 };
+      }
+      if (normalized.startsWith("select id, storage_key from media_asset")) {
+        return { rows: [{ id: "asset_01", storage_key: "assets/asset_01/master.webp" }], rowCount: 1 };
+      }
+      if (normalized.startsWith("select exists")) {
+        return { rows: [{ in_use: true }], rowCount: 1 };
+      }
+      throw new Error(`unexpected_query:${normalized}`);
+    }) as unknown as PoolClient["query"];
+    const release = vi.fn();
+    const pool = {
+      connect: vi.fn(async () => ({ query, release }) as unknown as PoolClient),
+    } as unknown as Pool;
+
+    await expect(
+      new ContentMediaService(storage, pool).deleteAsset("asset_01"),
+    ).rejects.toThrow("asset_in_use");
+    expect(remove).not.toHaveBeenCalled();
+    expect(release).toHaveBeenCalledOnce();
   });
 });

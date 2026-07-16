@@ -287,6 +287,7 @@ describe("ContentHub", () => {
     expect(html).toContain('src="/media/assets/asset_card/card.webp"');
     expect(html).toContain('src="/media/assets/asset_hero/heroDesktop.webp"');
     expect(countMediaPreviewTriggers(html)).toBe(2);
+    expect(html.match(/Quitar imagen/g)).toHaveLength(2);
     expect(html).not.toContain("Imagen asociada");
   });
 
@@ -317,6 +318,7 @@ describe("ContentHub", () => {
     expect(html).toContain("galeria-rio.jpeg");
     expect(html).toContain('src="/media/assets/asset_gallery/detail.webp"');
     expect(countMediaPreviewTriggers(html)).toBe(1);
+    expect(html).toContain("Eliminar de la galería");
     expect(html).not.toContain("Imagen asociada");
   });
 
@@ -352,6 +354,7 @@ describe("ContentHub", () => {
     expect(html).toContain("Subir orden");
     expect(html).toContain("Bajar orden");
     expect(html).toContain("Quitar");
+    expect(html).toContain("Quitar imagen");
     expect(countMediaPreviewTriggers(html)).toBe(2);
   });
 

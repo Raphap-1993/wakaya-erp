@@ -240,6 +240,28 @@ function normalizeOrders<T extends { order: number }>(items: T[]) {
     });
 }
 
+function createDraftSlide(order: number): HomeSlide {
+  const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+  return {
+    id: `slide-${suffix}`,
+    visible: false,
+    order,
+    image: "",
+    content: {
+      es: { eyebrow: "Wakaya", title: "Nuevo slide", subtitle: "" },
+      en: { eyebrow: "Wakaya", title: "New slide", subtitle: "" },
+    },
+    primaryCta: {
+      id: `slide-${suffix}-primary`,
+      label: { es: "Reservar", en: "Book" },
+      destination: { kind: "internal", value: "contact" },
+      style: "primary",
+    },
+    secondaryCta: null,
+    style: { headingSize: "display", bodySize: "regular" },
+  };
+}
+
 function isSlideComplete(slide: HomeSlide) {
   return homeContentSlideSchema.safeParse(slide).success;
 }
@@ -1249,6 +1271,39 @@ export function HomeEditor({
     );
   }
 
+  function addSlide() {
+    if (document.slider.slides.length >= 8) {
+      setFeedback({ kind: "error", message: "El slider admite un máximo de 8 imágenes." });
+      return;
+    }
+    const slide = createDraftSlide(document.slider.slides.length + 1);
+    setDocument((current) =>
+      updateDocumentState(current, (draft) => {
+        draft.slider.slides.push(slide);
+        normalizeOrders(draft.slider.slides);
+      }),
+    );
+    setSelected({ kind: "slide", id: slide.id });
+    setEditingSiteSettings(false);
+    setFeedback({ kind: "success", message: "Slide creado. Sube una imagen y publica los cambios." });
+  }
+
+  function deleteSlide(slideId: string) {
+    if (document.slider.slides.length <= 1) {
+      setFeedback({ kind: "error", message: "El home debe conservar al menos un slide." });
+      return;
+    }
+    const remaining = document.slider.slides.filter((slide) => slide.id !== slideId);
+    normalizeOrders(remaining);
+    setDocument((current) =>
+      updateDocumentState(current, (draft) => {
+        draft.slider.slides = remaining;
+      }),
+    );
+    setSelected({ kind: "slide", id: remaining[0].id });
+    setFeedback({ kind: "success", message: "Slide eliminado del borrador. Publica para confirmar." });
+  }
+
   function moveSection(sectionId: string, direction: -1 | 1) {
     setDocument((current) =>
       updateDocumentState(current, (draft) => {
@@ -1532,6 +1587,9 @@ export function HomeEditor({
               <h2>Slider</h2>
               <span>{sortedSlides.length}</span>
             </div>
+            <button type="button" className={styles.secondaryButton} onClick={addSlide}>
+              Agregar slide
+            </button>
             <div className={styles.nodeList}>
               {sortedSlides.map((slide) => (
                 <StructureRow
@@ -1619,6 +1677,13 @@ export function HomeEditor({
               <section className={styles.subCard}>
                 <div className={styles.subCardHeader}>
                   <h3>Estructura</h3>
+                  <button
+                    type="button"
+                    className={styles.ghostButton}
+                    onClick={() => deleteSlide(selectedSlide.id)}
+                  >
+                    Eliminar slide
+                  </button>
                 </div>
                 <div className={styles.formGrid}>
                   <label className={styles.fieldCheckbox}>

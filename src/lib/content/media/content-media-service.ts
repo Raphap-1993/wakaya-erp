@@ -15,6 +15,7 @@ import {
 } from "./image-optimizer";
 import { normalizeOriginalFilename } from "./media-filename";
 import type { MediaStorage } from "./media-storage";
+import { assertDurableMediaWriteConfiguration } from "./persistence";
 
 export type ContentMediaSlot = "hero" | "detail" | "card" | "gallery";
 
@@ -377,18 +378,36 @@ function normalizeCompatibilityMedia(
 
 export class ContentMediaService {
   constructor(
-    private readonly storage: MediaStorage = createFilesystemMediaStorage(),
-    private readonly pool: Pool | null = hasDatabaseUrl() ? getPool() : null,
+    private readonly configuredStorage?: MediaStorage,
+    private readonly configuredPool?: Pool | null,
     private readonly failureLogger: MediaFailureLogger = logger,
   ) {}
 
+  private resolveStorage() {
+    return this.configuredStorage ?? createFilesystemMediaStorage();
+  }
+
+  private resolvePool() {
+    if (this.configuredPool !== undefined) {
+      return this.configuredPool;
+    }
+    return hasDatabaseUrl() ? getPool() : null;
+  }
+
+  private assertWriteConfiguration() {
+    assertDurableMediaWriteConfiguration({
+      injectedStorage: Boolean(this.configuredStorage),
+    });
+  }
+
   async listAssetMetadata(assetIds: string[]): Promise<AdminMediaMetadata[]> {
     const ids = [...new Set(assetIds)].sort();
-    if (!this.pool || ids.length === 0) {
+    const pool = this.resolvePool();
+    if (!pool || ids.length === 0) {
       return [];
     }
 
-    const result = await this.pool.query<{
+    const result = await pool.query<{
       id: string;
       original_filename: string | null;
     }>(
@@ -408,6 +427,9 @@ export class ContentMediaService {
     crops?: Partial<Record<MediaVariantKey, MediaCropSpec>>;
     actorId?: string | null;
   }): Promise<{ asset: ContentMediaAsset }> {
+    this.assertWriteConfiguration();
+    const storage = this.resolveStorage();
+    const pool = this.resolvePool();
     const assetId = `asset_${randomUUID().replace(/-/g, "")}`;
     const originalFilename = normalizeOriginalFilename(input.file.name, input.file.type);
     const checksumSource = Buffer.from(await input.file.arrayBuffer());
@@ -419,7 +441,7 @@ export class ContentMediaService {
 
     try {
       const masterStored = await writeVariant(
-        this.storage,
+        storage,
         assetId,
         "master.webp",
         optimized.master.buffer,
@@ -436,7 +458,7 @@ export class ContentMediaService {
           continue;
         }
         variants[variantKey] = await writeVariant(
-          this.storage,
+          storage,
           assetId,
           `${variantKey}.webp`,
           artifact.buffer,
@@ -446,9 +468,9 @@ export class ContentMediaService {
         );
       }
 
-      if (this.pool) {
+      if (pool) {
         await persistAsset(
-          this.pool,
+          pool,
           {
             asset: {
               id: assetId,
@@ -500,9 +522,142 @@ export class ContentMediaService {
         },
       };
     } catch (error) {
-      await cleanupWrittenMedia(this.storage, writtenStoragePaths, this.failureLogger, assetId);
+      await cleanupWrittenMedia(storage, writtenStoragePaths, this.failureLogger, assetId);
       throw error;
     }
+  }
+
+  async deleteAsset(assetId: string): Promise<{
+    deleted: true;
+    assetId: string;
+    cleanupPending: boolean;
+  }> {
+    this.assertWriteConfiguration();
+    if (!/^asset_[a-z0-9]+$/i.test(assetId)) {
+      throw new Error("media_not_found");
+    }
+
+    const pool = this.resolvePool();
+    if (!pool) {
+      throw new Error("media_persistence_not_configured");
+    }
+    const storage = this.resolveStorage();
+    const client = await pool.connect().catch((error) => {
+      throw toMediaPersistenceError(error);
+    });
+    let storageKeys: string[] = [];
+
+    try {
+      await client.query("begin");
+      const assetResult = await client.query<{ id: string; storage_key: string }>(
+        `
+          select id, storage_key
+          from media_asset
+          where id = $1
+          limit 1
+          for update
+        `,
+        [assetId],
+      );
+      const asset = assetResult.rows[0];
+      if (!asset) {
+        throw new Error("media_not_found");
+      }
+
+      const mediaUrlPattern = `%/media/assets/${assetId}/%`;
+      const usageResult = await client.query<{ in_use: boolean }>(
+        `
+          select exists (
+            select 1
+            from content_experience
+            where card_asset_id = $1
+               or hero_asset_id = $1
+               or $1 = any(gallery_asset_ids)
+            union all
+            select 1
+            from content_gallery_item
+            where asset_id = $1
+            union all
+            select 1
+            from bungalow_public_content
+            where hero_asset_id = $1
+               or $1 = any(gallery_asset_ids)
+            union all
+            select 1
+            from home_content_revision
+            where document::text like $2
+            union all
+            select 1
+            from corporate_content_revision
+            where document::text like $2
+          ) as in_use
+        `,
+        [assetId, mediaUrlPattern],
+      );
+      if (usageResult.rows[0]?.in_use) {
+        throw new Error("asset_in_use");
+      }
+
+      const variants = await client.query<{ storage_key: string }>(
+        `
+          select storage_key
+          from media_variant
+          where asset_id = $1
+          order by storage_key asc
+        `,
+        [assetId],
+      );
+      storageKeys = [...variants.rows.map((row) => row.storage_key), asset.storage_key];
+      await client.query("delete from media_asset where id = $1", [assetId]);
+      await client.query("commit");
+    } catch (error) {
+      try {
+        await client.query("rollback");
+      } catch (rollbackError) {
+        logSecondaryFailure(this.failureLogger, {
+          operation: "rollback",
+          phase: "transaction_failed",
+          assetId,
+          error: rollbackError,
+        });
+      }
+      if (
+        error instanceof Error &&
+        ["media_not_found", "asset_in_use"].includes(error.message)
+      ) {
+        throw error;
+      }
+      throw toMediaPersistenceError(error);
+    } finally {
+      try {
+        client.release();
+      } catch (releaseError) {
+        logSecondaryFailure(this.failureLogger, {
+          operation: "release",
+          phase: "after_commit",
+          assetId,
+          error: releaseError,
+        });
+      }
+    }
+
+    let cleanupPending = false;
+    for (const storageKey of storageKeys) {
+      try {
+        await storage.remove(storageKey.split("/"));
+      } catch (error) {
+        cleanupPending = true;
+        logSecondaryFailure(this.failureLogger, {
+          operation: "remove",
+          phase: "after_commit",
+          assetId,
+          storageKey,
+          error,
+        });
+      }
+    }
+
+    return { deleted: true, assetId, cleanupPending };
   }
 
   async createCompatibilityHomeMedia(input: {
@@ -541,7 +696,7 @@ export class ContentMediaService {
   }
 
   async readPublicMedia(pathSegments: string[]) {
-    return readStoredPublicMedia(pathSegments, this.storage);
+    return readStoredPublicMedia(pathSegments, this.resolveStorage());
   }
 }
 

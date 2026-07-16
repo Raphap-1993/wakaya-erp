@@ -65,7 +65,7 @@ export const bungalowContentUpdateSchema = z.object({
   expectedVersion: z.coerce.number().int().nonnegative("required"),
   featuredOnHome: z.boolean(),
   sortOrder: z.coerce.number().int().nonnegative("required"),
-  heroImageUrl: z.string().trim().min(1, "required"),
+  heroImageUrl: z.string().trim(),
   galleryUrls: z.array(z.string().trim().min(1, "required")),
   nightlyRatePen: z.coerce.number().int().positive("required"),
   areaSqm: z.coerce.number().int().positive("required"),

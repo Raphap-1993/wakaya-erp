@@ -13,6 +13,7 @@ const bungalowPayloadSchema = z.object({
   sortOrder: z.coerce.number().int().nonnegative(),
   nightlyRatePen: z.coerce.number().int().positive(),
   areaSqm: z.coerce.number().int().positive(),
+  managedMedia: z.boolean().optional().default(false),
   heroImageUrl: z.string().trim().min(1).optional(),
   galleryUrls: z.array(z.string().trim().min(1)).optional().default([]),
   localeContent: z.object({
@@ -59,12 +60,20 @@ function resolveHeroImageUrl(payload: z.infer<typeof bungalowPayloadSchema>) {
     return heroUrlFromAssetId(payload.heroAssetId);
   }
 
+  if (payload.managedMedia) {
+    return "";
+  }
+
   return payload.heroImageUrl?.trim() ?? "";
 }
 
 function resolveGalleryUrls(payload: z.infer<typeof bungalowPayloadSchema>) {
   if (payload.galleryAssetIds.length > 0) {
     return galleryUrlsFromAssetIds(payload.galleryAssetIds);
+  }
+
+  if (payload.managedMedia) {
+    return [];
   }
 
   return payload.galleryUrls;

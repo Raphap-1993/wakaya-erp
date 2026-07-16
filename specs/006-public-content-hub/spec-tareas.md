@@ -151,3 +151,30 @@ npm run check:docs
 ```
 
 Trazabilidad: RF-006-01 a RF-006-13.
+
+## T-006-008 - Cerrar CRUD y persistencia operativa de media
+
+Objetivo: completar eliminación/reemplazo de referencias, borrado seguro de
+activos sin uso y guardas que impidan confirmar uploads efímeros en producción.
+
+Archivos permitidos:
+- `src/lib/content/media/**`
+- `src/app/api/admin/content/media/**`
+- `src/app/api/admin/content/bungalows/**`
+- `src/app/admin/content/**`
+- `src/app/admin/home/**`
+- `src/app/api/health/**`
+- `.env.example`
+- `docs/fase-7-deploy/**`
+
+Ciclo TDD:
+1. Red: servicio y API fallan por ausencia de DELETE, referencias en uso y
+   configuración durable; UI no expone quitar/eliminar.
+2. Green: DELETE transaccional, resolución runtime de DB/storage, health de
+   persistencia y acciones CRUD por módulo.
+3. Refactor: mantener compatibilidad de URLs legadas y centralizar errores.
+
+Comando:
+`npm test -- src/lib/content/media/content-media-service.test.ts src/app/api/admin/content/media/route.test.ts 'src/app/api/admin/content/media/[assetId]/route.test.ts' 'src/app/api/admin/content/bungalows/[id]/route.test.ts' src/app/admin/content/content-hub.test.tsx src/app/admin/home/home-editor.test.tsx src/app/api/health/route.test.ts && npm run typecheck`
+
+Trazabilidad: RF-006-14, RF-006-15, RF-006-16, RF-006-17.

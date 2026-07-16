@@ -115,6 +115,27 @@ Regenera derivados desde el maestro. Si el asset está referenciado, el cambio c
 
 ## DELETE /api/admin/content/media/{assetId}
 Solo elimina activos sin referencias; en uso responde `409 asset_in_use`.
+La operación elimina la metadata en PostgreSQL y después limpia el maestro y sus
+variantes del `MediaStorage`. Si la metadata ya fue eliminada pero queda una
+limpieza física pendiente, responde `200` con `cleanupPending: true` y deja
+evidencia en logs para reconciliación.
+
+```json
+{ "deleted": true, "assetId": "asset_01", "cleanupPending": false }
+```
+
+La UI primero quita o reemplaza la referencia y publica el documento dueño;
+solo después puede solicitar la eliminación del activo que quedó sin uso.
+
+## Invariantes de persistencia de media
+
+- En producción, `POST` y `DELETE` requieren `DATABASE_URL` y
+  `WAKAYA_MEDIA_STORAGE_PATH`; nunca se confirma una carga solo en memoria o en
+  el filesystem efímero del release.
+- El servicio resuelve PostgreSQL y la raíz de storage al ejecutar la petición,
+  no al importar el módulo.
+- El healthcheck informa si DB y storage durable están configurados sin exponer
+  credenciales ni rutas privadas.
 
 ## GET /api/public/content/experiences?locale=es
 Devuelve experiencias visibles sin auditoría ni permisos.

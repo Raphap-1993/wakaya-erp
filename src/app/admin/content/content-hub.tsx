@@ -207,12 +207,14 @@ function AssetField({
   previewUrl,
   mediaMetadata,
   onUploadSelected,
+  onRemove,
 }: {
   label: string;
   slot: "hero" | "gallery" | "card" | "detail";
   previewUrl: string;
   mediaMetadata: AdminMediaMetadataMap;
   onUploadSelected: (file: File, slot: "hero" | "gallery" | "card" | "detail") => void;
+  onRemove?: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const usablePreviewUrl = previewUrl.trim();
@@ -224,13 +226,20 @@ function AssetField({
     <div className={styles.previewCard}>
       <div className={styles.toolbar}>
         <strong>{label}</strong>
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => inputRef.current?.click()}
-        >
-          {usablePreviewUrl ? "Reemplazar" : "Subir imagen"}
-        </button>
+        <div className={styles.inlineActions}>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => inputRef.current?.click()}
+          >
+            {usablePreviewUrl ? "Reemplazar" : "Subir imagen"}
+          </button>
+          {usablePreviewUrl && onRemove ? (
+            <button type="button" className={styles.ghostButton} onClick={onRemove}>
+              Quitar imagen
+            </button>
+          ) : null}
+        </div>
       </div>
       {descriptor ? (
         // eslint-disable-next-line @next/next/no-img-element -- Preview administrativa de una variante runtime ya optimizada.
@@ -500,6 +509,7 @@ export function ContentHub({
         sortOrder: selectedBungalow.publicContent.sortOrder,
         nightlyRatePen: selectedBungalow.publicContent.nightlyRatePen,
         areaSqm: selectedBungalow.publicContent.areaSqm,
+        managedMedia: true,
         heroImageUrl: selectedBungalow.publicContent.heroImageUrl,
         galleryUrls: selectedBungalow.publicContent.galleryUrls,
         localeContent: selectedBungalow.publicContent.localeContent,
@@ -950,6 +960,13 @@ export function ContentHub({
                       );
                     })
                   }
+                  onRemove={() =>
+                    setExperiences((current) =>
+                      current.map((item) =>
+                        item.id === selectedExperience.id ? { ...item, cardAssetId: null } : item,
+                      ),
+                    )
+                  }
                 />
                 <AssetField
                   label="Hero"
@@ -964,6 +981,13 @@ export function ContentHub({
                         ),
                       );
                     })
+                  }
+                  onRemove={() =>
+                    setExperiences((current) =>
+                      current.map((item) =>
+                        item.id === selectedExperience.id ? { ...item, heroAssetId: null } : item,
+                      ),
+                    )
                   }
                 />
               </div>
@@ -999,7 +1023,7 @@ export function ContentHub({
                   type="button"
                   className={styles.secondaryButton}
                   onClick={() => {
-                    const nextId = `gallery_${String(gallery.items.length + 1).padStart(2, "0")}`;
+                    const nextId = `gallery_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
                     setGallery((current) => ({
                       ...current,
                       items: [
@@ -1119,6 +1143,20 @@ export function ContentHub({
                       onClick={() => setActiveLocale("en")}
                     >
                       EN
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.ghostButton}
+                      onClick={() => {
+                        const remaining = gallery.items
+                          .filter((item) => item.id !== selectedGalleryItem.id)
+                          .sort((left, right) => left.sortOrder - right.sortOrder)
+                          .map((item, index) => ({ ...item, sortOrder: index + 1 }));
+                        setGallery((current) => ({ ...current, items: remaining }));
+                        setSelectedGalleryId(remaining[0]?.id ?? "");
+                      }}
+                    >
+                      Eliminar de la galería
                     </button>
                   </div>
 
@@ -1416,6 +1454,13 @@ export function ContentHub({
                               heroImageUrl: assetPreviewUrl(asset.id, "hero"),
                             }));
                           })
+                        }
+                        onRemove={() =>
+                          updateSelectedBungalow((current) => ({
+                            ...current,
+                            heroAssetId: null,
+                            heroImageUrl: "",
+                          }))
                         }
                       />
 

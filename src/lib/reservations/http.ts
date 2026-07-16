@@ -248,6 +248,26 @@ export function mapApiError(error: unknown): { body: ApiErrorDetails; status: nu
       return { body: { error: "content_not_found" }, status: 404 };
     case "content_store_not_ready":
       return { body: { error: "content_store_not_ready" }, status: 503 };
+    case "media_persistence_not_configured":
+      return {
+        body: {
+          error: "media_persistence_not_configured",
+          message: "La persistencia de imágenes no está configurada en este entorno.",
+        },
+        status: 503,
+      };
+    case "media_storage_not_configured":
+      return {
+        body: {
+          error: "media_storage_not_configured",
+          message: "El almacenamiento persistente de imágenes no está configurado.",
+        },
+        status: 503,
+      };
+    case "media_not_found":
+      return { body: { error: "media_not_found" }, status: 404 };
+    case "asset_in_use":
+      return { body: { error: "asset_in_use" }, status: 409 };
     case "content_version_conflict":
       return { body: { error: "content_version_conflict" }, status: 409 };
     case "invalid_slug":

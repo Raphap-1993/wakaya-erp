@@ -169,4 +169,62 @@ describe("/api/admin/content/bungalows/[id]", () => {
       }),
     );
   });
+
+  it("persists explicit removal of managed hero and gallery media", async () => {
+    updateBungalowContentMock.mockResolvedValue({ bungalowId: "bungalow-family", revisionVersion: 4 });
+
+    const { PUT } = await loadRoute();
+    const response = await PUT(
+      new Request("http://localhost/api/admin/content/bungalows/bungalow-family", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          expectedVersion: 3,
+          featuredOnHome: true,
+          sortOrder: 1,
+          nightlyRatePen: 350,
+          areaSqm: 55,
+          managedMedia: true,
+          heroImageUrl: "/media/assets/asset_old/heroDesktop.webp",
+          galleryUrls: ["/media/assets/asset_old/detail.webp"],
+          localeContent: {
+            es: {
+              displayName: "Bungalow Familiar",
+              displayEyebrow: "Wakaya",
+              displayDescription: "Descripción",
+              displayTagline: "Tagline",
+              displayLongDescription: "Long",
+              displayHighlights: ["A"],
+              displayAmenities: ["B"],
+              displayIncluded: ["C"],
+            },
+            en: {
+              displayName: "Family bungalow",
+              displayEyebrow: "Wakaya",
+              displayDescription: "Description",
+              displayTagline: "Tagline",
+              displayLongDescription: "Long",
+              displayHighlights: ["A"],
+              displayAmenities: ["B"],
+              displayIncluded: ["C"],
+            },
+          },
+          heroAssetId: null,
+          galleryAssetIds: [],
+        }),
+      }),
+      { params: { id: "bungalow-family" } },
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateBungalowContentMock).toHaveBeenCalledWith(
+      "bungalow-family",
+      expect.objectContaining({
+        heroImageUrl: "",
+        galleryUrls: [],
+        heroAssetId: null,
+        galleryAssetIds: [],
+      }),
+    );
+  });
 });
