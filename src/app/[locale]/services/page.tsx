@@ -7,59 +7,9 @@ import styles from "@/components/public-site/figma-public-pages.module.css";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import { getPublicRoute } from "@/components/public-site/public-site-routes";
 import { listLocalizedPublicExperiences } from "@/lib/content/public-content";
+import { getPublishedPublicSiteView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
-
-type ExperienceCopy = {
-  metaTitle: string;
-  metaDescription: string;
-  heroMeta: string;
-  heroTitle: string;
-  heroCopy: string;
-  ctaTitle: string;
-  ctaCopy: string;
-  ctaLabel: string;
-  detailLabel: string;
-  includesLabel: string;
-  recommendationsLabel: string;
-  closeLabel: string;
-};
-
-const EXPERIENCES_HERO =
-  "https://wakayaecolodge.com/es/images/wakaya/services/servicio_laguna.jpg";
-
-function getExperienceCopy(locale: PublicSiteLocale): ExperienceCopy {
-  if (locale === "en") {
-    return {
-      metaTitle: "Services | Wakaya Ecolodge",
-      metaDescription: "Weddings, corporate events, Full Day, romantic dinners, and restaurant at Wakaya.",
-      heroMeta: "Services · Wakaya Ecolodge",
-      heroTitle: "Services",
-      heroCopy: "Hospitality for stays, celebrations, gatherings, and dining.",
-      ctaTitle: "Contact Wakaya",
-      ctaCopy: "Tell us the service and date you need.",
-      ctaLabel: "Contact us",
-      detailLabel: "View details",
-      includesLabel: "Includes",
-      recommendationsLabel: "Recommendations",
-      closeLabel: "Close",
-    };
-  }
-
-  return {
-    metaTitle: "Servicios | Wakaya Ecolodge",
-    metaDescription: "Bodas, eventos corporativos, Full Day, cenas románticas y restaurante en Wakaya.",
-    heroMeta: "Servicios · Wakaya Ecolodge",
-    heroTitle: "Servicios",
-    heroCopy: "Hospitalidad para estadías, celebraciones, reuniones y gastronomía.",
-    ctaTitle: "Contacta a Wakaya",
-    ctaCopy: "Indícanos el servicio y la fecha que necesitas.",
-    ctaLabel: "Contactar",
-    detailLabel: "Ver detalle",
-    includesLabel: "Incluye",
-    recommendationsLabel: "Recomendaciones",
-    closeLabel: "Cerrar",
-  };
-}
 
 async function readLocale(
   params: Promise<{ locale: string }> | { locale: string },
@@ -74,18 +24,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = getExperienceCopy(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const copy = site.content.services;
 
   return buildLocalizedPublicMetadata({
     locale,
     route: "services",
-    title: copy.metaTitle,
-    description: copy.metaDescription,
+    title: copy.metadata.title,
+    description: copy.metadata.description,
     keywords:
       locale === "en"
         ? ["wakaya services", "weddings", "corporate events", "restaurant", "pucallpa"]
         : ["servicios wakaya", "bodas", "eventos corporativos", "restaurante", "pucallpa"],
-    image: EXPERIENCES_HERO,
+    image: resolvePublicSiteMedia(site.media.servicesHero),
   });
 }
 
@@ -95,16 +46,17 @@ export default async function PublicSiteServicesLocalePage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = getExperienceCopy(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const copy = site.content.services;
   const experiences = await listLocalizedPublicExperiences(locale);
 
   return (
     <>
       <FigmaPageHero
-        meta={copy.heroMeta}
-        title={copy.heroTitle}
-        copy={copy.heroCopy}
-        image={EXPERIENCES_HERO}
+        meta={`${copy.hero.eyebrow} · Wakaya Ecolodge`}
+        title={copy.hero.title}
+        copy={copy.hero.copy}
+        image={resolvePublicSiteMedia(site.media.servicesHero)}
       />
 
       <section className={styles.section}>

@@ -290,6 +290,35 @@
   color: #7c4a14;
 }
 
+.feedbackRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.fieldError {
+  color: #a12622;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 0;
+  animation: cropSpin 0.7s linear infinite;
+}
+
+@keyframes cropSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .dialogBackdrop {
   position: fixed;
   inset: 0;

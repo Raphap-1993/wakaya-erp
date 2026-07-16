@@ -565,6 +565,7 @@ export class ContentMediaService {
       }
 
       const mediaUrlPattern = `%/media/assets/${assetId}/%`;
+      const mediaAssetIdPattern = `%"assetId": "${assetId}"%`;
       const usageResult = await client.query<{ in_use: boolean }>(
         `
           select exists (
@@ -590,9 +591,10 @@ export class ContentMediaService {
             select 1
             from corporate_content_revision
             where document::text like $2
+               or document::text like $3
           ) as in_use
         `,
-        [assetId, mediaUrlPattern],
+        [assetId, mediaUrlPattern, mediaAssetIdPattern],
       );
       if (usageResult.rows[0]?.in_use) {
         throw new Error("asset_in_use");

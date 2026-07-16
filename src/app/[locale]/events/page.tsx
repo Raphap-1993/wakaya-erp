@@ -5,7 +5,8 @@ import { PageHero } from "@/components/public-site/page-hero";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import { getPublicRoute } from "@/components/public-site/public-site-routes";
 import styles from "@/components/public-site/public-site-theme.module.css";
-import { getPublicSiteContent } from "../public-site-content";
+import { getPublishedPublicSiteView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 async function readLocale(params: Promise<{ locale: string }> | { locale: string }): Promise<PublicSiteLocale> {
@@ -19,13 +20,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const content = getPublicSiteContent(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const content = site.content;
 
   return buildLocalizedPublicMetadata({
     locale,
     route: "events",
     title: content.events.metadata.title,
     description: content.events.metadata.description,
+    image: resolvePublicSiteMedia(site.media.eventsHero),
   });
 }
 
@@ -35,7 +38,8 @@ export default async function PublicSiteEventsLocalePage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const content = getPublicSiteContent(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const content = site.content;
 
   return (
     <>
@@ -44,7 +48,7 @@ export default async function PublicSiteEventsLocalePage({
         title={content.events.hero.title}
         breadcrumb={`${content.labels.breadcrumbHome} / ${content.events.hero.eyebrow}`}
         copy={content.events.hero.copy}
-        image="https://wakayaecolodge.com/es/images/wakaya/eventos/evenos_celebraciones_familiar.jpg"
+        image={resolvePublicSiteMedia(site.media.eventsHero)}
       />
 
       <section className={styles.pageSection}>
@@ -61,14 +65,10 @@ export default async function PublicSiteEventsLocalePage({
 
           <article className={styles.pageCopyCard}>
             <h3>{content.events.venueBadge}</h3>
-            <p>
-              {locale === "en"
-                ? "We confirm dates, capacity, and every final detail with you before closing the event proposal."
-                : "Confirmamos contigo las fechas, la capacidad y cada detalle final antes de cerrar la propuesta del evento."}
-            </p>
+            <p>{content.events.proposalCopy}</p>
             <div className={styles.actions}>
               <Link className={styles.primaryButton} href={getPublicRoute(locale, "contact") as Route}>
-                {locale === "en" ? "Request proposal" : "Solicitar propuesta"}
+                {content.events.proposalCtaLabel}
               </Link>
             </div>
           </article>

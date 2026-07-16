@@ -18,8 +18,8 @@ type LocalizedBungalow = (typeof publicBungalows)[number] & {
   gallery: string[];
 };
 
-type PublicSitePageLabels = {
-  nav: Array<{ key: string; label: string }>;
+export type PublicSitePageLabels = {
+  nav: Array<{ key: string; label: string; visible?: boolean }>;
   footerIntro: string;
   footerExplore: string;
   footerReserve: string;
@@ -31,7 +31,7 @@ type PublicSitePageLabels = {
   breadcrumbHome: string;
 };
 
-type PublicSiteHomeContent = {
+export type PublicSiteHomeContent = {
   metadata: {
     title: string;
     description: string;
@@ -77,7 +77,7 @@ type PublicSiteHomeContent = {
   };
 };
 
-type PublicSitePageSection = {
+export type PublicSitePageSection = {
   metadata: {
     title: string;
     description: string;
@@ -90,7 +90,7 @@ type PublicSitePageSection = {
   };
 };
 
-type PublicSiteContent = {
+export type PublicSiteContent = {
   site: {
     brandSmall: string;
     brandName: string;
@@ -119,6 +119,7 @@ type PublicSiteContent = {
   contact: PublicSitePageSection & {
     introTitle: string;
     introCopy: string;
+    formTitle: string;
     checklist: string[];
     form: {
       guestName: string;
@@ -145,9 +146,11 @@ type PublicSiteContent = {
     emptyTitle: string;
     emptyCopy: string;
     viewDetailLabel: string;
+    perNightLabel: string;
   };
   bungalowDetail: {
     metadataKeywords: string[];
+    breadcrumbLabel: string;
     amenitiesTitle: string;
     includedTitle: string;
     detailsTitle: string;
@@ -167,6 +170,13 @@ type PublicSiteContent = {
     sectionEyebrow: string;
     sectionTitle: string;
     sectionCopy: string;
+    ctaTitle: string;
+    ctaCopy: string;
+    ctaLabel: string;
+    detailLabel: string;
+    includesLabel: string;
+    recommendationsLabel: string;
+    closeLabel: string;
     cards: Array<{ title: string; tag: string; copy: string }>;
   };
   events: PublicSitePageSection & {
@@ -175,6 +185,8 @@ type PublicSiteContent = {
     bodyCopy: string;
     checklist: string[];
     imageAlt: string;
+    proposalCopy: string;
+    proposalCtaLabel: string;
   };
   gallery: PublicSitePageSection & {
     sectionEyebrow: string;
@@ -191,11 +203,22 @@ type PublicSiteContent = {
     ctaTitle: string;
     ctaCopy: string;
     ctaButton: string;
-    items: Array<{ slug: string; title: string }>;
+    items: Array<{ slug: string; title: string; meta: string; copy: string }>;
+  };
+  petFriendly: PublicSitePageSection & {
+    sections: Array<{ title: string; copy: string; bullets: string[] }>;
+    ctaTitle: string;
+    ctaCopy: string;
+    ctaLabel: string;
+  };
+  complaints: PublicSitePageSection & {
+    formTitle: string;
+    formCopy: string;
+    cards: Array<{ title: string; copy: string; bullets: string[] }>;
   };
 };
 
-const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
+export const DEFAULT_PUBLIC_SITE_CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
   es: {
     site: {
       brandSmall: "Pucallpa · Peru",
@@ -207,12 +230,12 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
     labels: {
       nav: [
         { key: "home", label: "Inicio" },
-        { key: "about", label: "Nosotros" },
-        { key: "bungalows", label: "Bungalows" },
+        { key: "about", label: "Nosotros", visible: false },
+        { key: "bungalows", label: "Habitaciones" },
         { key: "services", label: "Servicios" },
-        { key: "events", label: "Eventos" },
-        { key: "gallery", label: "Galeria" },
-        { key: "publications", label: "Publicaciones" },
+        { key: "events", label: "Eventos", visible: false },
+        { key: "gallery", label: "Galería" },
+        { key: "publications", label: "Publicaciones", visible: false },
         { key: "contact", label: "Contacto" },
       ],
       footerIntro:
@@ -333,16 +356,17 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
     contact: {
       metadata: {
         title: "Contacto y reservas | Wakaya Ecolodge",
-        description: "Consulta disponibilidad y contacta a Wakaya Ecolodge.",
+        description: "Planifica tu estadía con Wakaya con atención directa del equipo de reservas.",
         keywords: ["contacto wakaya", "reservas wakaya", "pucallpa", "ecolodge"],
       },
       hero: {
-        eyebrow: "Contacto",
-        title: "Solicitud de estadia",
-        copy: "Consulta fechas, categorías y servicios disponibles.",
+        eyebrow: "Reservas",
+        title: "Contáctanos",
+        copy: "Estamos aquí para hacer realidad tu experiencia",
       },
-      introTitle: "Contacto Wakaya",
-      introCopy: "Teléfono, WhatsApp y correo para reservas y consultas.",
+      introTitle: "Hablemos",
+      introCopy: "Para reservas, consultas y grupos escríbenos. Respondemos en menos de 24 horas.",
+      formTitle: "Planifica tu estadía",
       checklist: [
         "Disponibilidad por fecha y categoría.",
         "Confirmación por el equipo Wakaya.",
@@ -352,17 +376,17 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
       ],
       form: {
         guestName: "Nombre",
-        guestEmail: "Correo",
+        guestEmail: "Email",
         guestPhone: "Telefono",
-        requestedCheckIn: "Check in",
-        requestedCheckOut: "Check out",
-        requestedGuests: "Personas",
+        requestedCheckIn: "Check-in",
+        requestedCheckOut: "Check-out",
+        requestedGuests: "Huéspedes",
         requestedBungalowType: "Categoria preferida",
-        notes: "Notas",
-        notesPlaceholder: "Requerimientos especiales, horarios o comentarios.",
+        notes: "Mensaje",
+        notesPlaceholder: "Cuéntanos qué tipo de experiencia buscas...",
         noPreference: "Sin preferencia",
         submitLabel: "Enviar solicitud",
-        guestOptions: ["2 huespedes", "3 huespedes", "4 huespedes", "5 huespedes"],
+        guestOptions: ["1 persona", "2 personas", "3 personas", "4 personas", "5 personas", "6 personas"],
       },
       visualBadge: "Reservas y consultas",
       visualAlt: "Canales de contacto de Wakaya",
@@ -370,13 +394,13 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
     bungalows: {
       metadata: {
         title: "Bungalows | Wakaya Ecolodge",
-        description: "Explora las categorías de bungalows de Wakaya Ecolodge en Pucallpa.",
+        description: "Bungalows de madera nativa dentro del paisaje selvático de Wakaya.",
         keywords: ["bungalows", "wakaya ecolodge", "pucallpa", "habitaciones"],
       },
       hero: {
-        eyebrow: "Bungalows",
-        title: "Resultados de busqueda",
-        copy: "Compara categorías y consulta disponibilidad por fechas.",
+        eyebrow: "Alojamiento",
+        title: "Nuestros Bungalows",
+        copy: "Bungalows de madera nativa rodeados de naturaleza tropical",
       },
       resultsMetaPrefix: "Categoria:",
       resultsMetaCategory: "Todas las categorias",
@@ -384,10 +408,12 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
       noGuests: "Sin huespedes",
       emptyTitle: "No encontramos coincidencias con esos filtros.",
       emptyCopy: "Ajusta fechas o categoria para revisar mas opciones referenciales.",
-      viewDetailLabel: "Ver detalle",
+      viewDetailLabel: "Ver detalles y reservar",
+      perNightLabel: "/noche",
     },
     bungalowDetail: {
       metadataKeywords: ["bungalows", "wakaya ecolodge", "pucallpa"],
+      breadcrumbLabel: "Bungalows",
       amenitiesTitle: "Lo que incluye",
       includedTitle: "Servicios incluidos",
       detailsTitle: "Detalles del bungalow",
@@ -421,6 +447,13 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
       sectionTitle: "Laguna, piscina, restaurante y mas",
       sectionCopy:
         "Los servicios publicos priorizan una lectura rapida de lo esencial: entorno, descanso, coordinacion y momentos especiales.",
+      ctaTitle: "Contacta a Wakaya",
+      ctaCopy: "Indícanos el servicio y la fecha que necesitas.",
+      ctaLabel: "Contactar",
+      detailLabel: "Ver detalle",
+      includesLabel: "Incluye",
+      recommendationsLabel: "Recomendaciones",
+      closeLabel: "Cerrar",
       cards: [
         { title: "Piscina y jardines", tag: "Relajo", copy: "Espacios abiertos para descanso, lectura y pausa durante la estadia." },
         { title: "Laguna y entorno natural", tag: "Naturaleza", copy: "Un paisaje tropical que sostiene la atmosfera del ecolodge durante todo el recorrido." },
@@ -448,16 +481,18 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
         "Integracion con bungalows y servicios del lodge.",
       ],
       imageAlt: "Espacio natural para eventos en Wakaya",
+      proposalCopy: "Confirmamos contigo las fechas, la capacidad y cada detalle final antes de cerrar la propuesta del evento.",
+      proposalCtaLabel: "Solicitar propuesta",
     },
     gallery: {
       metadata: {
-        title: "Galeria | Wakaya Ecolodge",
-        description: "Explora la atmosfera visual de Wakaya entre agua, vegetacion, arquitectura y descanso tropical.",
+        title: "Galería | Wakaya Ecolodge",
+        description: "Un recorrido visual por Wakaya y su paisaje tropical.",
       },
       hero: {
-        eyebrow: "Galeria",
-        title: "Galeria",
-        copy: "Agua, vegetacion, arquitectura y uso humano del lugar.",
+        eyebrow: "Imágenes",
+        title: "Galería",
+        copy: "La belleza de Wakaya en imágenes",
       },
       sectionEyebrow: "Imagenes",
       sectionTitle: "Atmosfera del ecolodge",
@@ -491,8 +526,30 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
         "Desde aqui puedes volver a los bungalows, revisar servicios o pasar directo a contacto sin salir del mismo lenguaje visual.",
       ctaButton: "Ver bungalows",
       items: [
-        { slug: "bodas-en-wakaya", title: "Celebraciones en un entorno natural" },
-        { slug: "full-day-pucallpa", title: "Como vivir un Full Day en Wakaya" },
+        { slug: "bodas-en-wakaya", title: "Celebraciones en un entorno natural", meta: "Editorial · Eventos", copy: "Como una celebracion mas intima puede mantenerse alineada con la calma y el entorno tropical de Wakaya." },
+        { slug: "full-day-pucallpa", title: "Como vivir un Full Day en Wakaya", meta: "Guia · Full day", copy: "Una visita corta para disfrutar del paisaje, las instalaciones y la hospitalidad de Wakaya." },
+        { slug: "que-bungalow-encaja", title: "Que bungalow encaja mejor con tu plan", meta: "Comparativa · Bungalows", copy: "Una lectura rapida para entender categoria, atmosfera y elegir mejor antes de enviar tu solicitud." },
+      ],
+    },
+    petFriendly: {
+      metadata: { title: "Pet Friendly | Wakaya Ecolodge", description: "Viaja a Wakaya Ecolodge con tu mascota y revisa las reglas de casa antes de llegar." },
+      hero: { eyebrow: "Viajen juntos", title: "Pet Friendly", copy: "Wakaya recibe mascotas pequeñas y medianas cuando la estadía se coordina con anticipación." },
+      sections: [
+        { title: "Una bienvenida cálida para tu compañero", copy: "Si tu mascota está acostumbrada a viajar con calma, Wakaya puede ser un gran lugar para compartir el viaje. Solo pedimos algunas reglas simples para cuidar la tranquilidad de todos.", bullets: ["Confirma tu mascota antes de llegar para recomendarte el bungalow más conveniente.", "Trae correa, cama y artículos de limpieza para toda la estadía.", "Mantén a tu mascota supervisada en las áreas compartidas."] },
+        { title: "Lo que ayuda a que todo fluya bien", copy: "Podemos sugerirte el bungalow más práctico según el tamaño, la energía de tu mascota y la ocupación de las fechas elegidas.", bullets: ["Por seguridad, una conducta agresiva o molestias repetidas pueden obligarnos a cortar la estadía de la mascota.", "Una limpieza extraordinaria o daños pueden generar un cargo adicional.", "Si viajas con más de una mascota, consúltanos antes de reservar."] },
+      ],
+      ctaTitle: "¿Quieres viajar con tu mascota?",
+      ctaCopy: "Compártenos tus fechas y cuéntanos un poco de tu compañero. Te orientamos para elegir la mejor opción y mantener una estadía tranquila.",
+      ctaLabel: "Planificar mi estadía",
+    },
+    complaints: {
+      metadata: { title: "Libro de Reclamaciones | Wakaya Ecolodge", description: "Ruta pública y clara para compartir un reclamo o queja relacionada con tu experiencia en Wakaya." },
+      hero: { eyebrow: "Atención al huésped", title: "Libro de Reclamaciones", copy: "Si necesitas reportar un inconveniente sobre tu estadía o el servicio, estamos listos para recibirlo con respeto y seguimiento." },
+      formTitle: "Registra tu caso en línea",
+      formCopy: "Completa los datos básicos de tu caso y conserva la constancia que te mostraremos al terminar.",
+      cards: [
+        { title: "Cómo presentar tu reclamo", copy: "Si quieres dejar tu caso documentado de inmediato, usa el formulario en línea. También puedes escribirnos o pedir orientación por los mismos canales de reserva.", bullets: ["Correo: reservas@wakayaecolodge.com", "WhatsApp: +51 961 508 813 · Teléfono: +51 977 419 468", "Horario: lunes a domingo, de 7:00 a 20:00"] },
+        { title: "Respuesta", copy: "Nuestro equipo revisa cada caso de forma directa. Si necesitamos más información, nos comunicaremos contigo.", bullets: ["Recibirás una constancia pública en pantalla.", "Incluye fotos o comprobantes solo si ayudan a explicar el caso.", "Plazo estimado de respuesta: hasta 15 días hábiles."] },
       ],
     },
   },
@@ -507,12 +564,12 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
     labels: {
       nav: [
         { key: "home", label: "Home" },
-        { key: "about", label: "About" },
-        { key: "bungalows", label: "Bungalows" },
+        { key: "about", label: "About", visible: false },
+        { key: "bungalows", label: "Rooms" },
         { key: "services", label: "Services" },
-        { key: "events", label: "Events" },
+        { key: "events", label: "Events", visible: false },
         { key: "gallery", label: "Gallery" },
-        { key: "publications", label: "Stories" },
+        { key: "publications", label: "Stories", visible: false },
         { key: "contact", label: "Contact" },
       ],
       footerIntro:
@@ -633,16 +690,17 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
     contact: {
       metadata: {
         title: "Contact and reservations | Wakaya Ecolodge",
-        description: "Check availability and contact Wakaya Ecolodge.",
+        description: "Plan your stay with Wakaya with direct support from the reservations team.",
         keywords: ["wakaya contact", "wakaya reservations", "pucallpa", "ecolodge"],
       },
       hero: {
-        eyebrow: "Contact",
-        title: "Stay request",
-        copy: "Check available dates, categories, and services.",
+        eyebrow: "Reservations",
+        title: "Contact us",
+        copy: "We are here to make your experience happen",
       },
-      introTitle: "Contact Wakaya",
-      introCopy: "Phone, WhatsApp, and email for bookings and enquiries.",
+      introTitle: "Let's talk",
+      introCopy: "For reservations, questions, and groups write to us. We reply in less than 24 hours.",
+      formTitle: "Plan your stay",
       checklist: [
         "Availability by date and category.",
         "Confirmation by the Wakaya team.",
@@ -654,15 +712,15 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
         guestName: "Name",
         guestEmail: "Email",
         guestPhone: "Phone",
-        requestedCheckIn: "Check in",
-        requestedCheckOut: "Check out",
+        requestedCheckIn: "Check-in",
+        requestedCheckOut: "Check-out",
         requestedGuests: "Guests",
         requestedBungalowType: "Preferred category",
-        notes: "Notes",
-        notesPlaceholder: "Special requirements, schedule, or comments.",
+        notes: "Message",
+        notesPlaceholder: "Tell us what kind of experience you are looking for...",
         noPreference: "No preference",
         submitLabel: "Send request",
-        guestOptions: ["2 guests", "3 guests", "4 guests", "5 guests"],
+        guestOptions: ["1 guest", "2 guests", "3 guests", "4 guests", "5 guests", "6 guests"],
       },
       visualBadge: "Bookings and enquiries",
       visualAlt: "Wakaya contact and reservations channels",
@@ -670,13 +728,13 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
     bungalows: {
       metadata: {
         title: "Bungalows | Wakaya Ecolodge",
-        description: "Explore Wakaya's bungalow categories in Pucallpa.",
+        description: "Native-wood bungalows within the jungle landscape of Wakaya.",
         keywords: ["bungalows", "wakaya ecolodge", "pucallpa", "room categories"],
       },
       hero: {
-        eyebrow: "Bungalows",
-        title: "Search results",
-        copy: "Compare categories and check availability by date.",
+        eyebrow: "Accommodation",
+        title: "Our Bungalows",
+        copy: "Native-wood bungalows surrounded by tropical nature",
       },
       resultsMetaPrefix: "Category:",
       resultsMetaCategory: "All categories",
@@ -684,10 +742,12 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
       noGuests: "No guests",
       emptyTitle: "We could not find a match for those filters.",
       emptyCopy: "Adjust your dates or category to review more reference options.",
-      viewDetailLabel: "View details",
+      viewDetailLabel: "View details and reserve",
+      perNightLabel: "/night",
     },
     bungalowDetail: {
       metadataKeywords: ["bungalows", "wakaya ecolodge", "pucallpa"],
+      breadcrumbLabel: "Bungalows",
       amenitiesTitle: "What is included",
       includedTitle: "Included services",
       detailsTitle: "Bungalow details",
@@ -721,6 +781,13 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
       sectionTitle: "Lagoon, pool, restaurant, and more",
       sectionCopy:
         "Services for stays, visits, celebrations, and dining.",
+      ctaTitle: "Contact Wakaya",
+      ctaCopy: "Tell us the service and date you need.",
+      ctaLabel: "Contact us",
+      detailLabel: "View details",
+      includesLabel: "Includes",
+      recommendationsLabel: "Recommendations",
+      closeLabel: "Close",
       cards: [
         { title: "Pool and gardens", tag: "Relax", copy: "Open spaces for rest, reading, and calm throughout the stay." },
         { title: "Lagoon and tropical setting", tag: "Nature", copy: "A lush natural frame that sustains the atmosphere of the ecolodge." },
@@ -748,16 +815,18 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
         "Connection with bungalows and lodge services.",
       ],
       imageAlt: "Natural event setting at Wakaya",
+      proposalCopy: "We confirm dates, capacity, and every final detail with you before closing the event proposal.",
+      proposalCtaLabel: "Request proposal",
     },
     gallery: {
       metadata: {
         title: "Gallery | Wakaya Ecolodge",
-        description: "Explore Wakaya's visual atmosphere through water, greenery, architecture, and tropical rest.",
+        description: "A visual journey through Wakaya and its tropical landscape.",
       },
       hero: {
-        eyebrow: "Gallery",
+        eyebrow: "Images",
         title: "Gallery",
-        copy: "Water, vegetation, architecture, and the lived rhythm of the place.",
+        copy: "The beauty of Wakaya in images",
       },
       sectionEyebrow: "Images",
       sectionTitle: "The atmosphere of the ecolodge",
@@ -791,15 +860,37 @@ const CONTENT: Record<PublicSiteLocale, PublicSiteContent> = {
         "From here you can return to bungalow categories, review services, or move directly into the contact flow without leaving the same visual system.",
       ctaButton: "View bungalows",
       items: [
-        { slug: "bodas-en-wakaya", title: "Celebrations in a natural setting" },
-        { slug: "full-day-pucallpa", title: "How to enjoy a Wakaya full-day experience" },
+        { slug: "bodas-en-wakaya", title: "Celebrations in a natural setting", meta: "Editorial · Events", copy: "How a more intimate celebration can feel aligned with Wakaya's calm and tropical setting." },
+        { slug: "full-day-pucallpa", title: "How to enjoy a Wakaya full-day experience", meta: "Guide · Full day", copy: "A shorter visit with access to Wakaya's landscape, facilities, and hospitality." },
+        { slug: "que-bungalow-encaja", title: "Which bungalow fits your stay best", meta: "Comparison · Bungalows", copy: "A faster read to understand category, atmosphere, and fit before sending the final request." },
+      ],
+    },
+    petFriendly: {
+      metadata: { title: "Pet Friendly | Wakaya Ecolodge", description: "Travel to Wakaya Ecolodge with your pet and review the friendly house rules before arrival." },
+      hero: { eyebrow: "Travel together", title: "Pet Friendly", copy: "Wakaya welcomes small and medium pets when the stay is coordinated in advance." },
+      sections: [
+        { title: "A warm welcome for your companion", copy: "If your pet is used to travelling calmly, Wakaya can be a beautiful place to share the trip. We only ask for a few simple rules so every guest enjoys the same peaceful atmosphere.", bullets: ["Confirm your pet before arrival so we can recommend the right bungalow.", "Bring a leash, bed, and cleaning essentials for the full stay.", "Please keep your pet supervised in shared areas."] },
+        { title: "What helps the stay go smoothly", copy: "We may suggest the most practical bungalow based on your pet's size, energy level, and the occupancy of the dates you chose.", bullets: ["For safety, aggressive behavior or repeated disturbance may require ending the pet stay.", "Any unusual cleaning or damage may generate an additional charge.", "If you are travelling with more than one pet, please ask us first."] },
+      ],
+      ctaTitle: "Want to travel with your pet?",
+      ctaCopy: "Send us your dates and tell us a bit about your companion. We will guide you to the best option for a calm stay.",
+      ctaLabel: "Plan my stay",
+    },
+    complaints: {
+      metadata: { title: "Complaints Book | Wakaya Ecolodge", description: "A clear public route to share a complaint or service claim related to your Wakaya stay." },
+      hero: { eyebrow: "Guest care", title: "Complaints Book", copy: "If you need to report an issue related to your stay or service, we are ready to receive it with respect and follow-up." },
+      formTitle: "Submit your case online",
+      formCopy: "Complete the basic details of your case and keep the tracking code we will show you right away.",
+      cards: [
+        { title: "How to submit a claim", copy: "If you want to leave your case documented right away, use the online form. You can also contact us first through the same reservation channels if you need guidance.", bullets: ["Email: reservas@wakayaecolodge.com", "WhatsApp: +51 961 508 813 · Phone: +51 977 419 468", "Hours: Monday to Sunday, 7:00 to 20:00"] },
+        { title: "Response", copy: "Our team reviews each case directly. If more information is required, we will contact you.", bullets: ["You will receive a public tracking code on screen.", "Include photos or proof only if they help explain the case.", "Expected response time: up to 15 business days."] },
       ],
     },
   },
 };
 
 export function getPublicSiteContent(locale: PublicSiteLocale): PublicSiteContent {
-  return CONTENT[locale];
+  return DEFAULT_PUBLIC_SITE_CONTENT[locale];
 }
 
 function readFirstNumber(value: string, fallback: number) {

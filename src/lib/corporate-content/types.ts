@@ -1,4 +1,5 @@
 import type { PublicCompanyContent } from "@/components/public-site/public-company-content";
+import type { PublicSiteContent } from "@/app/[locale]/public-site-content";
 
 export const CORPORATE_REQUIRED_TERM_SECTION_IDS = [
   "reservations",
@@ -21,6 +22,35 @@ export type CorporateContact = {
   hours: LocalizedCorporateText;
 };
 
+export type PublicSiteMediaReference =
+  | { kind: "asset"; assetId: string }
+  | { kind: "external"; url: string }
+  | { kind: "none" };
+
+export type PublicSiteMediaSlot =
+  | "logo"
+  | "aboutHero"
+  | "aboutSecondary"
+  | "faqHero"
+  | "testimonialsHero"
+  | "policiesHero"
+  | "bungalowsHero"
+  | "servicesHero"
+  | "galleryHero"
+  | "contactHero"
+  | "eventsHero"
+  | "publicationsHero"
+  | "petFriendlyHero"
+  | "complaintsHero";
+
+export type CorporatePublicSiteContent = {
+  locales: {
+    es: PublicSiteContent;
+    en: PublicSiteContent;
+  };
+  media: Record<PublicSiteMediaSlot, PublicSiteMediaReference>;
+};
+
 export type CorporateContentDocument = {
   schemaVersion: 1;
   locales: {
@@ -28,6 +58,7 @@ export type CorporateContentDocument = {
     en: PublicCompanyContent;
   };
   contact: CorporateContact;
+  publicSite?: CorporatePublicSiteContent;
   internal: {
     sourceLabel: string;
     sourceUrls: string[];
@@ -42,9 +73,13 @@ export type CorporateContentDocument = {
   };
 };
 
+export type ResolvedCorporateContentDocument = CorporateContentDocument & {
+  publicSite: CorporatePublicSiteContent;
+};
+
 export type CorporateContentRevisionRecord = {
   revisionVersion: number;
-  document: CorporateContentDocument;
+  document: ResolvedCorporateContentDocument;
   updatedAt: string;
   updatedByUserId: string | null;
   restoredFromVersion: number | null;
@@ -57,7 +92,7 @@ export type CorporateContentRevisionSummary = Omit<
 >;
 
 export type PublishCorporateContentInput = {
-  document: CorporateContentDocument;
+  document: ResolvedCorporateContentDocument;
   expectedVersion: number;
   actorId: string | null;
   restoredFromVersion?: number | null;

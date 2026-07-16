@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { DEFAULT_CORPORATE_CONTENT } from "./default-content";
+import { DEFAULT_CORPORATE_CONTENT } from "./default-document";
 import { PostgresCorporateContentStore } from "./store";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL?.trim());

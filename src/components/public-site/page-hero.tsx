@@ -5,18 +5,16 @@ type PageHeroProps = {
   title: string;
   breadcrumb: string;
   copy: string;
-  image?: string;
+  image: string;
   imageAlt?: string;
 };
 
-const DEFAULT_HERO_IMAGE =
-  'https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya1.png';
 export function PageHero({
   eyebrow,
   title,
   breadcrumb,
   copy,
-  image = DEFAULT_HERO_IMAGE,
+  image,
   imageAlt,
 }: PageHeroProps) {
   return (

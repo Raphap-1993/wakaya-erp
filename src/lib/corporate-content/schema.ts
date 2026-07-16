@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-import type { CorporateContentDocument } from "./types";
+import { DEFAULT_PUBLIC_SITE_CONTENT } from "@/app/[locale]/public-site-content";
+import { DEFAULT_PUBLIC_SITE_MEDIA } from "./public-site-media";
+import type {
+  CorporateContentDocument,
+  CorporatePublicSiteContent,
+  ResolvedCorporateContentDocument,
+} from "./types";
 import { CORPORATE_REQUIRED_TERM_SECTION_IDS } from "./types";
 
 const requiredText = z.string().trim().min(1, "required");
@@ -135,9 +141,50 @@ const localeContentSchema = z.object({
 
 const localizedTextSchema = z.object({ es: requiredText, en: requiredText });
 
+function hasRequiredPublicShape(value: unknown, template: unknown): boolean {
+  if (typeof template === "string") {
+    return typeof value === "string" &&
+      (template.trim().length === 0 || value.trim().length > 0);
+  }
+  if (typeof template === "number" || typeof template === "boolean") {
+    return typeof value === typeof template;
+  }
+  if (Array.isArray(template)) {
+    if (!Array.isArray(value)) return false;
+    if (template.length === 0) return true;
+    return value.length > 0 && value.every((item) => hasRequiredPublicShape(item, template[0]));
+  }
+  if (template && typeof template === "object") {
+    if (!value || typeof value !== "object") return false;
+    return Object.entries(template).every(([key, nestedTemplate]) =>
+      hasRequiredPublicShape((value as Record<string, unknown>)[key], nestedTemplate),
+    );
+  }
+  return true;
+}
+
+const publicSiteSchema = z.custom<CorporatePublicSiteContent>(
+  (value) => {
+    if (!value || typeof value !== "object" || !("locales" in value) || !("media" in value)) return false;
+    const candidate = value as CorporatePublicSiteContent;
+    const mediaSlots = Object.keys(DEFAULT_PUBLIC_SITE_MEDIA);
+    const mediaValid = mediaSlots.every((slot) => {
+      const reference = candidate.media?.[slot as keyof typeof DEFAULT_PUBLIC_SITE_MEDIA];
+      return reference?.kind === "none" ||
+        (reference?.kind === "asset" && reference.assetId.trim().length > 0) ||
+        (reference?.kind === "external" && reference.url.trim().length > 0);
+    });
+    return mediaValid &&
+      hasRequiredPublicShape(candidate.locales?.es, DEFAULT_PUBLIC_SITE_CONTENT.es) &&
+      hasRequiredPublicShape(candidate.locales?.en, DEFAULT_PUBLIC_SITE_CONTENT.en);
+  },
+  "invalid_public_site_content",
+);
+
 export const corporateContentDocumentSchema: z.ZodType<CorporateContentDocument> = z.object({
   schemaVersion: z.literal(1),
   locales: z.object({ es: localeContentSchema, en: localeContentSchema }),
+  publicSite: publicSiteSchema.optional(),
   contact: z.object({
     address: localizedTextSchema,
     locationNote: localizedTextSchema,
@@ -163,8 +210,19 @@ export const corporateContentDocumentSchema: z.ZodType<CorporateContentDocument>
 
 export function parseStoredCorporateContentDocument(
   input: CorporateContentDocument,
-): CorporateContentDocument {
-  const migrated = structuredClone(input);
+): ResolvedCorporateContentDocument {
+  const migrated = structuredClone(input) as CorporateContentDocument & {
+    publicSite?: CorporateContentDocument["publicSite"];
+  };
+
+  if (!migrated.publicSite) {
+    migrated.publicSite = {
+      locales: structuredClone(DEFAULT_PUBLIC_SITE_CONTENT),
+      media: structuredClone(DEFAULT_PUBLIC_SITE_MEDIA),
+    };
+  } else if (!migrated.publicSite.media) {
+    migrated.publicSite.media = structuredClone(DEFAULT_PUBLIC_SITE_MEDIA);
+  }
 
   (["es", "en"] as const).forEach((locale) => {
     const sections = migrated.locales[locale].policies.termsSections;
@@ -176,5 +234,5 @@ export function parseStoredCorporateContentDocument(
     }
   });
 
-  return corporateContentDocumentSchema.parse(migrated);
+  return corporateContentDocumentSchema.parse(migrated) as ResolvedCorporateContentDocument;
 }

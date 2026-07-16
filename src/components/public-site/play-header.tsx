@@ -31,6 +31,7 @@ type PlayHeaderProps = {
   contactEmail?: string;
   contactPhone?: string;
   contactPlace?: string;
+  logoUrl?: string;
 };
 
 const NAV_ORDER = ["home", "bungalows", "services", "gallery", "contact"] as const;
@@ -61,6 +62,7 @@ export function PlayHeader({
   localeSwitchLabel,
   navItems,
   navigationStyle,
+  logoUrl = "/images/wakaya/wakaya-logo-min.png",
 }: PlayHeaderProps = {}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -128,6 +130,8 @@ export function PlayHeader({
 
   useEffect(() => {
     if (!isHomeRoute) {
+      // Route state determines the initial solid header outside Home.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setScrolled(true);
       return;
     }
@@ -162,7 +166,7 @@ export function PlayHeader({
           >
             <img
               className={styles.prototypeBrandLogo}
-              src="/images/wakaya/wakaya-logo-min.png"
+              src={logoUrl}
               alt={brandName}
             />
           </Link>
@@ -228,7 +232,7 @@ export function PlayHeader({
             >
               <img
                 className={styles.prototypeBrandLogo}
-                src="/images/wakaya/wakaya-logo-min.png"
+                src={logoUrl}
                 alt={brandName}
               />
             </Link>

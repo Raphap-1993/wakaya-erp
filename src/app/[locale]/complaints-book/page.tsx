@@ -4,6 +4,8 @@ import { PublicComplaintForm } from "@/components/public-site/public-complaint-f
 import { WAKAYA_PRIMARY_PHONE_DISPLAY, WAKAYA_SECONDARY_PHONE_DISPLAY } from "@/lib/wakaya-contact";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import styles from "@/components/public-site/public-site-theme.module.css";
+import { getPublishedPublicSiteView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 type PublicComplaintFormProps = Parameters<typeof PublicComplaintForm>[0];
@@ -223,13 +225,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = getComplaintsCopy(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const copy = site.content.complaints;
 
   return buildLocalizedPublicMetadata({
     locale,
     route: "complaintsBook",
-    title: copy.metaTitle,
-    description: copy.metaDescription,
+    title: copy.metadata.title,
+    description: copy.metadata.description,
+    image: resolvePublicSiteMedia(site.media.complaintsHero),
     keywords:
       locale === "en"
         ? ["wakaya complaints", "complaints book", "guest support"]
@@ -243,16 +247,18 @@ export default async function PublicSiteComplaintsBookPage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = getComplaintsCopy(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const copy = site.content.complaints;
+  const formCopy = getComplaintsCopy(locale);
 
   return (
     <>
       <PageHero
-        eyebrow={copy.heroEyebrow}
-        title={copy.heroTitle}
-        breadcrumb={`${locale === "en" ? "Home" : "Inicio"} / ${copy.heroTitle}`}
-        copy={copy.heroCopy}
-        image="https://wakayaecolodge.com/es/images/wakaya/gallery/gallery04.jpg"
+        eyebrow={copy.hero.eyebrow}
+        title={copy.hero.title}
+        breadcrumb={`${locale === "en" ? "Home" : "Inicio"} / ${copy.hero.title}`}
+        copy={copy.hero.copy}
+        image={resolvePublicSiteMedia(site.media.complaintsHero)}
       />
 
       <section className={styles.pageSection}>
@@ -296,9 +302,9 @@ export default async function PublicSiteComplaintsBookPage({
           </article>
 
           <PublicComplaintForm
-            labels={copy.labels}
-            options={copy.options}
-            placeholders={copy.placeholders}
+            labels={{ ...formCopy.labels, formTitle: copy.formTitle, formCopy: copy.formCopy }}
+            options={formCopy.options}
+            placeholders={formCopy.placeholders}
           />
         </div>
       </section>

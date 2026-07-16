@@ -9,383 +9,13 @@ import {
   getPublicBungalowDetailRoute,
   getPublicRoute,
 } from "@/components/public-site/public-site-routes";
-import { getLocalizedDefaultHomeExperiences } from "@/lib/content/default-experiences";
+import { listLocalizedPublicExperiences } from "@/lib/content/public-content";
 import { buildHomeSectionStyleVars } from "@/lib/home-content/style-resolver";
 import { homeContentStore } from "@/lib/home-content/store";
+import { getPublishedPublicSiteContent } from "@/lib/corporate-content/public-view";
 import { toLocalizedHomeView } from "@/lib/home-content/public-view";
-import { getLocalizedBungalows, getPublicSiteContent } from "./public-site-content";
+import { getLocalizedBungalows } from "./public-site-content";
 import { buildLocalizedPublicMetadata } from "./public-site-metadata";
-
-type HomeRouteKey = "about" | "bungalows" | "contact" | "services";
-
-type HomeHero = {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  copy?: string;
-  primaryCtaLabel: string;
-  primaryRoute: HomeRouteKey;
-  secondaryCtaLabel: string;
-  secondaryRoute: HomeRouteKey;
-  image: string;
-  scrollLabel: string;
-};
-
-type ManualRequest = {
-  title: string;
-  helper: string;
-  checkIn: string;
-  checkOut: string;
-  guests: string;
-  room: string;
-  allCategories: string;
-  guestOptions: string[];
-  submitLabel: string;
-  submitHint: string;
-};
-
-type HomeStat = {
-  value: string;
-  label: string;
-};
-
-type StorySection = {
-  eyebrow: string;
-  title: string;
-  paragraphs: string[];
-  ctaLabel: string;
-  route: HomeRouteKey;
-  quote: string;
-  quoteSource: string;
-  image: string;
-};
-
-type ExperienceCard = {
-  eyebrow: string;
-  title: string;
-  copy: string;
-  price: string;
-  duration: string;
-  image: string;
-};
-
-type Testimonial = {
-  name: string;
-  origin: string;
-  quote: string;
-};
-
-type ClosingSection = {
-  eyebrow: string;
-  title: string;
-  ctaLabel: string;
-  route: HomeRouteKey;
-  image: string;
-};
-
-type HomeExperience = {
-  hero: HomeHero;
-  request: ManualRequest;
-  stats: HomeStat[];
-  story: StorySection;
-  rooms: {
-    eyebrow: string;
-    title: string;
-    ctaLabel: string;
-    detailLabel: string;
-  };
-  quoteBand: {
-    quote: string;
-    source: string;
-    image: string;
-  };
-  experiences: {
-    eyebrow: string;
-    title: string;
-    ctaLabel: string;
-    items: ExperienceCard[];
-  };
-  testimonials: {
-    eyebrow: string;
-    title: string;
-    items: Testimonial[];
-  };
-  closing: ClosingSection;
-};
-
-function buildHeroSlides(locale: PublicSiteLocale, home: HomeExperience) {
-  return [
-    {
-      eyebrow: home.hero.eyebrow,
-      title: home.hero.title,
-      subtitle: home.hero.subtitle,
-      copy: home.hero.copy,
-      ctaLabel: home.hero.primaryCtaLabel,
-      href: getPublicRoute(locale, home.hero.primaryRoute),
-      secondaryCtaLabel: home.hero.secondaryCtaLabel,
-      secondaryHref: getPublicRoute(locale, home.hero.secondaryRoute),
-      image: home.hero.image,
-      scrollLabel: home.hero.scrollLabel,
-    },
-    {
-      eyebrow: home.rooms.eyebrow,
-      title: home.rooms.title,
-      subtitle: home.experiences.title,
-      copy: home.story.paragraphs[0],
-      ctaLabel: home.rooms.ctaLabel,
-      href: getPublicRoute(locale, "bungalows"),
-      secondaryCtaLabel: home.story.ctaLabel,
-      secondaryHref: getPublicRoute(locale, home.story.route),
-      image: home.quoteBand.image,
-      scrollLabel: home.hero.scrollLabel,
-    },
-    {
-      eyebrow: home.closing.eyebrow,
-      title: home.closing.title,
-      subtitle: home.testimonials.title,
-      copy: home.story.paragraphs[1],
-      ctaLabel: home.closing.ctaLabel,
-      href: getPublicRoute(locale, home.closing.route),
-      secondaryCtaLabel: home.experiences.ctaLabel,
-      secondaryHref: getPublicRoute(locale, "services"),
-      image: home.closing.image,
-      scrollLabel: home.hero.scrollLabel,
-    },
-  ];
-}
-
-function buildHomeExperience(locale: PublicSiteLocale): HomeExperience {
-  if (locale === "en") {
-    return {
-      hero: {
-        eyebrow: "Pucallpa · Peruvian Amazon",
-        title: "Wakaya Ecolodge",
-        subtitle: "An encounter with the magical",
-        primaryCtaLabel: "Reserve now",
-        primaryRoute: "contact",
-        secondaryCtaLabel: "Explore experiences",
-        secondaryRoute: "services",
-        image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery01.jpg",
-        scrollLabel: "Explore",
-      },
-      request: {
-        title: "Plan your jungle stay",
-        helper:
-          "Choose your dates, preferred bungalow, and group size. We will guide you toward the best fit for your trip.",
-        checkIn: "Check in",
-        checkOut: "Check out",
-        guests: "Guests",
-        room: "Room",
-        allCategories: "All categories",
-        guestOptions: ["2 guests", "3 guests", "4 guests", "5 guests"],
-        submitLabel: "View options",
-        submitHint: "Next step: review matching bungalows and send your request.",
-      },
-      stats: [
-        { value: "50+", label: "Hectares of jungle" },
-        { value: "8", label: "Bungalows" },
-        { value: "200+", label: "Bird species" },
-        { value: "15+", label: "Years of history" },
-      ],
-      story: {
-        eyebrow: "Our story",
-        title: "Where the jungle transforms you",
-        paragraphs: [
-          "Wakaya was born from the dream of protecting a tropical retreat near Pucallpa. Every bungalow was built with certified native wood and low environmental impact.",
-          "We are a refuge for guests who want to disconnect from noise and reconnect with what matters: the river, the birds, and a slower tropical rhythm.",
-        ],
-        ctaLabel: "Discover our story",
-        route: "about",
-        quote: "Nature is not a place to visit. It is home.",
-        quoteSource: "Gary Snyder",
-        image: "https://wakayaecolodge.com/es/images/wakaya/aboutus/collage01.jpg",
-      },
-      rooms: {
-        eyebrow: "Accommodation",
-        title: "Our Bungalows",
-        ctaLabel: "See all",
-        detailLabel: "View details",
-      },
-      quoteBand: {
-        quote: "Drive stress away. Wake up the soul.",
-        source: "Pucallpa · Peruvian Amazon",
-        image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery09.jpg",
-      },
-      experiences: {
-        eyebrow: "Experiences",
-        title: "Unique experiences",
-        ctaLabel: "See all",
-        items: [
-          {
-            eyebrow: "2-3 h",
-            title: "Kayak on the river",
-            copy: "Follow Wakaya's tropical routes between birds, jungle edges, and a slower rhythm than a generic activity catalog.",
-            price: "S/. 45",
-            duration: "Kayak",
-            image: "https://wakayaecolodge.com/es/images/wakaya/services/servicio_laguna.jpg",
-          },
-          {
-            eyebrow: "4 h",
-            title: "Jungle photography",
-            copy: "A guided visual route through textures, light, and vegetation inside the central jungle atmosphere around Wakaya.",
-            price: "S/. 90",
-            duration: "Editorial walk",
-            image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery17.jpg",
-          },
-          {
-            eyebrow: "Custom",
-            title: "Weddings and celebrations",
-            copy: "Celebrate surrounded by jungle with direct support from the Wakaya team.",
-            price: "Quote",
-            duration: "Tailored planning",
-            image: "https://wakayaecolodge.com/es/images/wakaya/services/servicios_bodas.jpg",
-          },
-        ],
-      },
-      testimonials: {
-        eyebrow: "Voices",
-        title: "What our guests remember most",
-        items: [
-          {
-            name: "Camila Vargas",
-            origin: "Lima, Peru",
-            quote: "The bungalows feel warm and real, and the team makes the whole arrival feel carefully hosted rather than transactional.",
-          },
-          {
-            name: "Thomas & Sophie",
-            origin: "Lyon, France",
-            quote: "The calm, the trees, and the silence at night made Wakaya feel more memorable than any standard retreat we had tried.",
-          },
-          {
-            name: "Mariela Paredes",
-            origin: "Cusco, Peru",
-            quote: "The Wakaya team answered clearly and made every detail of the stay easy to coordinate.",
-          },
-        ],
-      },
-      closing: {
-        eyebrow: "Ready to escape",
-        title: "Your jungle retreat is waiting",
-        ctaLabel: "Request reservation",
-        route: "contact",
-        image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery18.jpg",
-      },
-    };
-  }
-
-  return {
-    hero: {
-      eyebrow: "Pucallpa · Amazonía peruana",
-      title: "Wakaya Ecolodge",
-      subtitle: "Un encuentro con lo Magico",
-      primaryCtaLabel: "Reservar ahora",
-      primaryRoute: "contact",
-      secondaryCtaLabel: "Explorar experiencias",
-      secondaryRoute: "services",
-      image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery01.jpg",
-      scrollLabel: "Explorar",
-    },
-    request: {
-      title: "Planifica tu escape a la selva",
-      helper: "Consulta disponibilidad por fecha, tipo de bungalow y cantidad de huéspedes.",
-      checkIn: "Check in",
-      checkOut: "Check out",
-      guests: "Personas",
-      room: "Habitacion",
-      allCategories: "Todas las categorias",
-      guestOptions: ["2 huespedes", "3 huespedes", "4 huespedes", "5 huespedes"],
-      submitLabel: "Ver opciones",
-      submitHint: "",
-    },
-    stats: [
-      { value: "Pucallpa", label: "Amazonía peruana" },
-      { value: "2019", label: "Desde" },
-    ],
-    story: {
-      eyebrow: "Nuestra historia",
-      title: "Donde la selva te transforma",
-      paragraphs: [
-        "Wakaya nació del sueño de conservar un refugio tropical cerca de Pucallpa. Cada bungalow fue construido con madera nativa certificada y mínimo impacto ambiental.",
-        "Somos un refugio para quienes buscan desconectarse del ruido y reconectarse con lo esencial: el sonido del rio, el canto de las aves y un ritmo tropical mas humano.",
-      ],
-      ctaLabel: "Conoce nuestra historia",
-      route: "about",
-      quote: "La naturaleza no es un lugar a visitar. Es el hogar.",
-      quoteSource: "Gary Snyder",
-      image: "https://wakayaecolodge.com/es/images/wakaya/aboutus/collage01.jpg",
-    },
-    rooms: {
-      eyebrow: "Alojamiento",
-      title: "Nuestros Bungalows",
-      ctaLabel: "Ver todos",
-      detailLabel: "Ver detalles",
-    },
-    quoteBand: {
-      quote: "Ahuyentar el estres. Despertar el alma.",
-      source: "Pucallpa · Amazonía peruana",
-      image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery09.jpg",
-    },
-    experiences: {
-      eyebrow: "Vivencias",
-      title: "Experiencias unicas",
-      ctaLabel: "Ver todas",
-      items: [
-        {
-          eyebrow: "2-3 h",
-          title: "Kayak en el rio",
-          copy: "Recorre el entorno tropical de Wakaya entre aves y selva virgen con una puesta en escena más editorial que un listado turístico genérico.",
-          price: "S/. 45",
-          duration: "Kayak",
-          image: "https://wakayaecolodge.com/es/images/wakaya/services/servicio_laguna.jpg",
-        },
-        {
-          eyebrow: "4 h",
-          title: "Fotografia en la selva",
-          copy: "Una ruta visual para trabajar luz, texturas y vegetacion dentro del paisaje que define a Wakaya.",
-          price: "S/. 90",
-          duration: "Recorrido guiado",
-          image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery17.jpg",
-        },
-        {
-          eyebrow: "A medida",
-          title: "Bodas y celebraciones",
-          copy: "Eventos rodeados de selva con acompañamiento directo del equipo Wakaya.",
-          price: "Cotizar",
-          duration: "Planeamiento humano",
-          image: "https://wakayaecolodge.com/es/images/wakaya/services/servicios_bodas.jpg",
-        },
-      ],
-    },
-    testimonials: {
-      eyebrow: "Voces",
-      title: "Lo que dicen nuestros huespedes",
-      items: [
-        {
-          name: "Camila Vargas",
-          origin: "Lima, Peru",
-          quote: "Los bungalows se sienten calidos y reales, y la llegada fue mucho mas cuidada porque todo se coordino con personas.",
-        },
-        {
-          name: "Thomas & Sophie",
-          origin: "Lyon, Francia",
-          quote: "La calma, la vegetacion y el silencio nocturno hicieron que Wakaya se sintiera mas memorable que un retiro estandar.",
-        },
-        {
-          name: "Mariela Paredes",
-          origin: "Cusco, Peru",
-          quote: "El equipo Wakaya respondió con claridad y facilitó cada detalle de la estadía.",
-        },
-      ],
-    },
-    closing: {
-      eyebrow: "Listo para escapar",
-      title: "Tu retiro en la selva te espera",
-      ctaLabel: "Solicitar reserva",
-      route: "contact",
-      image: "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery18.jpg",
-    },
-  };
-}
 
 async function readLocale(
   params: Promise<{ locale: string }> | { locale: string },
@@ -400,7 +30,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const content = getPublicSiteContent(locale);
+  const content = await getPublishedPublicSiteContent(locale);
   const publishedHome = await homeContentStore.getPublished();
   const home = toLocalizedHomeView(publishedHome.document, locale);
 
@@ -410,7 +40,7 @@ export async function generateMetadata({
     title: content.home.metadata.title,
     description: content.home.metadata.description,
     keywords: content.home.metadata.keywords,
-    image: home.slides[0]?.image ?? "https://wakayaecolodge.com/es/images/wakaya/gallery/gallery01.jpg",
+    image: home.slides[0]?.image,
   });
 }
 
@@ -438,14 +68,12 @@ export default async function LocalizedPublicHomePage({
   const bungalowsSection = home.sections.find((section) => section.type === "bungalows");
   const rooms = (await getLocalizedBungalows(locale)).slice(0, bungalowsSection?.content.visibleCount ?? 4);
   const experiencesSection = home.sections.find((section) => section.type === "experiences");
-  const homeExperiences =
-    experiencesSection?.type === "experiences"
-      ? getLocalizedDefaultHomeExperiences(
-          locale,
-          experiencesSection.content.experienceIds,
-          experiencesSection.content.visibleCount,
-        )
-      : [];
+  const publicExperiences = await listLocalizedPublicExperiences(locale);
+  const homeExperiences = experiencesSection?.type === "experiences"
+    ? publicExperiences
+        .filter((experience) => experiencesSection.content.experienceIds.includes(experience.id))
+        .slice(0, experiencesSection.content.visibleCount)
+    : [];
 
   function renderSection(section: (typeof home.sections)[number]) {
     switch (section.type) {
@@ -662,7 +290,7 @@ export default async function LocalizedPublicHomePage({
                     data-home-section="experience-card"
                   >
                     <div className={homeStyles.experienceMedia}>
-                      <img src={item.image} alt={item.title} />
+                      <img src={item.coverImage} alt={item.title} />
                       <span className={homeStyles.experiencePrice}>{item.priceLabel}</span>
                     </div>
                     <div className={homeStyles.experienceBody}>

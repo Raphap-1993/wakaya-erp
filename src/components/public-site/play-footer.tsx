@@ -69,6 +69,7 @@ type PlayFooterProps = {
   policyLinks?: FooterLink[];
   bottomLinks?: FooterLink[];
   locale?: PublicSiteLocale;
+  logoUrl?: string;
 };
 
 function buildFooterNav(locale: PublicSiteLocale): FooterLink[] {
@@ -135,6 +136,7 @@ export function PlayFooter({
   policyLinks,
   bottomLinks,
   locale = "es",
+  logoUrl = "/images/wakaya/wakaya-logo-min.png",
 }: PlayFooterProps = {}) {
   const resolvedFooterNav = footerNav ?? buildFooterNav(locale);
   const resolvedCompanyLinks = companyLinks ?? buildCompanyLinks(locale);
@@ -215,7 +217,7 @@ export function PlayFooter({
         <div className={styles.prototypeFooterBrandColumn}>
           <img
             className={styles.prototypeFooterLogo}
-            src="/images/wakaya/wakaya-logo-min.png"
+            src={logoUrl}
             alt={brandName}
           />
           <p className={styles.prototypeFooterLead}>{introCopy}</p>

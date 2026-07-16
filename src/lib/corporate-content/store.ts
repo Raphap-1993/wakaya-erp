@@ -5,7 +5,7 @@ import type { Pool, PoolClient } from "pg";
 
 import { getPool } from "@/lib/reservations/postgres";
 
-import { DEFAULT_CORPORATE_CONTENT } from "./default-content";
+import { DEFAULT_CORPORATE_CONTENT } from "./default-document";
 import {
   corporateContentDocumentSchema,
   parseStoredCorporateContentDocument,
@@ -42,7 +42,7 @@ const FALLBACK_STORAGE_PATH = ".data/wakaya-corporate-content.snapshot.json";
 const DEFAULT_UPDATED_AT = new Date(0).toISOString();
 const MEMORY_REVISIONS = new Map<string, PersistedRevision[]>();
 
-function cloneDocument(document: CorporateContentDocument) {
+function cloneDocument<T extends CorporateContentDocument>(document: T): T {
   return structuredClone(document);
 }
 
@@ -156,7 +156,7 @@ class FallbackCorporateContentStore implements CorporateContentStoreLike {
   }
 
   async publish(input: PublishCorporateContentInput) {
-    const document = corporateContentDocumentSchema.parse(input.document);
+    const document = parseStoredCorporateContentDocument(input.document);
     const records = this.readRecords();
     const currentVersion = records[0]?.revisionVersion ?? 0;
     if (input.expectedVersion !== currentVersion) {
@@ -276,7 +276,7 @@ export class PostgresCorporateContentStore implements CorporateContentStoreLike 
   }
 
   async publish(input: PublishCorporateContentInput) {
-    const document = corporateContentDocumentSchema.parse(input.document);
+    const document = parseStoredCorporateContentDocument(input.document);
     const client = await this.pool.connect();
     try {
       await client.query("begin");

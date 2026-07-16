@@ -6,6 +6,8 @@ import { calculateCapacityAvailability } from "@/lib/bungalow-capacity/availabil
 import { bungalowCapacityStore } from "@/lib/bungalow-capacity/store";
 import { compareDateOnly } from "@/lib/reservations/date-utils";
 import { reservationStore } from "@/lib/reservations/store";
+import { getPublishedPublicSiteView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { getLocalizedBungalows } from "../public-site-content";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
@@ -15,20 +17,6 @@ type PageProps = {
   params: Promise<{ locale: string }> | { locale: string };
   searchParams?: Promise<SearchParams> | SearchParams;
 };
-
-type BungalowPageCopy = {
-  metaTitle: string;
-  metaDescription: string;
-  heroMeta: string;
-  heroTitle: string;
-  heroCopy: string;
-  detailLabel: string;
-  perNightLabel: string;
-  noResultsTitle: string;
-  noResultsCopy: string;
-};
-
-const BUNGALOWS_HERO = "https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya2.png";
 
 function getSingleValue(value: string | string[] | undefined) {
   return typeof value === "string" ? value : "";
@@ -46,34 +34,6 @@ function parseCapacityLabel(value: string) {
 
 function hasValidStayRange(checkIn: string, checkOut: string) {
   return Boolean(checkIn && checkOut) && compareDateOnly(checkIn, checkOut) <= 0;
-}
-
-function getBungalowPageCopy(locale: PublicSiteLocale): BungalowPageCopy {
-  if (locale === "en") {
-    return {
-      metaTitle: "Bungalows | Wakaya Ecolodge",
-      metaDescription: "Native-wood bungalows within the jungle landscape of Wakaya.",
-      heroMeta: "Accommodation · Wakaya Ecolodge",
-      heroTitle: "Our Bungalows",
-      heroCopy: "Native-wood bungalows surrounded by tropical nature",
-      detailLabel: "View details and reserve",
-      perNightLabel: "/night",
-      noResultsTitle: "No bungalow matched those filters.",
-      noResultsCopy: "Adjust the dates or category and try again.",
-    };
-  }
-
-  return {
-    metaTitle: "Bungalows | Wakaya Ecolodge",
-    metaDescription: "Bungalows de madera nativa dentro del paisaje selvático de Wakaya.",
-    heroMeta: "Alojamiento · Wakaya Ecolodge",
-    heroTitle: "Nuestros Bungalows",
-    heroCopy: "Bungalows de madera nativa rodeados de naturaleza tropical",
-    detailLabel: "Ver detalles y reservar",
-    perNightLabel: "/noche",
-    noResultsTitle: "No encontramos coincidencias con esos filtros.",
-    noResultsCopy: "Ajusta las fechas o la categoría y vuelve a intentar.",
-  };
 }
 
 async function resolveSearchParams(
@@ -95,25 +55,27 @@ async function readLocale(
 
 export async function generateMetadata({ params }: Pick<PageProps, "params">) {
   const locale = await readLocale(params);
-  const copy = getBungalowPageCopy(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const copy = site.content.bungalows;
 
   return buildLocalizedPublicMetadata({
     locale,
     route: "bungalows",
-    title: copy.metaTitle,
-    description: copy.metaDescription,
+    title: copy.metadata.title,
+    description: copy.metadata.description,
     keywords:
       locale === "en"
         ? ["wakaya rooms", "amazon bungalows", "pucallpa stay"]
         : ["bungalows wakaya", "habitaciones amazónicas", "estadía pucallpa"],
-    image: BUNGALOWS_HERO,
+    image: resolvePublicSiteMedia(site.media.bungalowsHero),
   });
 }
 
 export default async function LocalizedBungalowsPage({ params, searchParams }: PageProps) {
   const locale = await readLocale(params);
   const resolvedSearchParams = await resolveSearchParams(searchParams);
-  const copy = getBungalowPageCopy(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const copy = site.content.bungalows;
   const category = getSingleValue(resolvedSearchParams.category);
   const checkIn = getSingleValue(resolvedSearchParams.checkIn);
   const checkOut = getSingleValue(resolvedSearchParams.checkOut);
@@ -182,10 +144,10 @@ export default async function LocalizedBungalowsPage({ params, searchParams }: P
   return (
     <>
       <FigmaPageHero
-        meta={copy.heroMeta}
-        title={copy.heroTitle}
-        copy={copy.heroCopy}
-        image={BUNGALOWS_HERO}
+        meta={`${copy.hero.eyebrow} · Wakaya Ecolodge`}
+        title={copy.hero.title}
+        copy={copy.hero.copy}
+        image={resolvePublicSiteMedia(site.media.bungalowsHero)}
       />
 
       <section className={styles.section}>
@@ -237,7 +199,7 @@ export default async function LocalizedBungalowsPage({ params, searchParams }: P
                       className={styles.buttonLink}
                       href={getPublicBungalowDetailRoute(locale, room.slug, search)}
                     >
-                      {copy.detailLabel}
+                      {copy.viewDetailLabel}
                     </a>
                   </div>
                 </article>
@@ -245,8 +207,8 @@ export default async function LocalizedBungalowsPage({ params, searchParams }: P
             })
           ) : (
             <article className={styles.storyPanel}>
-              <h2 className={styles.storyTitle}>{copy.noResultsTitle}</h2>
-              <p className={styles.storyParagraph}>{copy.noResultsCopy}</p>
+              <h2 className={styles.storyTitle}>{copy.emptyTitle}</h2>
+              <p className={styles.storyParagraph}>{copy.emptyCopy}</p>
             </article>
           )}
         </div>

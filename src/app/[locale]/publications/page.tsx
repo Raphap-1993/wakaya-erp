@@ -5,7 +5,8 @@ import { PageHero } from "@/components/public-site/page-hero";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import { getPublicRoute } from "@/components/public-site/public-site-routes";
 import styles from "@/components/public-site/public-site-theme.module.css";
-import { getPublicSiteContent } from "../public-site-content";
+import { getPublishedPublicSiteView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 async function readLocale(params: Promise<{ locale: string }> | { locale: string }): Promise<PublicSiteLocale> {
@@ -19,13 +20,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const content = getPublicSiteContent(locale);
+  const site = await getPublishedPublicSiteView(locale);
+  const content = site.content;
 
   return buildLocalizedPublicMetadata({
     locale,
     route: "publications",
     title: content.publications.metadata.title,
     description: content.publications.metadata.description,
+    image: resolvePublicSiteMedia(site.media.publicationsHero),
   });
 }
 
@@ -35,32 +38,8 @@ export default async function PublicSitePublicationsLocalePage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const content = getPublicSiteContent(locale);
-  const publicationMeta =
-    locale === "en"
-      ? [
-          "Editorial · Events",
-          "Guide · Full day",
-          "Comparison · Bungalows",
-        ]
-      : [
-          "Editorial · Eventos",
-          "Guia · Full day",
-          "Comparativa · Bungalows",
-        ];
-  const publicationCopy =
-    locale === "en"
-      ? [
-          "How a more intimate celebration can feel aligned with Wakaya's calm and tropical setting.",
-          "A shorter visit with access to Wakaya's landscape, facilities, and hospitality.",
-          "A faster read to understand category, atmosphere, and fit before sending the final request.",
-        ]
-      : [
-          "Como una celebracion mas intima puede mantenerse alineada con la calma y el entorno tropical de Wakaya.",
-          "Una visita corta para disfrutar del paisaje, las instalaciones y la hospitalidad de Wakaya.",
-          "Una lectura rapida para entender categoria, atmosfera y elegir mejor antes de enviar tu solicitud.",
-        ];
-
+  const site = await getPublishedPublicSiteView(locale);
+  const content = site.content;
   return (
     <>
       <PageHero
@@ -68,7 +47,7 @@ export default async function PublicSitePublicationsLocalePage({
         title={content.publications.hero.title}
         breadcrumb={`${content.labels.breadcrumbHome} / ${content.publications.hero.eyebrow}`}
         copy={content.publications.hero.copy}
-        image="https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya1.png"
+        image={resolvePublicSiteMedia(site.media.publicationsHero)}
       />
 
       <section className={styles.pageSection}>
@@ -79,22 +58,13 @@ export default async function PublicSitePublicationsLocalePage({
         </div>
 
         <div className={styles.publicationGrid}>
-          {[
-            ...content.publications.items,
-            {
-              slug: "que-bungalow-encaja",
-              title:
-                locale === "en"
-                  ? "Which bungalow fits your stay best"
-                  : "Que bungalow encaja mejor con tu plan",
-            },
-          ].map((publication, index) => (
+          {content.publications.items.map((publication) => (
             <article key={publication.slug} className={styles.publicationCard}>
               <span className={styles.publicationMeta}>
-                {publicationMeta[index] ?? publicationMeta[publicationMeta.length - 1]}
+                {publication.meta}
               </span>
               <strong>{publication.title}</strong>
-              <p>{publicationCopy[index] ?? publicationCopy[publicationCopy.length - 1]}</p>
+              <p>{publication.copy}</p>
               <Link href={getPublicRoute(locale, "contact") as Route}>
                 {content.publications.ctaLabel}
               </Link>

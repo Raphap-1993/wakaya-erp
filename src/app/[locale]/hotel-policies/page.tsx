@@ -2,13 +2,11 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { PageHero } from "@/components/public-site/page-hero";
-import {
-  publicCompanyAssets,
-} from "@/components/public-site/public-company-content";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import { getPublicRoute } from "@/components/public-site/public-site-routes";
 import styles from "@/components/public-site/public-site-theme.module.css";
 import { getPublishedCorporateView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 async function readLocale(
@@ -24,7 +22,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = (await getPublishedCorporateView(locale)).content.policies;
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = corporate.content.policies;
 
   return buildLocalizedPublicMetadata({
     locale,
@@ -35,7 +34,7 @@ export async function generateMetadata({
       locale === "en"
         ? ["wakaya policies", "wakaya terms", "wakaya privacy", "pucallpa lodge terms"]
         : ["politicas wakaya", "terminos wakaya", "privacidad wakaya", "pucallpa lodge"],
-    image: publicCompanyAssets.aboutNature,
+    image: resolvePublicSiteMedia(corporate.siteMedia.policiesHero),
   });
 }
 
@@ -45,7 +44,8 @@ export default async function PublicSiteHotelPoliciesPage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = (await getPublishedCorporateView(locale)).content.policies;
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = corporate.content.policies;
 
   return (
     <>
@@ -54,7 +54,7 @@ export default async function PublicSiteHotelPoliciesPage({
         title={copy.hero.title}
         breadcrumb={`${locale === "en" ? "Home" : "Inicio"} / ${copy.hero.title}`}
         copy={copy.hero.copy}
-        image={publicCompanyAssets.aboutNature}
+        image={resolvePublicSiteMedia(corporate.siteMedia.policiesHero)}
       />
 
       <section className={styles.pageSection}>

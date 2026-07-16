@@ -9,8 +9,9 @@ import styles from "@/components/public-site/public-site-theme.module.css";
 import { listSoldOutCapacityRanges } from "@/lib/bungalow-capacity/public-availability";
 import { bungalowCapacityStore } from "@/lib/bungalow-capacity/store";
 import { getPublishedCorporateView } from "@/lib/corporate-content/public-view";
+import { getPublishedPublicSiteContent } from "@/lib/corporate-content/public-view";
 import { reservationStore } from "@/lib/reservations/store";
-import { getLocalizedBungalow, getPublicSiteContent } from "../../public-site-content";
+import { getLocalizedBungalow } from "../../public-site-content";
 import { buildLocalizedBungalowMetadata } from "../../public-site-metadata";
 
 export const dynamic = "force-dynamic";
@@ -21,41 +22,6 @@ type PageProps = {
     | Promise<Record<string, string | string[] | undefined>>
     | Record<string, string | string[] | undefined>;
 };
-
-type ReviewItem = {
-  name: string;
-  origin: string;
-  rating: number;
-  text: string;
-  avatar: string;
-};
-
-const REVIEWS: ReviewItem[] = [
-  {
-    name: "Camila Vargas",
-    origin: "Lima, Perú",
-    rating: 5,
-    text:
-      "Una experiencia que me cambió. Los bungalows son increíbles y el personal hace que te sientas parte de la selva.",
-    avatar: "CV",
-  },
-  {
-    name: "Thomas & Sophie",
-    origin: "Lyon, Francia",
-    rating: 5,
-    text:
-      "Wakaya est un endroit hors du commun. La connexion avec la nature est totale, les repas délicieux, et le silence la nuit... inouï.",
-    avatar: "TS",
-  },
-  {
-    name: "Marco Rodríguez",
-    origin: "Santiago, Chile",
-    rating: 5,
-    text:
-      "Llegamos a descansar y nos fuimos transformados. El tour de aves al amanecer es lo mejor que hemos hecho en años.",
-    avatar: "MR",
-  },
-];
 
 function getSingleValue(value: string | string[] | undefined) {
   return typeof value === "string" ? value : "";
@@ -265,7 +231,7 @@ function iconForDetail(kind: "capacity" | "area" | "rate" | "checkin" | "checkou
 export async function generateMetadata({ params }: Pick<PageProps, "params">) {
   const { locale, slug } = await readParams(params);
   const room = await getLocalizedBungalow(locale, slug);
-  const content = getPublicSiteContent(locale);
+  const content = await getPublishedPublicSiteContent(locale);
 
   if (!room) {
     return buildLocalizedBungalowMetadata({
@@ -306,8 +272,8 @@ export default async function LocalizedBungalowDetailPage({
   searchParams,
 }: PageProps) {
   const { locale, slug } = await readParams(params);
-  const content = getPublicSiteContent(locale);
   const corporate = await getPublishedCorporateView(locale);
+  const content = corporate.siteContent;
   const resolvedSearchParams = await resolveSearchParams(searchParams);
   const room = await getLocalizedBungalow(locale, slug);
 
@@ -365,6 +331,18 @@ export default async function LocalizedBungalowDetailPage({
   const initialGuests = Number.isFinite(parsedGuests)
     ? Math.min(Math.max(parsedGuests, minGuests), maxGuests)
     : minGuests;
+  const reviews = corporate.content.testimonials.items.map((review) => ({
+    name: review.author,
+    origin: review.country,
+    rating: 5,
+    text: review.quote,
+    avatar: review.author
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0] ?? "")
+      .join("")
+      .toUpperCase(),
+  }));
 
   return (
     <section className={`${styles.pageSection} ${styles.detailShell} ${figmaStyles.surface}`}>
@@ -373,7 +351,7 @@ export default async function LocalizedBungalowDetailPage({
           <div className={figmaStyles.breadcrumbRow}>
             <a href={getPublicRoute(locale, "home")}>{content.labels.breadcrumbHome}</a>
             <span>/</span>
-            <a href={getPublicRoute(locale, "bungalows")}>{content.labels.nav.find((item) => item.key === "bungalows")?.label ?? "Bungalows"}</a>
+            <a href={getPublicRoute(locale, "bungalows")}>{content.bungalowDetail.breadcrumbLabel}</a>
             <span>/</span>
             <span>{room.displayName}</span>
           </div>
@@ -474,7 +452,7 @@ export default async function LocalizedBungalowDetailPage({
           <section className={figmaStyles.section}>
             <h2 className={figmaStyles.sectionTitle}>{reviewTitle}</h2>
             <div className={figmaStyles.reviewList}>
-              {REVIEWS.map((review) => (
+              {reviews.map((review) => (
                 <article key={review.name} className={figmaStyles.reviewCard}>
                   <div className={figmaStyles.reviewHeader}>
                     <div className={figmaStyles.reviewIdentity}>

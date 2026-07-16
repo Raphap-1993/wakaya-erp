@@ -2,18 +2,40 @@
 
 import { useState } from "react";
 
+import {
+  PublicSiteSettingsEditor,
+  type PublicSiteEditorSection,
+} from "@/app/admin/content/public-site-settings-editor";
+import { CropDialog } from "@/app/admin/content/media/crop-dialog";
+import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
+import { describeAdminApiError, type AdminApiErrorPayload } from "@/app/admin/content/admin-api-errors";
+import {
+  resolveAdminMediaDescriptor,
+  type AdminMediaMetadataMap,
+} from "@/lib/content/media/admin-media-metadata";
+import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
 import type { PublicCompanyContent } from "@/components/public-site/public-company-content";
 import type {
   CorporateContentDocument,
   CorporateContentRevisionRecord,
   CorporateContentRevisionSummary,
+  ResolvedCorporateContentDocument,
 } from "@/lib/corporate-content/types";
 import { CORPORATE_REQUIRED_TERM_SECTION_IDS } from "@/lib/corporate-content/types";
+import type { PublicSiteMediaSlot } from "@/lib/corporate-content/types";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 
 import styles from "./content-hub.module.css";
 
 type Locale = "es" | "en";
-type EditorSection = "about" | "faq" | "testimonials" | "terms" | "privacy" | "contact";
+type EditorSection =
+  | "about"
+  | "faq"
+  | "testimonials"
+  | "terms"
+  | "privacy"
+  | "contact"
+  | PublicSiteEditorSection;
 
 const SECTIONS: Array<{ key: EditorSection; label: string }> = [
   { key: "about", label: "Nosotros" },
@@ -22,6 +44,16 @@ const SECTIONS: Array<{ key: EditorSection; label: string }> = [
   { key: "terms", label: "Términos y estadía" },
   { key: "privacy", label: "Privacidad" },
   { key: "contact", label: "Contacto y horarios" },
+  { key: "navigation", label: "Navegación y footer" },
+  { key: "bungalows-page", label: "Página Bungalows" },
+  { key: "bungalow-detail", label: "Detalle de Bungalow" },
+  { key: "services-page", label: "Página Experiencias" },
+  { key: "gallery-page", label: "Página Galería" },
+  { key: "events-page", label: "Página Eventos" },
+  { key: "publications-page", label: "Página Publicaciones" },
+  { key: "contact-page", label: "Página Contacto" },
+  { key: "pet-friendly-page", label: "Página Pet Friendly" },
+  { key: "complaints-page", label: "Libro de Reclamaciones" },
 ];
 
 function linesToText(items: string[]) {
@@ -72,12 +104,16 @@ function isRequiredPolicyAnchor(kind: "terms" | "privacy", id: string) {
 export function CorporateContentEditor({
   initialItem,
   initialRevisions,
+  mediaMetadata = {},
+  onMediaAssetCreated,
 }: {
   initialItem: CorporateContentRevisionRecord;
   initialRevisions: CorporateContentRevisionSummary[];
+  mediaMetadata?: AdminMediaMetadataMap;
+  onMediaAssetCreated?: (asset: ContentMediaAsset) => void;
 }) {
   const [item, setItem] = useState(initialItem);
-  const [draft, setDraft] = useState<CorporateContentDocument>(() =>
+  const [draft, setDraft] = useState<ResolvedCorporateContentDocument>(() =>
     structuredClone(initialItem.document),
   );
   const [revisions, setRevisions] = useState(initialRevisions);
@@ -85,7 +121,9 @@ export function CorporateContentEditor({
   const [section, setSection] = useState<EditorSection>("about");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [versionConflict, setVersionConflict] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [uploadIntent, setUploadIntent] = useState<{ file: File; mediaSlot: PublicSiteMediaSlot } | null>(null);
 
   const content = draft.locales[locale];
 
@@ -106,9 +144,60 @@ export function CorporateContentEditor({
     setDraft((current) => ({ ...current, contact: next }));
   }
 
+  function updateMedia(mediaSlot: PublicSiteMediaSlot, assetId: string | null) {
+    setDraft((current) => ({
+      ...current,
+      publicSite: {
+        ...current.publicSite,
+        media: {
+          ...current.publicSite.media,
+          [mediaSlot]: assetId
+            ? { kind: "asset" as const, assetId }
+            : { kind: "none" as const },
+        },
+      },
+    }));
+  }
+
+  function renderPageMedia(mediaSlot: PublicSiteMediaSlot, label = "Imagen principal") {
+    const reference = draft.publicSite.media[mediaSlot];
+    const previewUrl = resolvePublicSiteMedia(reference);
+    const descriptor = previewUrl
+      ? resolveAdminMediaDescriptor(previewUrl, mediaMetadata)
+      : null;
+
+    return (
+      <div className={styles.previewCard}>
+        <div className={styles.toolbar}>
+          <strong>{label}</strong>
+          <div className={styles.inlineActions}>
+            <label className={styles.secondaryButton} htmlFor={`corporate-media-${mediaSlot}`}>
+              {previewUrl ? "Reemplazar" : "Subir imagen"}
+            </label>
+            {previewUrl ? <button type="button" className={styles.ghostButton} onClick={() => updateMedia(mediaSlot, null)}>Quitar imagen</button> : null}
+          </div>
+        </div>
+        {descriptor ? <img className={styles.previewImage} src={descriptor.previewUrl} alt={label} /> : <span className={styles.muted}>Sin imagen asociada</span>}
+        {descriptor ? <MediaFilenamePreview originalFilename={descriptor.originalFilename} previewUrl={descriptor.previewUrl} /> : null}
+        <input
+          id={`corporate-media-${mediaSlot}`}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) setUploadIntent({ file, mediaSlot });
+          }}
+        />
+      </div>
+    );
+  }
+
   async function publish() {
     setSaving(true);
     setFeedback(null);
+    setVersionConflict(false);
     try {
       const response = await fetch("/api/admin/corporate-content", {
         method: "PUT",
@@ -118,15 +207,16 @@ export function CorporateContentEditor({
           document: draft,
         }),
       });
-      const body = await response.json();
+      const body = (await response.json()) as AdminApiErrorPayload & {
+        item?: CorporateContentRevisionRecord;
+        revisions?: CorporateContentRevisionSummary[];
+      };
       if (!response.ok) {
-        setFeedback(
-          response.status === 409
-            ? "Hay una publicación más reciente. Recarga antes de continuar."
-            : body.error ?? "No se pudo publicar.",
-        );
+        setVersionConflict(response.status === 409);
+        setFeedback(describeAdminApiError(body, response));
         return;
       }
+      if (!body.item) throw new Error("publish_failed");
       setItem(body.item);
       setDraft(structuredClone(body.item.document));
       setRevisions(body.revisions ?? []);
@@ -141,6 +231,7 @@ export function CorporateContentEditor({
   async function restore(version: number) {
     setSaving(true);
     setFeedback(null);
+    setVersionConflict(false);
     try {
       const response = await fetch(
         `/api/admin/corporate-content/revisions/${version}/restore`,
@@ -150,15 +241,16 @@ export function CorporateContentEditor({
           body: JSON.stringify({ expectedVersion: item.revisionVersion }),
         },
       );
-      const body = await response.json();
+      const body = (await response.json()) as AdminApiErrorPayload & {
+        item?: CorporateContentRevisionRecord;
+        revisions?: CorporateContentRevisionSummary[];
+      };
       if (!response.ok) {
-        setFeedback(
-          response.status === 409
-            ? "Hay una publicación más reciente. Recarga antes de restaurar."
-            : body.error ?? "No se pudo restaurar.",
-        );
+        setVersionConflict(response.status === 409);
+        setFeedback(describeAdminApiError(body, response));
         return;
       }
+      if (!body.item) throw new Error("restore_failed");
       setItem(body.item);
       setDraft(structuredClone(body.item.document));
       setRevisions(body.revisions ?? []);
@@ -190,6 +282,8 @@ export function CorporateContentEditor({
     return (
       <div className={styles.sectionStack}>
         {renderPageIdentity("about", page)}
+        {renderPageMedia("aboutHero", "Imagen principal")}
+        {renderPageMedia("aboutSecondary", "Imagen secundaria")}
         <div className={styles.formGrid}>
           <Field label="Fecha de historia" value={page.storyDate} onChange={(value) => updatePage("about", { ...page, storyDate: value })} />
           <Field label="Título de historia" value={page.storyTitle} onChange={(value) => updatePage("about", { ...page, storyTitle: value })} />
@@ -232,6 +326,7 @@ export function CorporateContentEditor({
     return (
       <div className={styles.sectionStack}>
         {renderPageIdentity("faq", page)}
+        {renderPageMedia("faqHero")}
         <div className={styles.formGrid}>
           <Field label="Título de introducción" value={page.introTitle} onChange={(value) => updatePage("faq", { ...page, introTitle: value })} />
           <Field multiline label="Texto de introducción" value={page.introCopy} onChange={(value) => updatePage("faq", { ...page, introCopy: value })} />
@@ -262,6 +357,7 @@ export function CorporateContentEditor({
     return (
       <div className={styles.sectionStack}>
         {renderPageIdentity("testimonials", page)}
+        {renderPageMedia("testimonialsHero")}
         <div className={styles.formGrid}>
           <Field label="Título de introducción" value={page.introTitle} onChange={(value) => updatePage("testimonials", { ...page, introTitle: value })} />
           <Field multiline label="Texto de introducción" value={page.introCopy} onChange={(value) => updatePage("testimonials", { ...page, introCopy: value })} />
@@ -294,6 +390,7 @@ export function CorporateContentEditor({
     const listKey = kind === "terms" ? "termsSections" : "privacySections";
     return (
       <div className={styles.sectionStack}>
+        {renderPageMedia("policiesHero")}
         <div className={styles.formGrid}>
           <Field label="Título SEO" value={page.metaTitle} onChange={(value) => updatePage("policies", { ...page, metaTitle: value })} />
           <Field label="Descripción SEO" value={page.metaDescription} onChange={(value) => updatePage("policies", { ...page, metaDescription: value })} />
@@ -365,7 +462,16 @@ export function CorporateContentEditor({
           <button type="button" className={locale === "es" ? styles.tabButtonActive : styles.tabButton} onClick={() => setLocale("es")}>Español</button>
           <button type="button" className={locale === "en" ? styles.tabButtonActive : styles.tabButton} onClick={() => setLocale("en")}>Inglés</button>
         </div>
-        {feedback ? <div className={styles.statusChipPending}>{feedback}</div> : null}
+        {feedback ? (
+          <div className={styles.feedbackRow} aria-live="polite">
+            <div className={styles.statusChipPending}>{feedback}</div>
+            {versionConflict ? (
+              <button type="button" className={styles.secondaryButton} onClick={() => window.location.reload()}>
+                Recargar contenido
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       <div className={styles.split}>
@@ -385,6 +491,46 @@ export function CorporateContentEditor({
           {section === "terms" ? renderPolicies("terms") : null}
           {section === "privacy" ? renderPolicies("privacy") : null}
           {section === "contact" ? renderContact() : null}
+          {[
+            "navigation",
+            "bungalows-page",
+            "bungalow-detail",
+            "services-page",
+            "gallery-page",
+            "events-page",
+            "publications-page",
+            "contact-page",
+            "pet-friendly-page",
+            "complaints-page",
+          ].includes(section) ? (
+            <div className={styles.sectionStack}>
+              {section === "navigation" ? renderPageMedia("logo", "Logo del sitio") : null}
+              {section === "bungalows-page" ? renderPageMedia("bungalowsHero") : null}
+              {section === "services-page" ? renderPageMedia("servicesHero") : null}
+              {section === "gallery-page" ? renderPageMedia("galleryHero") : null}
+              {section === "events-page" ? renderPageMedia("eventsHero") : null}
+              {section === "publications-page" ? renderPageMedia("publicationsHero") : null}
+              {section === "contact-page" ? renderPageMedia("contactHero") : null}
+              {section === "pet-friendly-page" ? renderPageMedia("petFriendlyHero") : null}
+              {section === "complaints-page" ? renderPageMedia("complaintsHero") : null}
+              <PublicSiteSettingsEditor
+                section={section as PublicSiteEditorSection}
+                content={draft.publicSite.locales[locale]}
+                onChange={(next) =>
+                  setDraft((current) => ({
+                    ...current,
+                    publicSite: {
+                      ...current.publicSite,
+                      locales: {
+                        ...current.publicSite.locales,
+                        [locale]: next,
+                      },
+                    },
+                  }))
+                }
+              />
+            </div>
+          ) : null}
         </section>
       </div>
 
@@ -427,6 +573,30 @@ export function CorporateContentEditor({
           </div>
         </section>
       ) : null}
+
+      <CropDialog
+        open={Boolean(uploadIntent)}
+        file={uploadIntent?.file ?? null}
+        slot="hero"
+        onCancel={() => setUploadIntent(null)}
+        onApply={async (crops) => {
+          if (!uploadIntent) return;
+          const formData = new FormData();
+          formData.set("file", uploadIntent.file);
+          formData.set("slot", "hero");
+          formData.set("crops", JSON.stringify(crops));
+          const response = await fetch("/api/admin/content/media", { method: "POST", body: formData });
+          const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload & { asset?: ContentMediaAsset };
+          if (!response.ok || !body.asset) {
+            setFeedback(describeAdminApiError(body, response));
+            throw new Error(body.error ?? "media_processing_failed");
+          }
+          onMediaAssetCreated?.(body.asset);
+          updateMedia(uploadIntent.mediaSlot, body.asset.id);
+          setFeedback("Imagen procesada. Guarda y publica para confirmar el cambio.");
+          setUploadIntent(null);
+        }}
+      />
     </div>
   );
 }

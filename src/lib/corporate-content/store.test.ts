@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_CORPORATE_CONTENT } from "./default-content";
+import { DEFAULT_CORPORATE_CONTENT } from "./default-document";
 import {
   __resetCorporateContentStoreForTests,
   corporateContentStore,

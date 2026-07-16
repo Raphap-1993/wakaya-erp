@@ -1363,14 +1363,15 @@ export function HomeEditor({
         kind: "success",
         message: "Imagen optimizada y lista para publicar en el home.",
       });
+      setUploadIntent(null);
     } catch (error) {
       setFeedback({
         kind: "error",
         message: describeSaveError(error instanceof Error ? error.message : "media_upload_failed"),
       });
+      throw error;
     } finally {
       setUploadingSlot(null);
-      setUploadIntent(null);
     }
   }
 

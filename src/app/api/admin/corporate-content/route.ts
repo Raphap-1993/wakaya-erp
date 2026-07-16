@@ -2,7 +2,10 @@ import { isDeepStrictEqual } from "node:util";
 
 import { z } from "zod";
 
-import { corporateContentDocumentSchema } from "@/lib/corporate-content/schema";
+import {
+  corporateContentDocumentSchema,
+  parseStoredCorporateContentDocument,
+} from "@/lib/corporate-content/schema";
 import { corporateContentStore } from "@/lib/corporate-content/store";
 import { requirePermission } from "@/middleware/authn";
 
@@ -38,7 +41,7 @@ export async function PUT(request: Request) {
       );
     }
     const item = await corporateContentStore.publish({
-      document: payload.document,
+      document: parseStoredCorporateContentDocument(payload.document),
       expectedVersion: payload.expectedVersion,
       actorId: auth.subject ?? null,
     });

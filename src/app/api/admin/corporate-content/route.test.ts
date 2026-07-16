@@ -16,7 +16,7 @@ vi.mock("@/lib/corporate-content/store", () => ({
   },
 }));
 
-import { DEFAULT_CORPORATE_CONTENT } from "@/lib/corporate-content/default-content";
+import { DEFAULT_CORPORATE_CONTENT } from "@/lib/corporate-content/default-document";
 import { GET, PUT } from "./route";
 
 describe("/api/admin/corporate-content", () => {

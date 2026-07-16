@@ -1,10 +1,8 @@
 import { PageHero } from "@/components/public-site/page-hero";
-import {
-  publicCompanyAssets,
-} from "@/components/public-site/public-company-content";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import styles from "@/components/public-site/public-site-theme.module.css";
 import { getPublishedCorporateView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 async function readLocale(
@@ -20,7 +18,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = (await getPublishedCorporateView(locale)).content.testimonials;
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = corporate.content.testimonials;
 
   return buildLocalizedPublicMetadata({
     locale,
@@ -31,7 +30,7 @@ export async function generateMetadata({
       locale === "en"
         ? ["wakaya testimonials", "guest reviews", "wakaya guests"]
         : ["testimonios wakaya", "huespedes wakaya", "opiniones wakaya"],
-    image: publicCompanyAssets.reviewMichael,
+    image: resolvePublicSiteMedia(corporate.siteMedia.testimonialsHero),
   });
 }
 
@@ -41,7 +40,8 @@ export default async function PublicSiteTestimonialsPage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = (await getPublishedCorporateView(locale)).content.testimonials;
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = corporate.content.testimonials;
 
   return (
     <>
@@ -50,7 +50,7 @@ export default async function PublicSiteTestimonialsPage({
         title={copy.hero.title}
         breadcrumb={`${locale === "en" ? "Home" : "Inicio"} / ${copy.hero.title}`}
         copy={copy.hero.copy}
-        image={publicCompanyAssets.reviewMichael}
+        image={resolvePublicSiteMedia(corporate.siteMedia.testimonialsHero)}
       />
 
       <section className={styles.pageSection}>

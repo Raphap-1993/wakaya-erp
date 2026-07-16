@@ -7,6 +7,7 @@ import {
 } from "@/lib/content/media/admin-media-metadata";
 import { contentMediaService } from "@/lib/content/media/content-media-service";
 import { corporateContentStore } from "@/lib/corporate-content/store";
+import { DEFAULT_PUBLIC_SITE_MEDIA } from "@/lib/corporate-content/public-site-media";
 import { homeContentStore } from "@/lib/home-content/store";
 import { reservationStore } from "@/lib/reservations/store";
 import { createBlankBungalowPublicContent } from "@/lib/reservations/wakaya-bungalow-public-content";
@@ -83,6 +84,9 @@ export default async function AdminContentPage({
       publicContent.heroAssetId ?? "",
       ...(publicContent.galleryAssetIds ?? []),
     ]),
+    ...Object.values(corporateItem.document.publicSite?.media ?? DEFAULT_PUBLIC_SITE_MEDIA).flatMap((reference) =>
+      reference.kind === "asset" ? [reference.assetId] : [],
+    ),
   ]);
   const mediaMetadataMap = toAdminMediaMetadataMap(
     await contentMediaService.listAssetMetadata(mediaAssetIds),

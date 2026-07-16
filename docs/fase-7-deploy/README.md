@@ -16,6 +16,7 @@ Preparar y ejecutar la salida controlada de Wakaya ERP con runbook, rollback, am
 - [Runbook de deploy](../../ops/fase-7-deploy/runbook.md)
 - [Rollback](../../ops/fase-7-deploy/rollback.md)
 - [Plan de despliegue](../fase-3-arquitectura/03.03-plan-despliegue.md)
+- [Preparacion del CMS publico en PM2](07.04-wakaya-public-cms-pm2.md)
 
 ## Gate aplicable
 - gate-7-8 antes de produccion.

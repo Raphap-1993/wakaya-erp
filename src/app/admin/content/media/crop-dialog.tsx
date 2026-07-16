@@ -14,7 +14,7 @@ type CropDialogProps = {
   file: File | null;
   open: boolean;
   slot: CropDialogSlot;
-  onApply: (crops: Partial<Record<CropVariant, MediaCropSpec>>) => void;
+  onApply: (crops: Partial<Record<CropVariant, MediaCropSpec>>) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -33,6 +33,16 @@ const VARIANT_META: Record<CropVariant, { label: string; aspect: number }> = {
 
 export function requiredVariants(slot: CropDialogSlot): CropVariant[] {
   return slot === "hero" ? ["desktop", "mobile"] : ["standard"];
+}
+
+export function getCropDialogInteractionState(processing: boolean) {
+  return {
+    applyLabel: processing ? "Procesando…" : "Aplicar recortes",
+    applyDisabled: processing,
+    cancelDisabled: processing,
+    tabsDisabled: processing,
+    closeAllowed: !processing,
+  };
 }
 
 export function isCropDialogReady({
@@ -64,6 +74,8 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
   const [mediaSize, setMediaSize] = useState<{ width: number; height: number } | null>(null);
   const [areas, setAreas] = useState<Partial<Record<CropVariant, CropArea>>>({});
   const [saved, setSaved] = useState<Partial<Record<CropVariant, MediaCropSpec>>>({});
+  const [processing, setProcessing] = useState(false);
+  const [processingError, setProcessingError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -71,6 +83,8 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
     }
 
     const nextUrl = buildObjectUrl(file);
+    // The dialog state must be reset atomically whenever a different file is opened.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSourceUrl(nextUrl);
     setActiveVariant(requiredVariants(slot)[0] ?? "standard");
     setCrop({ x: 0, y: 0 });
@@ -78,6 +92,8 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
     setAreas({});
     setSaved({});
     setMediaSize(null);
+    setProcessing(false);
+    setProcessingError(null);
 
     return () => {
       if (nextUrl) {
@@ -97,6 +113,7 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
     saved,
   });
   const aspect = VARIANT_META[activeVariant].aspect;
+  const interaction = getCropDialogInteractionState(processing);
 
   function persistCurrentVariant() {
     const currentArea = areas[activeVariant];
@@ -122,6 +139,7 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
         className={styles.dialogCard}
         role="dialog"
         aria-modal="true"
+        aria-busy={processing}
         aria-labelledby="crop-dialog-title"
       >
         <div className={styles.dialogHeader}>
@@ -131,7 +149,12 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
               {slot === "hero" ? "Recortes obligatorios" : "Recorte fijo obligatorio"}
             </h3>
           </div>
-          <button type="button" className={styles.ghostButton} onClick={onCancel}>
+          <button
+            type="button"
+            className={styles.ghostButton}
+            disabled={interaction.cancelDisabled}
+            onClick={onCancel}
+          >
             Cancelar
           </button>
         </div>
@@ -143,6 +166,7 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
               type="button"
               role="tab"
               aria-selected={activeVariant === variant}
+              disabled={interaction.tabsDisabled}
               className={activeVariant === variant ? styles.tabButtonActive : styles.tabButton}
               onClick={() => {
                 persistCurrentVariant();
@@ -154,7 +178,7 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
           ))}
         </div>
 
-        <div className={styles.cropStage}>
+        <div className={styles.cropStage} aria-disabled={processing}>
           <Cropper
             image={sourceUrl}
             crop={crop}
@@ -186,11 +210,18 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
             ))}
           </div>
 
+          {processingError ? (
+            <p className={styles.fieldError} role="alert">
+              {processingError}
+            </p>
+          ) : null}
+
           <button
             type="button"
             className={styles.primaryButton}
-            disabled={!isReady}
-            onClick={() => {
+            disabled={!isReady || interaction.applyDisabled}
+            onClick={async () => {
+              if (processing) return;
               persistCurrentVariant();
               const next = { ...saved };
               const currentArea = areas[activeVariant];
@@ -204,11 +235,21 @@ export function CropDialog({ file, open, slot, onApply, onCancel }: CropDialogPr
                 };
               }
               if (variants.every((variant) => Boolean(next[variant]))) {
-                onApply(next);
+                setProcessing(true);
+                setProcessingError(null);
+                try {
+                  await onApply(next);
+                } catch {
+                  setProcessingError(
+                    "No se pudo procesar la imagen. Ajusta el recorte o inténtalo nuevamente.",
+                  );
+                  setProcessing(false);
+                }
               }
             }}
           >
-            Aplicar recortes
+            {processing ? <span className={styles.spinner} aria-hidden="true" /> : null}
+            {interaction.applyLabel}
           </button>
         </div>
       </div>

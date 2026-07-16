@@ -603,7 +603,7 @@ describe("ContentMediaService", () => {
 
   it("deletes unreferenced asset metadata and every stored variant", async () => {
     const { storage, remove } = createStorage();
-    const query = vi.fn(async (sql: unknown) => {
+    const queryMock = vi.fn(async (sql: unknown) => {
       const normalized = String(sql).replace(/\s+/g, " ").trim().toLowerCase();
       if (normalized === "begin" || normalized === "commit" || normalized === "rollback") {
         return { rows: [], rowCount: 0 };
@@ -627,7 +627,8 @@ describe("ContentMediaService", () => {
         return { rows: [], rowCount: 1 };
       }
       throw new Error(`unexpected_query:${normalized}`);
-    }) as unknown as PoolClient["query"];
+    });
+    const query = queryMock as unknown as PoolClient["query"];
     const release = vi.fn();
     const pool = {
       connect: vi.fn(async () => ({ query, release }) as unknown as PoolClient),
@@ -646,7 +647,7 @@ describe("ContentMediaService", () => {
 
   it("refuses to delete an asset that is still referenced", async () => {
     const { storage, remove } = createStorage();
-    const query = vi.fn(async (sql: unknown) => {
+    const queryMock = vi.fn(async (sql: unknown) => {
       const normalized = String(sql).replace(/\s+/g, " ").trim().toLowerCase();
       if (normalized === "begin" || normalized === "rollback") {
         return { rows: [], rowCount: 0 };
@@ -658,7 +659,8 @@ describe("ContentMediaService", () => {
         return { rows: [{ in_use: true }], rowCount: 1 };
       }
       throw new Error(`unexpected_query:${normalized}`);
-    }) as unknown as PoolClient["query"];
+    });
+    const query = queryMock as unknown as PoolClient["query"];
     const release = vi.fn();
     const pool = {
       connect: vi.fn(async () => ({ query, release }) as unknown as PoolClient),
@@ -667,6 +669,11 @@ describe("ContentMediaService", () => {
     await expect(
       new ContentMediaService(storage, pool).deleteAsset("asset_01"),
     ).rejects.toThrow("asset_in_use");
+    const usageSql = String(
+      queryMock.mock.calls.find(([sql]) => String(sql).toLowerCase().includes("select exists"))?.[0] ?? "",
+    );
+    expect(usageSql).toContain("corporate_content_revision");
+    expect(usageSql).toContain("document::text like $3");
     expect(remove).not.toHaveBeenCalled();
     expect(release).toHaveBeenCalledOnce();
   });

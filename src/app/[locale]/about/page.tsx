@@ -2,13 +2,11 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { PageHero } from "@/components/public-site/page-hero";
-import {
-  publicCompanyAssets,
-} from "@/components/public-site/public-company-content";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import { getPublicRoute } from "@/components/public-site/public-site-routes";
 import styles from "@/components/public-site/public-site-theme.module.css";
 import { getPublishedCorporateView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 async function readLocale(
@@ -24,7 +22,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = (await getPublishedCorporateView(locale)).content.about;
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = corporate.content.about;
 
   return buildLocalizedPublicMetadata({
     locale,
@@ -35,7 +34,7 @@ export async function generateMetadata({
       locale === "en"
         ? ["wakaya story", "wakaya company", "amazon ecolodge", "pucallpa retreat"]
         : ["historia wakaya", "empresa wakaya", "ecolodge pucallpa", "naturaleza pucallpa"],
-    image: publicCompanyAssets.aboutReception,
+    image: resolvePublicSiteMedia(corporate.siteMedia.aboutHero),
   });
 }
 
@@ -45,7 +44,10 @@ export default async function PublicSiteAboutLocalePage({
   params: Promise<{ locale: string }> | { locale: string };
 }) {
   const locale = await readLocale(params);
-  const copy = (await getPublishedCorporateView(locale)).content.about;
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = corporate.content.about;
+  const heroImage = resolvePublicSiteMedia(corporate.siteMedia.aboutHero);
+  const secondaryImage = resolvePublicSiteMedia(corporate.siteMedia.aboutSecondary);
 
   return (
     <>
@@ -54,7 +56,7 @@ export default async function PublicSiteAboutLocalePage({
         title={copy.hero.title}
         breadcrumb={`${locale === "en" ? "Home" : "Inicio"} / ${copy.hero.title}`}
         copy={copy.hero.copy}
-        image={publicCompanyAssets.aboutReception}
+        image={heroImage}
       />
 
       <section className={styles.pageSection}>
@@ -79,11 +81,11 @@ export default async function PublicSiteAboutLocalePage({
 
           <div className={styles.aboutMosaic}>
             <div className={styles.aboutImageLarge}>
-              <img src={publicCompanyAssets.aboutReception} alt={copy.storyTitle} />
+              <img src={heroImage} alt={copy.storyTitle} />
             </div>
             <div className={styles.aboutStack}>
               <div className={styles.aboutImageSmall}>
-                <img src={publicCompanyAssets.aboutNature} alt={copy.purposeTitle} />
+                <img src={secondaryImage} alt={copy.purposeTitle} />
               </div>
               <div className={styles.aboutFactCard}>
                 <strong>2019</strong>

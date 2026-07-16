@@ -11,6 +11,16 @@ import { CropDialog } from "@/app/admin/content/media/crop-dialog";
 import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
 import { CorporateContentEditor } from "@/app/admin/content/corporate-content-editor";
 import {
+  describeAdminApiError,
+  mapAdminValidationIssues,
+  type AdminApiErrorPayload,
+} from "@/app/admin/content/admin-api-errors";
+import {
+  removeBungalowHero,
+  reorderBungalowGallery,
+  replaceBungalowHero,
+} from "@/app/admin/content/bungalow-media-state";
+import {
   resolveAdminMediaDescriptor,
   type AdminMediaMetadataMap,
 } from "@/lib/content/media/admin-media-metadata";
@@ -287,6 +297,9 @@ export function ContentHub({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [savingBungalow, setSavingBungalow] = useState(false);
+  const [versionConflict, setVersionConflict] = useState(false);
   const [activeLocale, setActiveLocale] = useState<LocaleKey>("es");
   const [experiences, setExperiences] = useState<ExperienceRecord[]>(initialExperiences);
   const [selectedExperienceId, setSelectedExperienceId] = useState<string>(
@@ -434,9 +447,12 @@ export function ContentHub({
         ),
       },
     );
-    const body = await response.json().catch(() => ({}));
+    const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload & {
+      experience?: ExperienceRecord;
+    };
     if (!response.ok) {
-      setFeedback({ kind: "error", message: body.error ?? "No se pudo guardar la experiencia." });
+      setVersionConflict(response.status === 409);
+      setFeedback({ kind: "error", message: describeAdminApiError(body, response) });
       return;
     }
 
@@ -467,9 +483,10 @@ export function ContentHub({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ expectedVersion: currentExperience.version }),
     });
-    const body = await response.json().catch(() => ({}));
+    const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload;
     if (!response.ok) {
-      setFeedback({ kind: "error", message: body.error ?? "No se pudo archivar la experiencia." });
+      setVersionConflict(response.status === 409);
+      setFeedback({ kind: "error", message: describeAdminApiError(body, response) });
       return;
     }
 
@@ -487,9 +504,10 @@ export function ContentHub({
         items: gallery.items,
       }),
     });
-    const body = await response.json().catch(() => ({}));
+    const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload & GalleryPublication;
     if (!response.ok) {
-      setFeedback({ kind: "error", message: body.error ?? "No se pudo guardar la galería." });
+      setVersionConflict(response.status === 409);
+      setFeedback({ kind: "error", message: describeAdminApiError(body, response) });
       return;
     }
     setGallery(body as GalleryPublication);
@@ -500,37 +518,57 @@ export function ContentHub({
     event.preventDefault();
     if (!selectedBungalow) return;
 
-    const response = await fetch(`/api/admin/content/bungalows/${selectedBungalow.bungalow.id}`, {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        expectedVersion: selectedBungalow.publicContent.revisionVersion ?? 0,
-        featuredOnHome: selectedBungalow.publicContent.featuredOnHome,
-        sortOrder: selectedBungalow.publicContent.sortOrder,
-        nightlyRatePen: selectedBungalow.publicContent.nightlyRatePen,
-        areaSqm: selectedBungalow.publicContent.areaSqm,
-        managedMedia: true,
-        heroImageUrl: selectedBungalow.publicContent.heroImageUrl,
-        galleryUrls: selectedBungalow.publicContent.galleryUrls,
-        localeContent: selectedBungalow.publicContent.localeContent,
-        heroAssetId: selectedBungalow.publicContent.heroAssetId ?? null,
-        galleryAssetIds: selectedBungalow.publicContent.galleryAssetIds ?? [],
-      }),
-    });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      setFeedback({ kind: "error", message: body.error ?? "No se pudo guardar el bungalow." });
-      return;
-    }
+    setSavingBungalow(true);
+    setFeedback(null);
+    setFieldErrors({});
+    setVersionConflict(false);
 
-    setBungalows((current) =>
-      current.map((item) =>
-        item.bungalow.id === selectedBungalow.bungalow.id
-          ? { ...item, publicContent: body.item as BungalowPublicContent }
-          : item,
-      ),
-    );
-    setFeedback({ kind: "success", message: "Bungalow guardado." });
+    try {
+      const response = await fetch(`/api/admin/content/bungalows/${selectedBungalow.bungalow.id}`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          expectedVersion: selectedBungalow.publicContent.revisionVersion ?? 0,
+          featuredOnHome: selectedBungalow.publicContent.featuredOnHome,
+          sortOrder: selectedBungalow.publicContent.sortOrder,
+          nightlyRatePen: selectedBungalow.publicContent.nightlyRatePen,
+          areaSqm: selectedBungalow.publicContent.areaSqm,
+          managedMedia: true,
+          localeContent: selectedBungalow.publicContent.localeContent,
+          heroAssetId: selectedBungalow.publicContent.heroAssetId ?? null,
+          galleryAssetIds: selectedBungalow.publicContent.galleryAssetIds ?? [],
+        }),
+      });
+      const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload & {
+        item?: BungalowPublicContent;
+      };
+      if (!response.ok || !body.item) {
+        const nextErrors = mapAdminValidationIssues(body.issues);
+        setFieldErrors(nextErrors);
+        setVersionConflict(response.status === 409);
+        setFeedback({ kind: "error", message: describeAdminApiError(body, response) });
+        const firstField = Object.keys(nextErrors)[0];
+        if (firstField) {
+          requestAnimationFrame(() => {
+            document.querySelector<HTMLElement>(`[data-admin-field="${firstField}"] input, [data-admin-field="${firstField}"] textarea, [data-admin-field="${firstField}"] select`)?.focus();
+          });
+        }
+        return;
+      }
+
+      setBungalows((current) =>
+        current.map((item) =>
+          item.bungalow.id === selectedBungalow.bungalow.id
+            ? { ...item, publicContent: body.item as BungalowPublicContent }
+            : item,
+        ),
+      );
+      setFeedback({ kind: "success", message: "Bungalow guardado y publicado." });
+    } catch {
+      setFeedback({ kind: "error", message: "No se pudo guardar. Verifica la conexión e inténtalo nuevamente." });
+    } finally {
+      setSavingBungalow(false);
+    }
   }
 
   return (
@@ -559,8 +597,15 @@ export function ContentHub({
           />
         </div>
         {feedback ? (
-          <div className={feedback.kind === "success" ? styles.statusChipReady : styles.statusChipPending}>
-            {feedback.message}
+          <div className={styles.feedbackRow} aria-live="polite">
+            <div className={feedback.kind === "success" ? styles.statusChipReady : styles.statusChipPending}>
+              {feedback.message}
+            </div>
+            {versionConflict ? (
+              <button type="button" className={styles.secondaryButton} onClick={() => router.refresh()}>
+                Recargar contenido
+              </button>
+            ) : null}
           </div>
         ) : null}
       </header>
@@ -614,6 +659,8 @@ export function ContentHub({
           <CorporateContentEditor
             initialItem={initialCorporateItem}
             initialRevisions={initialCorporateRevisions}
+            mediaMetadata={mediaMetadata}
+            onMediaAssetCreated={handleMediaAssetCreated}
           />
         ) : null}
 
@@ -655,8 +702,8 @@ export function ContentHub({
               <div className={styles.toolbar}>
                 <strong>Editor de experiencia</strong>
                 <div className={styles.inlineActions}>
-                  <button type="submit" className={styles.primaryButton}>
-                    Guardar
+                  <button type="submit" className={styles.primaryButton} disabled={savingBungalow}>
+                    {savingBungalow ? "Guardando…" : "Guardar"}
                   </button>
                   <button type="button" className={styles.ghostButton} onClick={archiveExperience}>
                     Archivar
@@ -1090,7 +1137,7 @@ export function ContentHub({
                     />
 
                     <div className={styles.formGrid}>
-                      <label className={styles.field}>
+                      <label className={styles.field} data-admin-field="sortOrder">
                         <span>Orden</span>
                         <input
                           type="number"
@@ -1270,11 +1317,13 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.sortOrder ? <span className={styles.fieldError}>{fieldErrors.sortOrder}</span> : null}
                       </label>
-                      <label className={styles.field}>
+                      <label className={styles.field} data-admin-field="nightlyRatePen">
                         <span>Tarifa PEN</span>
                         <input
                           type="number"
+                          min="1"
                           value={selectedBungalow.publicContent.nightlyRatePen}
                           onChange={(event) =>
                             updateSelectedBungalow((current) => ({
@@ -1283,11 +1332,13 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.nightlyRatePen ? <span className={styles.fieldError}>{fieldErrors.nightlyRatePen}</span> : null}
                       </label>
-                      <label className={styles.field}>
+                      <label className={styles.field} data-admin-field="areaSqm">
                         <span>Área m²</span>
                         <input
                           type="number"
+                          min="1"
                           value={selectedBungalow.publicContent.areaSqm}
                           onChange={(event) =>
                             updateSelectedBungalow((current) => ({
@@ -1296,8 +1347,9 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.areaSqm ? <span className={styles.fieldError}>{fieldErrors.areaSqm}</span> : null}
                       </label>
-                      <label className={styles.field}>
+                      <label className={styles.field} data-admin-field="displayName">
                         <span>Visible en Home</span>
                         <select
                           value={selectedBungalow.publicContent.featuredOnHome ? "yes" : "no"}
@@ -1343,8 +1395,9 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.displayName ? <span className={styles.fieldError}>{fieldErrors.displayName}</span> : null}
                       </label>
-                      <label className={styles.field}>
+                      <label className={styles.field} data-admin-field="displayEyebrow">
                         <span>Eyebrow</span>
                         <input
                           value={selectedBungalowLocale?.displayEyebrow ?? ""}
@@ -1355,8 +1408,9 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.displayEyebrow ? <span className={styles.fieldError}>{fieldErrors.displayEyebrow}</span> : null}
                       </label>
-                      <label className={styles.fieldFull}>
+                      <label className={styles.fieldFull} data-admin-field="displayDescription">
                         <span>Descripción corta</span>
                         <textarea
                           value={selectedBungalowLocale?.displayDescription ?? ""}
@@ -1367,8 +1421,9 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.displayDescription ? <span className={styles.fieldError}>{fieldErrors.displayDescription}</span> : null}
                       </label>
-                      <label className={styles.fieldFull}>
+                      <label className={styles.fieldFull} data-admin-field="displayTagline">
                         <span>Frase destacada</span>
                         <input
                           value={selectedBungalowLocale?.displayTagline ?? ""}
@@ -1379,8 +1434,9 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.displayTagline ? <span className={styles.fieldError}>{fieldErrors.displayTagline}</span> : null}
                       </label>
-                      <label className={styles.fieldFull}>
+                      <label className={styles.fieldFull} data-admin-field="displayLongDescription">
                         <span>Descripción larga</span>
                         <textarea
                           value={selectedBungalowLocale?.displayLongDescription ?? ""}
@@ -1391,6 +1447,7 @@ export function ContentHub({
                             }))
                           }
                         />
+                        {fieldErrors.displayLongDescription ? <span className={styles.fieldError}>{fieldErrors.displayLongDescription}</span> : null}
                       </label>
                       <label className={styles.field}>
                         <span>Puntos destacados</span>
@@ -1450,16 +1507,23 @@ export function ContentHub({
                           beginUpload(file, slot, (asset) => {
                             updateSelectedBungalow((current) => ({
                               ...current,
-                              heroAssetId: asset.id,
-                              heroImageUrl: assetPreviewUrl(asset.id, "hero"),
+                              ...replaceBungalowHero(
+                                {
+                                  heroAssetId: current.heroAssetId ?? null,
+                                  galleryAssetIds: current.galleryAssetIds ?? [],
+                                },
+                                asset.id,
+                              ),
                             }));
                           })
                         }
                         onRemove={() =>
                           updateSelectedBungalow((current) => ({
                             ...current,
-                            heroAssetId: null,
-                            heroImageUrl: "",
+                            ...removeBungalowHero({
+                              heroAssetId: current.heroAssetId ?? null,
+                              galleryAssetIds: current.galleryAssetIds ?? [],
+                            }),
                           }))
                         }
                       />
@@ -1506,9 +1570,15 @@ export function ContentHub({
                                       disabled={index === 0}
                                       onClick={() =>
                                         updateSelectedBungalow((current) => {
-                                          const next = [...(current.galleryAssetIds ?? [])];
-                                          [next[index - 1], next[index]] = [next[index], next[index - 1]];
-                                          return { ...current, galleryAssetIds: next };
+                                          const next = reorderBungalowGallery(
+                                            {
+                                              heroAssetId: current.heroAssetId ?? null,
+                                              galleryAssetIds: current.galleryAssetIds ?? [],
+                                            },
+                                            index,
+                                            index - 1,
+                                          );
+                                          return { ...current, ...next };
                                         })
                                       }
                                     >
@@ -1520,9 +1590,15 @@ export function ContentHub({
                                       disabled={index === (selectedBungalow.publicContent.galleryAssetIds?.length ?? 1) - 1}
                                       onClick={() =>
                                         updateSelectedBungalow((current) => {
-                                          const next = [...(current.galleryAssetIds ?? [])];
-                                          [next[index], next[index + 1]] = [next[index + 1], next[index]];
-                                          return { ...current, galleryAssetIds: next };
+                                          const next = reorderBungalowGallery(
+                                            {
+                                              heroAssetId: current.heroAssetId ?? null,
+                                              galleryAssetIds: current.galleryAssetIds ?? [],
+                                            },
+                                            index,
+                                            index + 1,
+                                          );
+                                          return { ...current, ...next };
                                         })
                                       }
                                     >
@@ -1633,13 +1709,13 @@ export function ContentHub({
               uploadHandlerRef.current,
             );
             setFeedback({ kind: "success", message: "Imagen procesada y asociada." });
+            setUploadIntent(null);
           } catch (error) {
             setFeedback({
               kind: "error",
               message: error instanceof Error ? describeContentHubError(error.message) : "No se pudo procesar la imagen.",
             });
-          } finally {
-            setUploadIntent(null);
+            throw error;
           }
         }}
       />

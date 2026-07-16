@@ -4,8 +4,9 @@ import { PublicBookingRequestForm } from "@/components/public-site/public-bookin
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import { getLocalizedPublicExperienceBySlug } from "@/lib/content/public-content";
 import { getPublishedCorporateView } from "@/lib/corporate-content/public-view";
+import { resolvePublicSiteMedia } from "@/lib/corporate-content/public-site-media";
 import type { CorporateContact } from "@/lib/corporate-content/types";
-import { getLocalizedBungalows } from "../public-site-content";
+import { getLocalizedBungalows, type PublicSiteContent } from "../public-site-content";
 import { buildLocalizedPublicMetadata } from "../public-site-metadata";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -58,8 +59,6 @@ type ContactCopy = {
   selectedExperienceLabel: string;
 };
 
-const CONTACT_HERO = "https://wakayaecolodge.com/es/images/wakaya/slider/slider_wakaya1.png";
-
 function getSingleValue(value: string | string[] | undefined) {
   return typeof value === "string" ? value : "";
 }
@@ -69,32 +68,36 @@ function parseCapacity(value: string) {
   return match ? Number.parseInt(match[0], 10) : null;
 }
 
-function getContactCopy(locale: PublicSiteLocale, contact: CorporateContact): ContactCopy {
+function getContactCopy(
+  locale: PublicSiteLocale,
+  contact: CorporateContact,
+  page: PublicSiteContent["contact"],
+): ContactCopy {
   if (locale === "en") {
     return {
-      metaTitle: "Contact and reservations | Wakaya Ecolodge",
-      metaDescription: "Plan your stay with Wakaya with direct support from the reservations team.",
-      heroMeta: "Reservations · Wakaya Ecolodge",
-      heroTitle: "Contact us",
-      heroCopy: "We are here to make your experience happen",
-      infoTitle: "Let's talk",
-      infoCopy: "For reservations, questions, and groups write to us. We reply in less than 24 hours.",
-      formTitle: "Plan your stay",
-      submitLabel: "Send request",
+      metaTitle: page.metadata.title,
+      metaDescription: page.metadata.description,
+      heroMeta: `${page.hero.eyebrow} · Wakaya Ecolodge`,
+      heroTitle: page.hero.title,
+      heroCopy: page.hero.copy,
+      infoTitle: page.introTitle,
+      infoCopy: page.introCopy,
+      formTitle: page.formTitle,
+      submitLabel: page.form.submitLabel,
       labels: {
-        name: "Name",
-        email: "Email",
-        checkIn: "Check-in",
-        checkOut: "Check-out",
-        guests: "Guests",
-        message: "Message",
+        name: page.form.guestName,
+        email: page.form.guestEmail,
+        checkIn: page.form.requestedCheckIn,
+        checkOut: page.form.requestedCheckOut,
+        guests: page.form.requestedGuests,
+        message: page.form.notes,
       },
       placeholders: {
-        name: "Your name",
-        email: "your@email.com",
-        message: "Tell us what kind of experience you are looking for...",
+        name: page.form.guestName,
+        email: page.form.guestEmail,
+        message: page.form.notesPlaceholder,
       },
-      guestOptions: ["1 guest", "2 guests", "3 guests", "4 guests", "5 guests", "6 guests"],
+      guestOptions: page.form.guestOptions,
       details: [
         {
           icon: "⌂",
@@ -141,29 +144,29 @@ function getContactCopy(locale: PublicSiteLocale, contact: CorporateContact): Co
   }
 
   return {
-    metaTitle: "Contacto y reservas | Wakaya Ecolodge",
-    metaDescription: "Planifica tu estadía con Wakaya con atención directa del equipo de reservas.",
-    heroMeta: "Reservas · Wakaya Ecolodge",
-    heroTitle: "Contáctanos",
-    heroCopy: "Estamos aquí para hacer realidad tu experiencia",
-    infoTitle: "Hablemos",
-    infoCopy: "Para reservas, consultas y grupos escríbenos. Respondemos en menos de 24 horas.",
-    formTitle: "Planifica tu estadía",
-    submitLabel: "Enviar solicitud",
+    metaTitle: page.metadata.title,
+    metaDescription: page.metadata.description,
+    heroMeta: `${page.hero.eyebrow} · Wakaya Ecolodge`,
+    heroTitle: page.hero.title,
+    heroCopy: page.hero.copy,
+    infoTitle: page.introTitle,
+    infoCopy: page.introCopy,
+    formTitle: page.formTitle,
+    submitLabel: page.form.submitLabel,
     labels: {
-      name: "Nombre",
-      email: "Email",
-      checkIn: "Check-in",
-      checkOut: "Check-out",
-      guests: "Huéspedes",
-      message: "Mensaje",
+      name: page.form.guestName,
+      email: page.form.guestEmail,
+      checkIn: page.form.requestedCheckIn,
+      checkOut: page.form.requestedCheckOut,
+      guests: page.form.requestedGuests,
+      message: page.form.notes,
     },
     placeholders: {
-      name: "Tu nombre",
-      email: "tu@email.com",
-      message: "Cuéntanos qué tipo de experiencia buscas...",
+      name: page.form.guestName,
+      email: page.form.guestEmail,
+      message: page.form.notesPlaceholder,
     },
-    guestOptions: ["1 persona", "2 personas", "3 personas", "4 personas", "5 personas", "6 personas"],
+    guestOptions: page.form.guestOptions,
     details: [
       {
         icon: "⌂",
@@ -228,7 +231,8 @@ async function readLocale(
 
 export async function generateMetadata({ params }: Pick<PageProps, "params">) {
   const locale = await readLocale(params);
-  const copy = getContactCopy(locale, (await getPublishedCorporateView(locale)).contact);
+  const corporate = await getPublishedCorporateView(locale);
+  const copy = getContactCopy(locale, corporate.contact, corporate.siteContent.contact);
 
   return buildLocalizedPublicMetadata({
     locale,
@@ -239,14 +243,14 @@ export async function generateMetadata({ params }: Pick<PageProps, "params">) {
       locale === "en"
         ? ["wakaya reservations", "contact wakaya", "amazon lodge booking request"]
         : ["reservas wakaya", "contacto wakaya", "solicitud de reserva"],
-    image: CONTACT_HERO,
+    image: resolvePublicSiteMedia(corporate.siteMedia.contactHero),
   });
 }
 
 export default async function PublicSiteContactLocalePage({ params, searchParams }: PageProps) {
   const locale = await readLocale(params);
   const corporate = await getPublishedCorporateView(locale);
-  const copy = getContactCopy(locale, corporate.contact);
+  const copy = getContactCopy(locale, corporate.contact, corporate.siteContent.contact);
   const resolvedSearchParams = await resolveSearchParams(searchParams);
   const localizedBungalows = await getLocalizedBungalows(locale);
   const requestedBungalowType = getSingleValue(resolvedSearchParams.requestedBungalowType);
@@ -283,7 +287,7 @@ export default async function PublicSiteContactLocalePage({ params, searchParams
         meta={copy.heroMeta}
         title={copy.heroTitle}
         copy={copy.heroCopy}
-        image={CONTACT_HERO}
+        image={resolvePublicSiteMedia(corporate.siteMedia.contactHero)}
       />
 
       <section className={styles.section}>

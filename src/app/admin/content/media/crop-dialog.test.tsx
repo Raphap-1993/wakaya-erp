@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { isCropDialogReady, requiredVariants } from "./crop-dialog";
+import {
+  getCropDialogInteractionState,
+  isCropDialogReady,
+  requiredVariants,
+} from "./crop-dialog";
 
 describe("CropDialog", () => {
   it("requires desktop and mobile crops for hero assets", () => {
@@ -51,5 +55,15 @@ describe("CropDialog", () => {
         saved: {},
       }),
     ).toBe(true);
+  });
+
+  it("locks every interrupting action while processing", () => {
+    expect(getCropDialogInteractionState(true)).toEqual({
+      applyLabel: "Procesando…",
+      applyDisabled: true,
+      cancelDisabled: true,
+      tabsDisabled: true,
+      closeAllowed: false,
+    });
   });
 });
