@@ -52,6 +52,13 @@ function parseFirstNumber(value: string, fallback: number) {
   return match ? Number(match[0]) : fallback;
 }
 
+export function getBungalowReviewKey(
+  review: { name: string; origin: string },
+  index: number,
+) {
+  return `${review.name}-${review.origin}-${index}`;
+}
+
 function iconForAmenity(label: string) {
   const normalized = label.toLowerCase();
 
@@ -452,8 +459,8 @@ export default async function LocalizedBungalowDetailPage({
           <section className={figmaStyles.section}>
             <h2 className={figmaStyles.sectionTitle}>{reviewTitle}</h2>
             <div className={figmaStyles.reviewList}>
-              {reviews.map((review) => (
-                <article key={review.name} className={figmaStyles.reviewCard}>
+              {reviews.map((review, index) => (
+                <article key={getBungalowReviewKey(review, index)} className={figmaStyles.reviewCard}>
                   <div className={figmaStyles.reviewHeader}>
                     <div className={figmaStyles.reviewIdentity}>
                       <div className={figmaStyles.reviewAvatar}>{review.avatar}</div>

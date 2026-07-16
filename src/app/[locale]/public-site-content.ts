@@ -913,6 +913,15 @@ function formatArea(areaSqm: number, locale: PublicSiteLocale) {
   return locale === "en" ? `${areaSqm} sqm` : `${areaSqm} m2`;
 }
 
+export function buildBungalowGallery(
+  heroImageUrl: string | null | undefined,
+  galleryUrls: string[],
+  fallbackImageUrl: string,
+) {
+  const images = [...new Set([heroImageUrl?.trim() ?? "", ...galleryUrls].filter(Boolean))];
+  return images.length > 0 ? images : [fallbackImageUrl];
+}
+
 export async function getLocalizedBungalows(locale: PublicSiteLocale): Promise<LocalizedBungalow[]> {
   const [operationalBungalows, publicContentItems] = await Promise.all([
     reservationStore.listBungalows(),
@@ -948,10 +957,11 @@ export async function getLocalizedBungalows(locale: PublicSiteLocale): Promise<L
         displayHighlights: localizedContent?.displayHighlights ?? [],
         displayAmenities: localizedContent?.displayAmenities ?? [],
         displayIncluded: localizedContent?.displayIncluded ?? [],
-        gallery:
-          publicContent && publicContent.galleryUrls.length > 0
-            ? publicContent.galleryUrls
-            : [publicContent?.heroImageUrl || bungalow.image],
+        gallery: buildBungalowGallery(
+          publicContent?.heroImageUrl,
+          publicContent?.galleryUrls ?? [],
+          bungalow.image,
+        ),
       };
     })
     .sort((left, right) => {

@@ -202,5 +202,23 @@ describe("PostgresContentStore", () => {
       bungalowId: "bungalow-family",
       revisionVersion: 4,
     });
+
+    const insertCall = queryMock.mock.calls.find(([sql]) =>
+      String(sql).replace(/\s+/g, " ").trim().toLowerCase().startsWith("insert into bungalow_public_content"),
+    );
+    expect(insertCall?.[1]).toEqual([
+      "bungalow-family",
+      true,
+      1,
+      "https://example.com/hero.webp",
+      ["https://example.com/gallery-1.webp"],
+      350,
+      55,
+      expect.any(String),
+      "asset_hero_01",
+      ["asset_gallery_01"],
+      4,
+      expect.any(String),
+    ]);
   });
 });

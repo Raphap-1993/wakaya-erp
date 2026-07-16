@@ -32,7 +32,7 @@ import LocalizedHotelPoliciesPage from "./hotel-policies/page";
 import LocalizedPetFriendlyPage from "./pet-friendly/page";
 import LocalizedComplaintsBookPage from "./complaints-book/page";
 import LocalizedTestimonialsPage from "./testimonials/page";
-import { getPublicSiteContent } from "./public-site-content";
+import { buildBungalowGallery, getPublicSiteContent } from "./public-site-content";
 import PrototypeAboutPage from "@/app/prototype/public-site/about/page";
 import PrototypeBungalowsPage from "@/app/prototype/public-site/bungalows/page";
 import PrototypeContactPage from "@/app/prototype/public-site/contact/page";
@@ -90,6 +90,32 @@ describe("localized public site routes", () => {
     expect(html).not.toContain("S/. 0");
     expect(staticParams).toContainEqual({ locale: "es", slug: "bungalow-individual" });
     expect(staticParams).toContainEqual({ locale: "en", slug: "bungalow-individual" });
+  });
+
+  it("generates unique keys for bungalow reviews when authors repeat", async () => {
+    const reviews = [
+      { name: "Michael C.", origin: "Perú" },
+      { name: "Michael C.", origin: "Alemania" },
+    ];
+
+    const keys = reviews.map((review, index) =>
+      localizedBungalowDetailModule.getBungalowReviewKey(review, index),
+    );
+
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("puts the managed bungalow hero first even when legacy gallery images exist", () => {
+    expect(
+      buildBungalowGallery(
+        "/media/assets/asset_new/heroDesktop.webp",
+        ["https://example.com/legacy-gallery.webp"],
+        "https://example.com/fallback.webp",
+      ),
+    ).toEqual([
+      "/media/assets/asset_new/heroDesktop.webp",
+      "https://example.com/legacy-gallery.webp",
+    ]);
   });
 
   it("exports bilingual metadata alternates for the public home", async () => {
