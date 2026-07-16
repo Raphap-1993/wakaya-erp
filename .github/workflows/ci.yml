@@ -16,7 +16,7 @@ jobs:
   template-integrity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: "20"
@@ -34,7 +34,7 @@ jobs:
       quarkus-angular: ${{ steps.filter.outputs.quarkus-angular }}
       spring-react: ${{ steps.filter.outputs.spring-react }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -56,7 +56,7 @@ jobs:
       run:
         working-directory: stacks/node-next/template
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '20'
@@ -74,7 +74,7 @@ jobs:
       run:
         working-directory: stacks/java-monolith/template
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
@@ -90,7 +90,7 @@ jobs:
       run:
         working-directory: stacks/quarkus-angular/template/backend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
@@ -106,7 +106,7 @@ jobs:
       run:
         working-directory: stacks/quarkus-angular/template/frontend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '20'
@@ -123,7 +123,7 @@ jobs:
       run:
         working-directory: stacks/spring-react/template/backend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
@@ -139,7 +139,7 @@ jobs:
       run:
         working-directory: stacks/spring-react/template/frontend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '20'
