@@ -31,3 +31,13 @@ Menú y estilo global aparecen solo al seleccionar `Configuración web`.
 ## UI-010-08 - Mobile
 
 A 390 px no hay scroll horizontal y la acción principal sigue alcanzable.
+
+## UI-010-09 - Publicación inválida
+
+Al publicar con varios errores, no se envía la mutación. El resumen muestra
+bloque, idioma y campo para cada incidencia; el primer campo se abre y enfoca.
+
+## UI-010-10 - Navegación de errores
+
+Cada `Ir al campo` selecciona el bloque, activa el idioma, abre opciones
+avanzadas cuando corresponde y marca el control con `aria-invalid`.

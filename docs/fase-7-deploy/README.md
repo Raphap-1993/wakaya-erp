@@ -5,7 +5,7 @@
 
 <!-- nav-guided:start -->
 ## Navegacion guiada
-- Anterior: [Evidencia local del editor simple y cupos sin bloqueos](../fase-6-qa/06.06-content-workbench-capacity-simplification-local-evidence.md)
+- Anterior: [Evidencia local de nombres y popup de media pública](../fase-6-qa/06.09-media-filename-preview-local-evidence.md)
 - Siguiente: [Checklist de salida a produccion](07.00-checklist-salida-produccion.md)
 <!-- nav-guided:end -->
 
@@ -19,6 +19,8 @@ Preparar y ejecutar la salida controlada de Wakaya ERP con runbook, rollback, am
 
 ## Gate aplicable
 - gate-7-8 antes de produccion.
+- Estado actual: **PENDIENTE**. Esta verificación es local; no se ejecutó
+  despliegue ni se modificó producción.
 
 ## Operacion IA de la fase
 | Elemento | Definicion |

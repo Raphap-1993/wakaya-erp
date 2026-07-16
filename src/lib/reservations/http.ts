@@ -176,6 +176,8 @@ export function mapApiError(error: unknown): { body: ApiErrorDetails; status: nu
         },
         status: 404,
       };
+    case "media_persistence_failed":
+      return { body: { error: "media_persistence_failed" }, status: 503 };
     case "initial_email_failed":
       return { body: { error: "initial_email_failed" }, status: 502 };
     case "zoho_sync_failed":

@@ -6,6 +6,7 @@ playwright-report
 test-results
 .agent
 .superpowers/
+.worktrees/
 .stitch/
 .env
 .env.local

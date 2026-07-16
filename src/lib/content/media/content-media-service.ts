@@ -2,8 +2,10 @@ import { createHash, randomUUID } from "node:crypto";
 
 import type { Pool, PoolClient } from "pg";
 
+import { logger, type SafeLogger } from "@/lib/logger";
 import { getPool } from "@/lib/reservations/postgres";
 
+import type { AdminMediaMetadata } from "./admin-media-metadata";
 import { createFilesystemMediaStorage } from "./filesystem-media-storage";
 import {
   optimizeContentImage,
@@ -11,9 +13,14 @@ import {
   type MediaCropSpec,
   type MediaVariantKey,
 } from "./image-optimizer";
+import { normalizeOriginalFilename } from "./media-filename";
 import type { MediaStorage } from "./media-storage";
 
 export type ContentMediaSlot = "hero" | "detail" | "card" | "gallery";
+
+type MediaFailureLogger = Pick<SafeLogger, "error">;
+type SecondaryFailureOperation = "remove" | "rollback" | "release";
+type SecondaryFailurePhase = "after_commit" | "compensation" | "transaction_failed";
 
 type PersistedVariant = {
   storageKey: string;
@@ -26,6 +33,7 @@ type PersistedVariant = {
 
 export type ContentMediaAsset = {
   id: string;
+  originalFilename: string;
   status: "ready";
   master: {
     url: string;
@@ -43,6 +51,7 @@ type PersistedAssetRow = {
   storage_key: string;
   checksum_sha256: string;
   mime_type: string;
+  original_filename: string;
   format: "webp";
   width: number;
   height: number;
@@ -127,8 +136,11 @@ async function writeVariant(
   buffer: Buffer,
   quality: number,
   dimensions: { width: number; height: number },
+  writtenStoragePaths: string[][],
 ): Promise<PersistedVariant> {
-  const stored = await storage.write(buildStorageKey(assetId, fileName), buffer);
+  const pathSegments = buildStorageKey(assetId, fileName);
+  writtenStoragePaths.push(pathSegments);
+  const stored = await storage.write(pathSegments, buffer);
   return {
     storageKey: stored.storageKey,
     url: toUrl(stored.storageKey),
@@ -139,14 +151,93 @@ async function writeVariant(
   };
 }
 
+function logSecondaryFailure(
+  failureLogger: MediaFailureLogger,
+  input: {
+    operation: SecondaryFailureOperation;
+    phase: SecondaryFailurePhase;
+    assetId: string;
+    storageKey?: string;
+    error: unknown;
+  },
+) {
+  try {
+    const rawErrorCode =
+      input.error && typeof input.error === "object" && "code" in input.error
+        ? (input.error as { code?: unknown }).code
+        : undefined;
+    const errorCode =
+      typeof rawErrorCode === "string" && /^[a-z0-9_.:-]{1,64}$/i.test(rawErrorCode)
+        ? rawErrorCode
+        : undefined;
+    const errorClass =
+      input.error instanceof Error ? input.error.constructor.name : typeof input.error;
+
+    failureLogger.error("media_secondary_failure", {
+      operation: input.operation,
+      phase: input.phase,
+      assetId: input.assetId,
+      ...(input.storageKey ? { storageKey: input.storageKey } : {}),
+      errorClass,
+      ...(errorCode ? { errorCode } : {}),
+    });
+  } catch {
+    // Observability must never replace the primary processing or persistence error.
+  }
+}
+
+async function cleanupWrittenMedia(
+  storage: MediaStorage,
+  writtenStoragePaths: string[][],
+  failureLogger: MediaFailureLogger,
+  assetId: string,
+) {
+  for (const pathSegments of [...writtenStoragePaths].reverse()) {
+    try {
+      await storage.remove(pathSegments);
+    } catch (error) {
+      logSecondaryFailure(failureLogger, {
+        operation: "remove",
+        phase: "compensation",
+        assetId,
+        storageKey: pathSegments.join("/"),
+        error,
+      });
+    }
+  }
+}
+
+function toMediaPersistenceError(error: unknown) {
+  const persistenceError = new Error("media_persistence_failed", { cause: error });
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string"
+  ) {
+    return Object.assign(persistenceError, {
+      code: (error as { code: string }).code,
+    });
+  }
+  return persistenceError;
+}
+
 async function persistAsset(
   pool: Pool,
   rows: {
     asset: PersistedAssetRow;
     variants: PersistedVariantRow[];
   },
+  failureLogger: MediaFailureLogger,
 ) {
-  const client = await pool.connect();
+  let client: PoolClient;
+  try {
+    client = await pool.connect();
+  } catch (error) {
+    throw toMediaPersistenceError(error);
+  }
+  let failed = false;
+  let persistenceError: unknown;
   try {
     await client.query("begin");
     await insertAsset(client, rows.asset);
@@ -155,10 +246,43 @@ async function persistAsset(
     }
     await client.query("commit");
   } catch (error) {
-    await client.query("rollback");
-    throw error;
-  } finally {
+    failed = true;
+    persistenceError = error;
+    try {
+      await client.query("rollback");
+    } catch (rollbackError) {
+      logSecondaryFailure(failureLogger, {
+        operation: "rollback",
+        phase: "transaction_failed",
+        assetId: rows.asset.id,
+        error: rollbackError,
+      });
+    }
+  }
+
+  if (failed) {
+    try {
+      client.release();
+    } catch (releaseError) {
+      logSecondaryFailure(failureLogger, {
+        operation: "release",
+        phase: "transaction_failed",
+        assetId: rows.asset.id,
+        error: releaseError,
+      });
+    }
+    throw toMediaPersistenceError(persistenceError);
+  }
+
+  try {
     client.release();
+  } catch (releaseError) {
+    logSecondaryFailure(failureLogger, {
+      operation: "release",
+      phase: "after_commit",
+      assetId: rows.asset.id,
+      error: releaseError,
+    });
   }
 }
 
@@ -166,13 +290,14 @@ async function insertAsset(client: Pick<PoolClient, "query">, row: PersistedAsse
   await client.query(
     `
       insert into media_asset (
-        id, storage_key, checksum_sha256, mime_type, format, width, height, byte_size, status, created_by
+        id, storage_key, checksum_sha256, mime_type, original_filename, format, width, height, byte_size, status, created_by
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       on conflict (id) do update
       set storage_key = excluded.storage_key,
           checksum_sha256 = excluded.checksum_sha256,
           mime_type = excluded.mime_type,
+          original_filename = excluded.original_filename,
           format = excluded.format,
           width = excluded.width,
           height = excluded.height,
@@ -186,6 +311,7 @@ async function insertAsset(client: Pick<PoolClient, "query">, row: PersistedAsse
       row.storage_key,
       row.checksum_sha256,
       row.mime_type,
+      row.original_filename,
       row.format,
       row.width,
       row.height,
@@ -253,7 +379,28 @@ export class ContentMediaService {
   constructor(
     private readonly storage: MediaStorage = createFilesystemMediaStorage(),
     private readonly pool: Pool | null = hasDatabaseUrl() ? getPool() : null,
+    private readonly failureLogger: MediaFailureLogger = logger,
   ) {}
+
+  async listAssetMetadata(assetIds: string[]): Promise<AdminMediaMetadata[]> {
+    const ids = [...new Set(assetIds)].sort();
+    if (!this.pool || ids.length === 0) {
+      return [];
+    }
+
+    const result = await this.pool.query<{
+      id: string;
+      original_filename: string | null;
+    }>(
+      "select id, original_filename from media_asset where id = any($1::text[]) order by id asc",
+      [ids],
+    );
+
+    return result.rows.map((row) => ({
+      assetId: row.id,
+      originalFilename: row.original_filename ?? "",
+    }));
+  }
 
   async createAsset(input: {
     file: File;
@@ -262,92 +409,100 @@ export class ContentMediaService {
     actorId?: string | null;
   }): Promise<{ asset: ContentMediaAsset }> {
     const assetId = `asset_${randomUUID().replace(/-/g, "")}`;
+    const originalFilename = normalizeOriginalFilename(input.file.name, input.file.type);
     const checksumSource = Buffer.from(await input.file.arrayBuffer());
     const optimized = await optimizeContentImage(input.file, {
       requiredVariants: resolveSlotVariants(input.slot),
       crops: input.crops ?? buildFallbackCrops(input.slot),
     });
+    const writtenStoragePaths: string[][] = [];
 
-    const masterStored = await writeVariant(
-      this.storage,
-      assetId,
-      "master.webp",
-      optimized.master.buffer,
-      optimized.master.quality,
-      optimized.master,
-    );
-
-    const variants: Partial<Record<MediaVariantKey, PersistedVariant>> = {};
-    for (const [variantKey, artifact] of Object.entries(optimized.variants) as Array<
-      [MediaVariantKey, (typeof optimized.variants)[MediaVariantKey]]
-    >) {
-      if (!artifact) {
-        continue;
-      }
-      variants[variantKey] = await writeVariant(
+    try {
+      const masterStored = await writeVariant(
         this.storage,
         assetId,
-        `${variantKey}.webp`,
-        artifact.buffer,
-        artifact.quality,
-        artifact,
+        "master.webp",
+        optimized.master.buffer,
+        optimized.master.quality,
+        optimized.master,
+        writtenStoragePaths,
       );
-    }
 
-    if (this.pool) {
-      await persistAsset(this.pool, {
+      const variants: Partial<Record<MediaVariantKey, PersistedVariant>> = {};
+      for (const [variantKey, artifact] of Object.entries(optimized.variants) as Array<
+        [MediaVariantKey, (typeof optimized.variants)[MediaVariantKey]]
+      >) {
+        if (!artifact) {
+          continue;
+        }
+        variants[variantKey] = await writeVariant(
+          this.storage,
+          assetId,
+          `${variantKey}.webp`,
+          artifact.buffer,
+          artifact.quality,
+          artifact,
+          writtenStoragePaths,
+        );
+      }
+
+      if (this.pool) {
+        await persistAsset(
+          this.pool,
+          {
+            asset: {
+              id: assetId,
+              storage_key: masterStored.storageKey,
+              checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
+              mime_type: input.file.type,
+              original_filename: originalFilename,
+              format: "webp",
+              width: optimized.master.width,
+              height: optimized.master.height,
+              byte_size: optimized.master.bytes,
+              status: "ready",
+              created_by: input.actorId ?? null,
+            },
+            variants: Object.entries(variants).map(([variantKey, variant]) => ({
+              id: `${assetId}_${variantKey}`,
+              asset_id: assetId,
+              slot: variantKey as MediaVariantKey,
+              storage_key: variant.storageKey,
+              format: "webp",
+              width: variant.width,
+              height: variant.height,
+              quality: variant.quality,
+              crop_spec:
+                (input.crops ?? buildFallbackCrops(input.slot))[
+                  variantKey as MediaVariantKey
+                ] ?? null,
+              byte_size: variant.bytes,
+            })),
+          },
+          this.failureLogger,
+        );
+      }
+
+      return {
         asset: {
           id: assetId,
-          storage_key: masterStored.storageKey,
-          checksum_sha256: createHash("sha256").update(checksumSource).digest("hex"),
-          mime_type: input.file.type,
-          format: "webp",
-          width: optimized.master.width,
-          height: optimized.master.height,
-          byte_size: optimized.master.bytes,
+          originalFilename,
           status: "ready",
-          created_by: input.actorId ?? null,
+          master: {
+            url: masterStored.url,
+            width: optimized.master.width,
+            height: optimized.master.height,
+            format: "webp",
+            quality: 95,
+            nearLossless: true,
+          },
+          variants,
         },
-        variants: Object.entries(variants).map(([variantKey, variant]) => ({
-          id: `${assetId}_${variantKey}`,
-          asset_id: assetId,
-          slot: variantKey as MediaVariantKey,
-          storage_key: variant.storageKey,
-          format: "webp",
-          width: variant.width,
-          height: variant.height,
-          quality: variant.quality,
-          crop_spec: (input.crops ?? buildFallbackCrops(input.slot))[variantKey as MediaVariantKey] ?? null,
-          byte_size: variant.bytes,
-        })),
-      }).catch((error: unknown) => {
-        if (
-          error &&
-          typeof error === "object" &&
-          "code" in error &&
-          (error as { code?: string }).code === "42P01"
-        ) {
-          return;
-        }
-        throw error;
-      });
+      };
+    } catch (error) {
+      await cleanupWrittenMedia(this.storage, writtenStoragePaths, this.failureLogger, assetId);
+      throw error;
     }
-
-    return {
-      asset: {
-        id: assetId,
-        status: "ready",
-        master: {
-          url: masterStored.url,
-          width: optimized.master.width,
-          height: optimized.master.height,
-          format: "webp",
-          quality: 95,
-          nearLossless: true,
-        },
-        variants,
-      },
-    };
   }
 
   async createCompatibilityHomeMedia(input: {

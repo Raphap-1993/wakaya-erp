@@ -1,9 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { CropDialog } from "@/app/admin/content/media/crop-dialog";
+import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
+import {
+  resolveAdminMediaDescriptor,
+  type AdminMediaMetadataMap,
+} from "@/lib/content/media/admin-media-metadata";
+import type { ContentMediaAsset } from "@/lib/content/media/content-media-service";
 import {
   homeContentSectionSchema,
   homeContentSlideSchema,
@@ -31,10 +38,26 @@ import {
 } from "@/lib/home-content/types";
 
 import styles from "./home-editor.module.css";
+import {
+  buildHomeMediaUploadFormData,
+  resolveHomeMediaUrl,
+  type HomeMediaCropPayload,
+  type HomeMediaSlot,
+} from "./home-media-upload";
+import {
+  countValidationIssuesForNode,
+  mapHomeValidationIssues,
+  validateHomeDocument,
+  type HomeValidationIssueInput,
+  type HomeValidationNode,
+  type HomeValidationTarget,
+} from "./home-validation";
 
 type HomeEditorProps = {
   initialItem: HomeContentRevisionRecord;
   initialRevisions: HomeContentRevisionRecord[];
+  mediaMetadata?: AdminMediaMetadataMap;
+  onMediaAssetCreated?: (asset: ContentMediaAsset) => void;
 };
 
 type SelectedNode =
@@ -43,6 +66,12 @@ type SelectedNode =
 
 type LocaleKey = "es" | "en";
 type PreviewMode = "desktop" | "mobile";
+type HomeUploadIntent = {
+  file: File;
+  fieldSlot: string;
+  mediaSlot: HomeMediaSlot;
+  onComplete: (mediaUrl: string) => void;
+};
 
 const LOCALE_LABELS: Record<LocaleKey, string> = {
   es: "Español",
@@ -125,6 +154,14 @@ function describeSaveError(message: string) {
       return "La imagen supera el tamaño máximo permitido.";
     case "media_dimensions_too_large":
       return "La imagen es demasiado grande para procesarla de forma segura.";
+    case "media_crop_required":
+      return "Completa todos los recortes obligatorios antes de aplicar la imagen.";
+    case "media_crop_invalid":
+      return "El recorte seleccionado no es válido. Ajusta la imagen e inténtalo otra vez.";
+    case "media_crop_too_small":
+      return "El recorte usa un área demasiado pequeña. Selecciona una zona más amplia.";
+    case "media_processing_failed":
+      return "No se pudo optimizar la imagen. Prueba con otro archivo JPG, PNG o WebP.";
     default:
       return message || "No se pudo publicar el home.";
   }
@@ -215,10 +252,24 @@ function describeCompletionState(isComplete: boolean) {
   return isComplete ? "Completo" : "Pendiente";
 }
 
+function describeValidationCount(count: number) {
+  return `Revisar · ${count} ${count === 1 ? "campo" : "campos"}`;
+}
+
+function validationIssueId(key: string) {
+  return `home-validation-issue-${key.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function isValidationIssueInput(value: unknown): value is HomeValidationIssueInput {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as { path?: unknown; message?: unknown };
+  return Array.isArray(candidate.path) && typeof candidate.message === "string";
+}
+
 function getPreviewTitle(document: HomeContentDocument, selected: SelectedNode) {
   if (selected.kind === "slide") {
     const slide = document.slider.slides.find((item) => item.id === selected.id);
-    return slide?.content.es.title ?? "Slide";
+    return slide?.content.es.title || slide?.content.en.title || "Slide";
   }
 
   const section = document.sections.find((item) => item.id === selected.id);
@@ -228,21 +279,21 @@ function getPreviewTitle(document: HomeContentDocument, selected: SelectedNode) 
 
   switch (section.type) {
     case "booking-band":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "stats":
       return "Cifras clave";
     case "story":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "bungalows":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "quote-band":
-      return section.content.quote.es;
+      return section.content.quote.es || HOME_SECTION_LABELS[section.type];
     case "experiences":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "testimonials":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
     case "closing-cta":
-      return section.content.title.es;
+      return section.content.title.es || HOME_SECTION_LABELS[section.type];
   }
 }
 
@@ -933,32 +984,45 @@ function StructureRow({
 function ImageField({
   label,
   value,
+  mediaMetadata,
   slot,
   isUploading,
-  onUpload,
+  onSelect,
 }: {
   label: string;
   value: string;
+  mediaMetadata: AdminMediaMetadataMap;
   slot: string;
   isUploading: boolean;
-  onUpload: (file: File, slot: string) => Promise<void>;
+  onSelect: (file: File, slot: string) => void;
 }) {
+  const mediaDescriptor = value
+    ? resolveAdminMediaDescriptor(value, mediaMetadata)
+    : null;
+
   return (
-    <div className={`${styles.field} ${styles.fieldFull}`}>
+    <div className={`${styles.field} ${styles.fieldFull}`} data-validation-field={label}>
       <span>{label}</span>
-      <span className={styles.metaPill}>{value ? "Imagen asociada" : "Sin imagen asociada"}</span>
+      {mediaDescriptor ? (
+        <MediaFilenamePreview
+          originalFilename={mediaDescriptor.originalFilename}
+          previewUrl={mediaDescriptor.previewUrl}
+        />
+      ) : (
+        <span className={styles.metaPill}>Sin imagen asociada</span>
+      )}
       <label className={styles.uploadButton}>
         <span>{isUploading ? "Subiendo..." : "Subir imagen"}</span>
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
           disabled={isUploading}
-          onChange={async (event) => {
+          onChange={(event) => {
             const file = event.target.files?.[0];
             if (!file) {
               return;
             }
-            await onUpload(file, slot);
+            onSelect(file, slot);
             event.target.value = "";
           }}
         />
@@ -1006,7 +1070,23 @@ function SelectedPreview({
   );
 }
 
-export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
+export function completeHomeMediaUpload(
+  asset: ContentMediaAsset,
+  mediaSlot: HomeMediaSlot,
+  onMediaAssetCreated: ((asset: ContentMediaAsset) => void) | undefined,
+  onComplete: (mediaUrl: string) => void,
+) {
+  const mediaUrl = resolveHomeMediaUrl(asset, mediaSlot);
+  onMediaAssetCreated?.(asset);
+  onComplete(mediaUrl);
+}
+
+export function HomeEditor({
+  initialItem,
+  initialRevisions,
+  mediaMetadata = {},
+  onMediaAssetCreated,
+}: HomeEditorProps) {
   const [document, setDocument] = useState<HomeContentDocument>(() => cloneDocument(initialItem.document));
   const [publishedRecord, setPublishedRecord] = useState(initialItem);
   const [currentVersion, setCurrentVersion] = useState(initialItem.revisionVersion);
@@ -1017,8 +1097,15 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
   const [editingSiteSettings, setEditingSiteSettings] = useState(false);
   const [utilityPanel, setUtilityPanel] = useState<"preview" | "history" | null>(null);
   const [feedback, setFeedback] = useState<{ kind: "success" | "error"; message: string } | null>(null);
+  const [validationAttempted, setValidationAttempted] = useState(false);
+  const [serverValidationResult, setServerValidationResult] = useState<{
+    documentFingerprint: string;
+    issues: HomeValidationTarget[];
+  } | null>(null);
+  const [pendingFocusTarget, setPendingFocusTarget] = useState<HomeValidationTarget | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
+  const [uploadIntent, setUploadIntent] = useState<HomeUploadIntent | null>(null);
   const [baseDocument, setBaseDocument] = useState(() => JSON.stringify(initialItem.document));
 
   const selectedSlide =
@@ -1037,11 +1124,104 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
     () => [...document.sections].sort((left, right) => left.order - right.order),
     [document.sections],
   );
+  const clientValidationIssues = useMemo(
+    () => (validationAttempted ? validateHomeDocument(document) : []),
+    [document, validationAttempted],
+  );
+  const documentFingerprint = JSON.stringify(document);
+  const serverValidationIssues =
+    serverValidationResult?.documentFingerprint === documentFingerprint ? serverValidationResult.issues : [];
+  const validationIssues = clientValidationIssues.length > 0 ? clientValidationIssues : serverValidationIssues;
 
   const selectedIsComplete =
     selected.kind === "slide"
       ? (selectedSlide ? isSlideComplete(selectedSlide) : false)
       : (selectedSection ? isSectionComplete(selectedSection) : false);
+
+  useEffect(() => {
+    const root = window.document.getElementById("home-editor-fields");
+    if (!root) return;
+
+    const clearActiveField = () => {
+      root.querySelectorAll<HTMLElement>('[data-validation-active="true"]').forEach((element) => {
+        element.removeAttribute("data-validation-active");
+      });
+      root.querySelectorAll<HTMLElement>('[data-home-validation-control="true"]').forEach((element) => {
+        element.removeAttribute("data-home-validation-control");
+        element.removeAttribute("aria-invalid");
+        element.removeAttribute("aria-describedby");
+      });
+    };
+
+    clearActiveField();
+    if (!pendingFocusTarget) return;
+
+    const currentTarget = validationIssues.find((issue) => issue.key === pendingFocusTarget.key);
+    if (!currentTarget) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      let scope: ParentNode = root;
+
+      if (currentTarget.groupLabel.startsWith("CTA")) {
+        const ctaSection = Array.from(root.querySelectorAll("section")).find((section) => {
+          const heading = section.querySelector(":scope > div h3, :scope > div h4");
+          return heading?.textContent?.trim() === currentTarget.groupLabel;
+        });
+        if (ctaSection) scope = ctaSection;
+      }
+
+      if (currentTarget.groupLabel === "Opciones avanzadas") {
+        const advanced = root.querySelector<HTMLDetailsElement>("details");
+        if (advanced) {
+          advanced.open = true;
+          scope = advanced;
+        }
+      }
+
+      const candidates = Array.from(scope.querySelectorAll<HTMLElement>("label, [data-validation-field]")).filter(
+        (element) => {
+          const directLabel = Array.from(element.children).find((child) => child.tagName === "SPAN");
+          return (
+            element.dataset.validationField === currentTarget.fieldLabel ||
+            directLabel?.textContent?.trim() === currentTarget.fieldLabel
+          );
+        },
+      );
+      const field = candidates[currentTarget.focusOccurrence] ?? candidates[0];
+      const control = field?.matches("input, select, textarea, button, a")
+        ? field
+        : field?.querySelector<HTMLElement>("input, select, textarea, button, a");
+
+      if (!field || !control) return;
+
+      field.setAttribute("data-validation-active", "true");
+      control.setAttribute("data-home-validation-control", "true");
+      control.setAttribute("aria-invalid", "true");
+      control.setAttribute("aria-describedby", validationIssueId(currentTarget.key));
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+      control.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeLocale, editingSiteSettings, pendingFocusTarget, selected, validationIssues]);
+
+  function goToValidationTarget(target: HomeValidationTarget) {
+    if (target.node.kind === "settings") {
+      setEditingSiteSettings(true);
+    } else {
+      setSelected({ kind: target.node.kind, id: target.node.id });
+      setEditingSiteSettings(false);
+    }
+    if (target.locale) setActiveLocale(target.locale);
+    setPendingFocusTarget(target);
+  }
+
+  function nodeStatus(node: HomeValidationNode, isComplete: boolean) {
+    const count = countValidationIssuesForNode(validationIssues, node);
+    return count > 0 ? describeValidationCount(count) : describeCompletionState(isComplete);
+  }
 
   function updateSlide(slideId: string, mutate: (slide: HomeSlide) => void) {
     setDocument((current) =>
@@ -1084,30 +1264,46 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
     );
   }
 
-  async function uploadImage(
+  function beginImageUpload(
     file: File,
-    slot: string,
+    fieldSlot: string,
+    mediaSlot: HomeMediaSlot,
     onComplete: (mediaUrl: string) => void,
   ) {
-    setUploadingSlot(slot);
+    setFeedback(null);
+    setUploadIntent({ file, fieldSlot, mediaSlot, onComplete });
+  }
+
+  async function uploadImageWithCrops(
+    intent: HomeUploadIntent,
+    crops: HomeMediaCropPayload,
+  ) {
+    setUploadingSlot(intent.fieldSlot);
     setFeedback(null);
 
     try {
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("slot", slot);
+      const formData = buildHomeMediaUploadFormData(
+        intent.file,
+        intent.mediaSlot,
+        crops,
+      );
 
-      const response = await fetch("/api/admin/home-content/media", {
+      const response = await fetch("/api/admin/content/media", {
         method: "POST",
         body: formData,
       });
-      const body = await response.json();
+      const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(body.error ?? "media_upload_failed");
       }
 
-      onComplete(body.media.url);
+      completeHomeMediaUpload(
+        body.asset as ContentMediaAsset,
+        intent.mediaSlot,
+        onMediaAssetCreated,
+        intent.onComplete,
+      );
       setFeedback({
         kind: "success",
         message: "Imagen optimizada y lista para publicar en el home.",
@@ -1119,6 +1315,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       });
     } finally {
       setUploadingSlot(null);
+      setUploadIntent(null);
     }
   }
 
@@ -1146,8 +1343,17 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
   }
 
   async function publishChanges() {
-    setIsSaving(true);
     setFeedback(null);
+    setServerValidationResult(null);
+
+    const issues = validateHomeDocument(document);
+    if (issues.length > 0) {
+      setValidationAttempted(true);
+      goToValidationTarget(issues[0]);
+      return;
+    }
+
+    setIsSaving(true);
 
     try {
       const response = await fetch("/api/admin/home-content", {
@@ -1163,6 +1369,16 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       const body = await response.json();
 
       if (!response.ok) {
+        const serverIssues = Array.isArray(body.issues) ? body.issues.filter(isValidationIssueInput) : [];
+        if (serverIssues.length > 0) {
+          const mappedIssues = mapHomeValidationIssues(document, serverIssues);
+          if (mappedIssues.length > 0) {
+            setValidationAttempted(true);
+            setServerValidationResult({ documentFingerprint, issues: mappedIssues });
+            goToValidationTarget(mappedIssues[0]);
+            return;
+          }
+        }
         throw new Error(body.error ?? "publish_failed");
       }
 
@@ -1171,6 +1387,9 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       setCurrentVersion(body.item.revisionVersion);
       setRevisions(body.revisions);
       setBaseDocument(JSON.stringify(body.item.document));
+      setValidationAttempted(false);
+      setServerValidationResult(null);
+      setPendingFocusTarget(null);
       setFeedback({
         kind: "success",
         message: `Home publicado como versión ${body.item.revisionVersion}.`,
@@ -1210,6 +1429,9 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
       setCurrentVersion(body.item.revisionVersion);
       setRevisions(body.revisions);
       setBaseDocument(JSON.stringify(body.item.document));
+      setValidationAttempted(false);
+      setServerValidationResult(null);
+      setPendingFocusTarget(null);
       setFeedback({
         kind: "success",
         message: `Restaurado y republicado como versión ${body.item.revisionVersion}.`,
@@ -1238,7 +1460,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
               <strong>Última publicación:</strong> {formatPublicationMeta(publishedRecord)}
             </span>
             <span>
-              <strong>Estado:</strong> {describeCompletionState(selectedIsComplete)}
+              <strong>Estado:</strong> {nodeStatus(selected, selectedIsComplete)}
             </span>
           </div>
 
@@ -1273,9 +1495,35 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
         </div>
       </section>
 
-      {feedback ? (
-        <div className={feedback.kind === "success" ? styles.successAlert : styles.errorAlert}>{feedback.message}</div>
-      ) : null}
+      <div id="home-validation-feedback" aria-live="polite">
+        {validationIssues.length > 0 ? (
+          <section className={`${styles.errorAlert} ${styles.validationAlert}`} role="alert">
+            <strong>
+              No se puede publicar. Corrige {validationIssues.length} {validationIssues.length === 1 ? "campo" : "campos"}.
+            </strong>
+            <ul className={styles.validationList}>
+              {validationIssues.map((issue) => (
+                <li className={styles.validationItem} id={validationIssueId(issue.key)} key={issue.key}>
+                  <span className={styles.validationMessage}>
+                    <strong>{issue.summaryLabel}</strong>
+                    <span>{issue.message}</span>
+                  </span>
+                  <button
+                    className={styles.validationButton}
+                    type="button"
+                    aria-label={`Ir al campo: ${issue.summaryLabel}`}
+                    onClick={() => goToValidationTarget(issue)}
+                  >
+                    Ir al campo
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : feedback ? (
+          <div className={feedback.kind === "success" ? styles.successAlert : styles.errorAlert}>{feedback.message}</div>
+        ) : null}
+      </div>
 
       <div className={styles.layout}>
         <aside className={styles.sidebar}>
@@ -1290,7 +1538,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                   key={slide.id}
                   title={slide.content.es.title}
                   subtitle={`Orden ${slide.order} · ${slide.visible ? "Visible" : "Oculto"}`}
-                  status={describeCompletionState(isSlideComplete(slide))}
+                  status={nodeStatus({ kind: "slide", id: slide.id }, isSlideComplete(slide))}
                   selected={selected.kind === "slide" && selected.id === slide.id}
                   onSelect={() => {
                     setSelected({ kind: "slide", id: slide.id });
@@ -1314,7 +1562,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                   key={section.id}
                   title={HOME_SECTION_LABELS[section.type]}
                   subtitle={`${getPreviewTitle(document, { kind: "section", id: section.id })} · ${section.visible ? "Visible" : "Oculta"}`}
-                  status={describeCompletionState(isSectionComplete(section))}
+                  status={nodeStatus({ kind: "section", id: section.id }, isSectionComplete(section))}
                   selected={selected.kind === "section" && selected.id === section.id}
                   onSelect={() => {
                     setSelected({ kind: "section", id: section.id });
@@ -1334,10 +1582,17 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
           >
             <strong>Configuración web</strong>
             <span>Ajustes generales</span>
+            {countValidationIssuesForNode(validationIssues, { kind: "settings", id: "navigation" }) > 0 ? (
+              <span>
+                {describeValidationCount(
+                  countValidationIssuesForNode(validationIssues, { kind: "settings", id: "navigation" }),
+                )}
+              </span>
+            ) : null}
           </button>
         </aside>
 
-        <section className={styles.editor}>
+        <section className={styles.editor} id="home-editor-fields">
           <div className={styles.editorHeader}>
             <div>
               <p className={styles.editorKicker}>
@@ -1348,7 +1603,7 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
             <span className={styles.metaPill}>
               {editingSiteSettings
                 ? "Menú público"
-                : `Estado · ${describeCompletionState(selectedIsComplete)}`}
+                : `Estado · ${nodeStatus(selected, selectedIsComplete)}`}
             </span>
           </div>
 
@@ -1419,10 +1674,11 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                   <ImageField
                     label="Imagen"
                     value={selectedSlide.image}
+                    mediaMetadata={mediaMetadata}
                     slot={selectedSlide.id}
                     isUploading={uploadingSlot === selectedSlide.id}
-                    onUpload={(file, slot) =>
-                      uploadImage(file, slot, (mediaUrl) => {
+                    onSelect={(file, slot) =>
+                      beginImageUpload(file, slot, "hero", (mediaUrl) => {
                         updateSlide(selectedSlide.id, (slide) => void (slide.image = mediaUrl));
                       })
                     }
@@ -1718,10 +1974,11 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <ImageField
                         label="Imagen"
                         value={selectedSection.content.image}
+                        mediaMetadata={mediaMetadata}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
-                        onUpload={(file, slot) =>
-                          uploadImage(file, slot, (mediaUrl) => {
+                        onSelect={(file, slot) =>
+                          beginImageUpload(file, slot, "detail", (mediaUrl) => {
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "story") section.content.image = mediaUrl;
                             });
@@ -1895,10 +2152,11 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <ImageField
                         label="Imagen"
                         value={selectedSection.content.image}
+                        mediaMetadata={mediaMetadata}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
-                        onUpload={(file, slot) =>
-                          uploadImage(file, slot, (mediaUrl) => {
+                        onSelect={(file, slot) =>
+                          beginImageUpload(file, slot, "detail", (mediaUrl) => {
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "quote-band") section.content.image = mediaUrl;
                             });
@@ -1993,7 +2251,11 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <h3>Fuente de experiencias</h3>
                       <span className={styles.metaPill}>{selectedSection.experienceIds.length} asociadas</span>
                     </div>
-                    <Link className={styles.secondaryButton} href="/admin/content?tab=experiences">
+                    <Link
+                      className={styles.secondaryButton}
+                      href="/admin/content?tab=experiences"
+                      data-validation-field="Experiencias visibles"
+                    >
                       Gestionar experiencias
                     </Link>
                   </section>
@@ -2097,10 +2359,11 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
                       <ImageField
                         label="Imagen"
                         value={selectedSection.content.image}
+                        mediaMetadata={mediaMetadata}
                         slot={selectedSection.id}
                         isUploading={uploadingSlot === selectedSection.id}
-                        onUpload={(file, slot) =>
-                          uploadImage(file, slot, (mediaUrl) => {
+                        onSelect={(file, slot) =>
+                          beginImageUpload(file, slot, "detail", (mediaUrl) => {
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "closing-cta") section.content.image = mediaUrl;
                             });
@@ -2224,6 +2487,19 @@ export function HomeEditor({ initialItem, initialRevisions }: HomeEditorProps) {
           </section>
         </div>
       ) : null}
+
+      <CropDialog
+        open={Boolean(uploadIntent)}
+        file={uploadIntent?.file ?? null}
+        slot={uploadIntent?.mediaSlot ?? "detail"}
+        onCancel={() => {
+          if (!uploadingSlot) setUploadIntent(null);
+        }}
+        onApply={async (crops) => {
+          if (!uploadIntent) return;
+          await uploadImageWithCrops(uploadIntent, crops);
+        }}
+      />
     </main>
   );
 }

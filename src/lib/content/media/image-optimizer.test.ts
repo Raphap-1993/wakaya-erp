@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -209,6 +209,30 @@ describe("filesystem media storage", () => {
     const storage = createFilesystemMediaStorage();
 
     await expect(storage.write(["content", "..", "escape.webp"], Buffer.from("fake"))).rejects.toThrow(
+      "invalid_media_path",
+    );
+  });
+
+  it("removes stored media idempotently and prunes empty asset directories", async () => {
+    mediaRoot = await mkdtemp(join(tmpdir(), "wakaya-content-media-"));
+    const storage = createFilesystemMediaStorage({ rootPath: mediaRoot });
+    const pathSegments = ["content", "asset-01", "hero.webp"];
+
+    await storage.write(pathSegments, Buffer.from("image"));
+    await storage.remove(pathSegments);
+    await storage.remove(pathSegments);
+
+    await expect(storage.read(pathSegments)).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(access(join(mediaRoot, "content", "asset-01"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  it("rejects traversal attempts when removing media", async () => {
+    mediaRoot = await mkdtemp(join(tmpdir(), "wakaya-content-media-"));
+    const storage = createFilesystemMediaStorage({ rootPath: mediaRoot });
+
+    await expect(storage.remove(["content", "..", "escape.webp"])).rejects.toThrow(
       "invalid_media_path",
     );
   });

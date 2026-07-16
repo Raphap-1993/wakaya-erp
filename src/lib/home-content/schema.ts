@@ -73,6 +73,22 @@ const optionalTrimmedStringSchema: z.ZodType<string | undefined> = z.preprocess(
   z.string().trim().min(1).optional(),
 );
 
+function isSafePublicImageLocation(value: string) {
+  if (/^\/media\/[a-zA-Z0-9][a-zA-Z0-9._-]*(?:\/[a-zA-Z0-9][a-zA-Z0-9._-]*)*$/.test(value)) {
+    return true;
+  }
+
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
+function publicImageLocationSchema(message: "invalid_slide_image" | "invalid_section_image") {
+  return z.string().trim().refine(isSafePublicImageLocation, message);
+}
+
 const visibleCountSchema = z.union([z.literal(2), z.literal(3), z.literal(4)]);
 
 const headingSizeSchema = z.custom<HeadingSizePreset>(
@@ -233,7 +249,7 @@ export const homeContentSlideSchema = z.object({
   id: z.string().trim().min(1, "invalid_slide_id"),
   visible: z.boolean(),
   order: z.number().int().positive("invalid_slide_order"),
-  image: z.string().trim().url("invalid_slide_image"),
+  image: publicImageLocationSchema("invalid_slide_image"),
   content: z.object({
     en: homeSlideContentSchema,
     es: homeSlideContentSchema,
@@ -295,7 +311,7 @@ const storySectionSchema = z.object({
     paragraphs: localeTextListSchema,
     quote: localeTextSchema,
     quoteSource: localeTextSchema,
-    image: z.string().trim().url("invalid_section_image"),
+    image: publicImageLocationSchema("invalid_section_image"),
   }),
   ctas: z.array(homeCtaSchema),
 });
@@ -324,7 +340,7 @@ const quoteBandSectionSchema = z.object({
   content: z.object({
     quote: localeTextSchema,
     source: localeTextSchema,
-    image: z.string().trim().url("invalid_section_image"),
+    image: publicImageLocationSchema("invalid_section_image"),
   }),
   ctas: z.array(homeCtaSchema),
 });
@@ -335,7 +351,7 @@ const legacyExperienceItemSchema = z.object({
   copy: localeTextSchema,
   price: z.string().trim().min(1, "required"),
   duration: localeTextSchema,
-  image: z.string().trim().url("invalid_section_image"),
+  image: publicImageLocationSchema("invalid_section_image"),
 });
 
 const legacyExperiencesSectionSchema = z.object({
@@ -396,7 +412,7 @@ const closingSectionSchema = z.object({
   content: z.object({
     eyebrow: localeTextSchema,
     title: localeTextSchema,
-    image: z.string().trim().url("invalid_section_image"),
+    image: publicImageLocationSchema("invalid_section_image"),
   }),
   ctas: z.array(homeCtaSchema),
 });

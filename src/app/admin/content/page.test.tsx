@@ -12,6 +12,8 @@ const {
   listBungalowsMock,
   getBungalowPublicContentMock,
   listReservationsMock,
+  listAssetMetadataMock,
+  contentHubMock,
 } = vi.hoisted(() => ({
   requireAdminPageAccessMock: vi.fn(),
   getPublishedMock: vi.fn(),
@@ -23,6 +25,8 @@ const {
   listBungalowsMock: vi.fn(),
   getBungalowPublicContentMock: vi.fn(),
   listReservationsMock: vi.fn(),
+  listAssetMetadataMock: vi.fn(),
+  contentHubMock: vi.fn(),
 }));
 
 vi.mock("@/app/admin/require-admin-page-access", () => ({
@@ -30,7 +34,16 @@ vi.mock("@/app/admin/require-admin-page-access", () => ({
 }));
 
 vi.mock("@/app/admin/content/content-hub", () => ({
-  ContentHub: (props: unknown) => <pre>{JSON.stringify(props, null, 2)}</pre>,
+  ContentHub: (props: unknown) => {
+    contentHubMock(props);
+    return <pre>{JSON.stringify(props, null, 2)}</pre>;
+  },
+}));
+
+vi.mock("@/lib/content/media/content-media-service", () => ({
+  contentMediaService: {
+    listAssetMetadata: listAssetMetadataMock,
+  },
 }));
 
 vi.mock("@/lib/home-content/store", () => ({
@@ -66,6 +79,7 @@ import AdminContentPage from "./page";
 
 describe("AdminContentPage", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     requireAdminPageAccessMock.mockResolvedValue({
       authenticated: true,
       roles: ["admin"],
@@ -165,6 +179,7 @@ describe("AdminContentPage", () => {
         bungalow: null,
       },
     ]);
+    listAssetMetadataMock.mockResolvedValue([]);
   });
 
   it("opens the editorial worklist when no module was requested", async () => {
@@ -193,5 +208,92 @@ describe("AdminContentPage", () => {
     expect(html).toContain("&quot;bungalowId&quot;: &quot;bungalow-suite&quot;");
     expect(html).not.toContain("initialBungalowSnapshot");
     expect(html).not.toContain("unitId");
+  });
+
+  it("hydrates media metadata once for Home, Experiences, Gallery, and Bungalows", async () => {
+    getPublishedMock.mockResolvedValue({
+      revisionVersion: 4,
+      document: {
+        schemaVersion: 2,
+        slider: {
+          autoplayMs: 4000,
+          slides: [
+            { image: "/media/assets/asset_home_slide/heroDesktop.webp" },
+            { image: "https://cdn.example.com/legacy-home.jpg" },
+          ],
+        },
+        sections: [
+          { content: { image: "/media/assets/asset_home_section/detail.webp" } },
+          { content: { image: "https://cdn.example.com/legacy-section.jpg" } },
+        ],
+      },
+      updatedAt: "2026-07-14T00:00:00.000Z",
+      updatedByUserId: "admin-user-1",
+      restoredFromVersion: null,
+      source: "published",
+    });
+    listExperiencesMock.mockResolvedValue([
+      {
+        id: "experience-1",
+        cardAssetId: "asset_experience_card",
+        heroAssetId: "asset_experience_hero",
+        galleryAssetIds: ["asset_experience_gallery", "asset_experience_card"],
+      },
+    ]);
+    getGalleryMock.mockResolvedValue({
+      id: "global",
+      version: 2,
+      updatedBy: "admin-user-1",
+      updatedAt: "2026-07-14T00:00:00.000Z",
+      items: [{ id: "gallery-1", assetId: "asset_gallery" }],
+    });
+    getBungalowPublicContentMock.mockImplementation(async (bungalowId: string) => ({
+      bungalowId,
+      revisionVersion: 2,
+      featuredOnHome: false,
+      sortOrder: 1,
+      heroImageUrl: "",
+      galleryUrls: [],
+      nightlyRatePen: 350,
+      areaSqm: 55,
+      localeContent: {
+        es: {},
+        en: {},
+      },
+      heroAssetId: "asset_bungalow_hero",
+      galleryAssetIds: ["asset_bungalow_gallery", "asset_bungalow_hero"],
+      updatedAt: "2026-07-14T00:00:00.000Z",
+    }));
+    listAssetMetadataMock.mockImplementation(async (assetIds: string[]) =>
+      assetIds.map((assetId) => ({
+        assetId,
+        originalFilename: `${assetId}.jpg`,
+      })),
+    );
+
+    renderToStaticMarkup(await AdminContentPage({ searchParams: {} }));
+
+    expect(listAssetMetadataMock).toHaveBeenCalledTimes(1);
+    const requestedAssetIds = listAssetMetadataMock.mock.calls[0][0] as string[];
+    expect(requestedAssetIds).toEqual([
+      "asset_home_slide",
+      "asset_home_section",
+      "asset_experience_card",
+      "asset_experience_hero",
+      "asset_experience_gallery",
+      "asset_gallery",
+      "asset_bungalow_hero",
+      "asset_bungalow_gallery",
+    ]);
+    expect(contentHubMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialMediaMetadata: Object.fromEntries(
+          requestedAssetIds.map((assetId) => [
+            assetId,
+            { assetId, originalFilename: `${assetId}.jpg` },
+          ]),
+        ),
+      }),
+    );
   });
 });

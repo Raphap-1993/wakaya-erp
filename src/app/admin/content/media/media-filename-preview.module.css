@@ -1,0 +1,162 @@
+.trigger,
+.closeButton {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(132, 180, 212, 0.42);
+  background: rgba(255, 255, 255, 0.92);
+  color: #234462;
+  font: inherit;
+  cursor: pointer;
+}
+
+.trigger {
+  display: block;
+  width: fit-content;
+  max-width: min(100%, 24rem);
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unavailable {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: baseline;
+  gap: 8px;
+  color: #526b82;
+  font-size: 0.9rem;
+}
+
+.unavailableFilename {
+  min-width: 0;
+  overflow: hidden;
+  color: #234462;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unavailableState {
+  flex: 0 0 auto;
+}
+
+.trigger:hover,
+.closeButton:hover {
+  border-color: rgba(63, 118, 171, 0.56);
+  background: rgba(240, 248, 255, 0.98);
+}
+
+.trigger:focus-visible,
+.closeButton:focus-visible {
+  outline: 3px solid #234462;
+  outline-offset: 2px;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: clamp(12px, 3vw, 32px);
+  background: rgba(12, 24, 38, 0.68);
+}
+
+.dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(960px, 100%);
+  max-height: calc(100dvh - clamp(24px, 6vw, 64px));
+  overflow: hidden;
+  border: 1px solid rgba(132, 180, 212, 0.48);
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(12, 24, 38, 0.34);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(182, 209, 229, 0.72);
+}
+
+.heading {
+  min-width: 0;
+}
+
+.title,
+.filename {
+  margin: 0;
+}
+
+.title {
+  color: #102033;
+  font-size: 1.2rem;
+}
+
+.filename {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #526b82;
+  font-size: 0.9rem;
+}
+
+.closeButton {
+  flex: 0 0 auto;
+}
+
+.previewFrame,
+.errorState {
+  min-height: min(58dvh, 560px);
+}
+
+.previewFrame {
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: clamp(12px, 2vw, 24px);
+  background: #0b1420;
+}
+
+.previewImage {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(68dvh, 720px);
+  object-fit: contain;
+}
+
+.errorState {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: #f4f8fb;
+  color: #526b82;
+  text-align: center;
+}
+
+.errorState p {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .closeButton {
+    width: 100%;
+  }
+
+  .previewFrame,
+  .errorState {
+    min-height: 52dvh;
+  }
+}

@@ -36,6 +36,7 @@ describe("POST /api/admin/content/media", () => {
     createAssetMock.mockResolvedValue({
       asset: {
         id: "asset_01",
+        originalFilename: "hero.jpg",
         status: "ready",
         master: { width: 3200, height: 2133, format: "webp", quality: 95, nearLossless: true },
         variants: {
@@ -73,6 +74,7 @@ describe("POST /api/admin/content/media", () => {
       }),
     );
     expect(body.asset.id).toBe("asset_01");
+    expect(body.asset.originalFilename).toBe("hero.jpg");
   });
 
   it("rejects hero uploads without the mobile crop", async () => {
@@ -97,5 +99,75 @@ describe("POST /api/admin/content/media", () => {
 
     expect(response.status).toBe(422);
     expect(body.error).toBe("media_crop_required");
+  });
+
+  it("returns a stable 503 response without exposing SQL persistence details", async () => {
+    createAssetMock.mockRejectedValue(
+      Object.assign(
+        new Error("media_persistence_failed", {
+          cause: new Error('relation "media_asset" does not exist'),
+        }),
+        { code: "42P01" },
+      ),
+    );
+    const formData = new FormData();
+    formData.set("file", new File([Buffer.from("image")], "hero.jpg", { type: "image/jpeg" }));
+    formData.set("slot", "hero");
+    formData.set(
+      "crops",
+      JSON.stringify({
+        desktop: { x: 0, y: 0, width: 1, height: 1, rotation: 0 },
+        mobile: { x: 0, y: 0, width: 1, height: 1, rotation: 0 },
+      }),
+    );
+
+    const { POST } = await loadRoute();
+    const response = await POST(
+      new Request("http://localhost/api/admin/content/media", {
+        method: "POST",
+        body: formData,
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body).toEqual({ error: "media_persistence_failed" });
+    expect(JSON.stringify(body)).not.toContain("media_asset");
+  });
+
+  it("returns the same stable 503 response for a non-42P01 database failure", async () => {
+    const databaseError = Object.assign(
+      new Error('duplicate key value violates unique constraint "media_asset_pkey"'),
+      { code: "23505" },
+    );
+    createAssetMock.mockRejectedValue(
+      Object.assign(new Error("media_persistence_failed", { cause: databaseError }), {
+        code: "23505",
+      }),
+    );
+    const formData = new FormData();
+    formData.set("file", new File([Buffer.from("image")], "hero.jpg", { type: "image/jpeg" }));
+    formData.set("slot", "hero");
+    formData.set(
+      "crops",
+      JSON.stringify({
+        desktop: { x: 0, y: 0, width: 1, height: 1, rotation: 0 },
+        mobile: { x: 0, y: 0, width: 1, height: 1, rotation: 0 },
+      }),
+    );
+
+    const { POST } = await loadRoute();
+    const response = await POST(
+      new Request("http://localhost/api/admin/content/media", {
+        method: "POST",
+        body: formData,
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body).toEqual({ error: "media_persistence_failed" });
+    expect(JSON.stringify(body)).not.toContain("unique constraint");
+    expect(JSON.stringify(body)).not.toContain("media_asset_pkey");
   });
 });

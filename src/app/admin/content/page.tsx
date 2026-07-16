@@ -1,6 +1,11 @@
 import { requireAdminPageAccess } from "@/app/admin/require-admin-page-access";
 import { ContentHub } from "@/app/admin/content/content-hub";
 import { contentStore } from "@/lib/content/store";
+import {
+  collectAdminMediaAssetIds,
+  toAdminMediaMetadataMap,
+} from "@/lib/content/media/admin-media-metadata";
+import { contentMediaService } from "@/lib/content/media/content-media-service";
 import { corporateContentStore } from "@/lib/corporate-content/store";
 import { homeContentStore } from "@/lib/home-content/store";
 import { reservationStore } from "@/lib/reservations/store";
@@ -59,9 +64,34 @@ export default async function AdminContentPage({
   );
 
   const selectedBungalowId = initialBungalowId || bungalowItems[0]?.bungalow.id || "";
+  const homeMediaValues = [
+    ...homeItem.document.slider.slides.map((slide) => slide.image),
+    ...homeItem.document.sections.flatMap((section) => {
+      const image = (section.content as { image?: unknown }).image;
+      return typeof image === "string" ? [image] : [];
+    }),
+  ];
+  const mediaAssetIds = collectAdminMediaAssetIds([
+    ...homeMediaValues,
+    ...experiences.flatMap((experience) => [
+      experience.cardAssetId ?? "",
+      experience.heroAssetId ?? "",
+      ...experience.galleryAssetIds,
+    ]),
+    ...gallery.items.map((item) => item.assetId),
+    ...bungalowItems.flatMap(({ publicContent }) => [
+      publicContent.heroAssetId ?? "",
+      ...(publicContent.galleryAssetIds ?? []),
+    ]),
+  ]);
+  const mediaMetadataMap = toAdminMediaMetadataMap(
+    await contentMediaService.listAssetMetadata(mediaAssetIds),
+  );
+  const mediaHydrationProps = { initialMediaMetadata: mediaMetadataMap };
 
   return (
     <ContentHub
+      {...mediaHydrationProps}
       key={`${initialTab}:${selectedBungalowId}`}
       initialTab={initialTab}
       initialHomeItem={homeItem}
