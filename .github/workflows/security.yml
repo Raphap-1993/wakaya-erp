@@ -36,7 +36,7 @@ jobs:
           generateSarif: "1"
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
           category: semgrep
@@ -52,7 +52,7 @@ jobs:
           sarif_file: tfsec.sarif
       - name: Upload tfsec SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: tfsec.sarif
           category: tfsec
@@ -66,7 +66,7 @@ jobs:
           soft_fail: true
       - name: Upload checkov SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: checkov.sarif
           category: checkov
@@ -89,7 +89,7 @@ jobs:
           exit-code: '0'
       - name: Upload trivy SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-node-next.sarif
           category: trivy-node-next
@@ -113,7 +113,7 @@ jobs:
           output-format: sarif
       - name: Upload grype SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
           category: grype
