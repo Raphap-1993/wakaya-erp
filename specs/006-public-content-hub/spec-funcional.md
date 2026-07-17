@@ -32,6 +32,9 @@ Permitir que un editor mantenga contenido público ES/EN y media desde una sola 
 | RF-006-15 | Eliminar activos sin uso | Metadata y archivos optimizados se eliminan sin romper referencias vigentes o revisiones |
 | RF-006-16 | Impedir falsos positivos de persistencia | Producción rechaza cargas si PostgreSQL o el storage durable no están configurados |
 | RF-006-17 | Crear y eliminar slides del Home | El borrador permite agregar hasta 8 slides y conserva al menos uno al eliminar |
+| RF-006-18 | Contactar por WhatsApp desde cualquier página pública | Botón flotante con identidad oficial usa el número publicado en `Contacto y horarios` y un mensaje localizado |
+| RF-006-19 | Ordenar bungalows desde backoffice | Home y catálogo respetan `sortOrder`; si existen empates heredados usan Familiar, Matrimonial, Individual, Doble y Triple |
+| RF-006-20 | Mostrar todos los bungalows en el Home | Carrusel responsive lista los cinco tipos, con controles accesibles y desplazamiento táctil |
 
 ## Reglas de negocio
 - `slug` de experiencia es único, minúsculo y no cambia al editar traducciones.
@@ -43,6 +46,8 @@ Permitir que un editor mantenga contenido público ES/EN y media desde una sola 
 - El CTA del popup conserva locale y no crea una booking request por sí mismo.
 - El formulario resuelve el slug público a un ID vigente y envía `requestedExperienceId`; la API persiste el ID nullable y el backoffice lo muestra en el detalle de la solicitud.
 - El contenido de bungalow se asocia al tipo `bungalow`, nunca a `bungalow_unit`.
+- El botón global de WhatsApp no mantiene un número paralelo: deriva su destino de `corporate_content_revision.document.contact.whatsapp`.
+- El Home no recorta el catálogo por cantidad: el carrusel recibe todos los tipos públicos ya ordenados.
 
 ## Requerimientos no funcionales
 - Seguridad: mutaciones requieren `content:write`.
@@ -64,6 +69,9 @@ Permitir que un editor mantenga contenido público ES/EN y media desde una sola 
   variantes WebP en el storage persistente configurado.
 - Home permite crear y eliminar slides; cada cambio solo se vuelve público al
   ejecutar `Publicar cambios` y queda cubierto por la revisión recuperable.
+- Cambiar el WhatsApp corporativo y publicar actualiza el destino global sin deploy.
+- El orden publicado se refleja igual en ES/EN, Home y catálogo de bungalows.
+- El Home renderiza cinco tarjetas en desktop y mobile; las tarjetas fuera del viewport son alcanzables por controles o gesto horizontal.
 
 ## Fuera de alcance
 - page builder, HTML/CSS libre, DAM general, álbumes múltiples y workflow editorial multinivel.

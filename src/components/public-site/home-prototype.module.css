@@ -602,6 +602,66 @@
   background: var(--wakaya-eco-green-deep);
 }
 
+.roomCarousel {
+  min-width: 0;
+}
+
+.roomCarouselControls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.roomCarouselControls button {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.roomCarouselControls button:hover,
+.roomCarouselControls button:focus-visible {
+  border-color: var(--wakaya-cta-green);
+  color: var(--wakaya-eco-green-deep);
+  background: var(--wakaya-cta-green);
+}
+
+.roomCarouselControls button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.roomCarouselControls span {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.roomCarouselTrack {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 18px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: var(--wakaya-cta-green) rgba(255, 255, 255, 0.12);
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+
+.roomCarouselTrack .roomGridCard {
+  flex: 0 0 calc((100% - 60px) / 4);
+  scroll-snap-align: start;
+}
+
 .roomSection .sectionEyebrowOnDark,
 .roomSection .inlineLinkOnDark,
 .roomSection .roomGridEyebrow,
@@ -932,8 +992,8 @@
 }
 
 @media (max-width: 1180px) {
-  .roomGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .roomCarouselTrack .roomGridCard {
+    flex-basis: calc((100% - 20px) / 2);
   }
 
   .storyGrid {
@@ -1054,8 +1114,17 @@
     flex-direction: column;
   }
 
-  .roomGrid {
-    grid-template-columns: 1fr;
+  .roomCarouselControls {
+    justify-content: flex-start;
+  }
+
+  .roomCarouselTrack {
+    margin-right: -18px;
+    padding-right: 18px;
+  }
+
+  .roomCarouselTrack .roomGridCard {
+    flex-basis: 86%;
   }
 
   .storyQuoteCard {

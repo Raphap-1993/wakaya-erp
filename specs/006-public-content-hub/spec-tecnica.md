@@ -69,6 +69,9 @@ Interfaz `MediaStorage` con `put`, `getPublicUrl` y `remove`. El adapter vigente
 - `/[locale]/gallery` consume la colección global;
 - bungalows consumen variantes nuevas y luego fallback legado.
 - `/[locale]/contact` resuelve `experience=<slug>`, envía `requestedExperienceId` y el detalle de booking request muestra experiencia localizada e ID.
+- el layout localizado renderiza una única acción flotante de WhatsApp con `contact.whatsapp`, normaliza el teléfono a dígitos y precarga copy ES/EN;
+- Home y catálogo consumen el mismo orden de `bungalow_public_content.sort_order`; los empates usan el orden estable del catálogo Wakaya.
+- Home entrega la colección completa a un componente cliente con `scroll-snap`, controles anterior/siguiente y tarjetas de cuatro, dos y una por viewport; `visibleCount` queda solo para compatibilidad de revisiones históricas.
 
 ## Convergencia con fuentes existentes
 - migrar `src/lib/home-content/types.ts`, `schema.ts`, `default-content.ts`, `store.ts` y `public-view.ts` a documento v2 con `schemaVersion: 2` y `experienceIds`; el copy de experiencias deja de vivir embebido en Home;

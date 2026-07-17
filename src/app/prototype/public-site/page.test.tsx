@@ -40,7 +40,7 @@ describe('PublicSitePrototypePage', () => {
     expect(html).toContain('Lo que dicen nuestros huespedes');
     expect(html).toContain('Tu retiro en la selva te espera');
     expect(html).toContain('Solicitar reserva');
-    expect(countOccurrences(html, 'data-home-section="room-grid-card"')).toBe(4);
+    expect(countOccurrences(html, 'data-home-section="room-grid-card"')).toBe(5);
     expect(countOccurrences(html, 'data-home-section="experience-card"')).toBe(3);
     expect(countOccurrences(html, 'data-home-section="testimonial-card"')).toBe(3);
   });

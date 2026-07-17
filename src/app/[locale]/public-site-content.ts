@@ -18,6 +18,10 @@ type LocalizedBungalow = (typeof publicBungalows)[number] & {
   gallery: string[];
 };
 
+const publicBungalowCatalogOrder = new Map(
+  publicBungalows.map((bungalow, index) => [bungalow.bookingRequestBungalowId, index] as const),
+);
+
 export type PublicSitePageLabels = {
   nav: Array<{ key: string; label: string; visible?: boolean }>;
   footerIntro: string;
@@ -974,6 +978,13 @@ export async function getLocalizedBungalows(locale: PublicSiteLocale): Promise<L
       if (leftSort !== rightSort) {
         return leftSort - rightSort;
       }
+
+      const leftCatalogOrder = publicBungalowCatalogOrder.get(left.bookingRequestBungalowId) ?? Number.MAX_SAFE_INTEGER;
+      const rightCatalogOrder = publicBungalowCatalogOrder.get(right.bookingRequestBungalowId) ?? Number.MAX_SAFE_INTEGER;
+      if (leftCatalogOrder !== rightCatalogOrder) {
+        return leftCatalogOrder - rightCatalogOrder;
+      }
+
       return left.displayName.localeCompare(right.displayName);
     });
 }

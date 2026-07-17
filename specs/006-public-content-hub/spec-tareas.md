@@ -178,3 +178,24 @@ Comando:
 `npm test -- src/lib/content/media/content-media-service.test.ts src/app/api/admin/content/media/route.test.ts 'src/app/api/admin/content/media/[assetId]/route.test.ts' 'src/app/api/admin/content/bungalows/[id]/route.test.ts' src/app/admin/content/content-hub.test.tsx src/app/admin/home/home-editor.test.tsx src/app/api/health/route.test.ts && npm run typecheck`
 
 Trazabilidad: RF-006-14, RF-006-15, RF-006-16, RF-006-17.
+
+## T-006-009 - WhatsApp global y orden público de bungalows
+
+Objetivo: reutilizar el contacto corporativo publicado en todo el sitio, hacer
+estable el orden administrado y listar todos los bungalows en el Home.
+
+Archivos permitidos:
+- `src/app/[locale]/**`
+- `src/components/public-site/**`
+- `src/app/admin/content/**`
+- `specs/006-public-content-hub/**`
+
+Ciclo TDD:
+1. Red: el layout no expone WhatsApp global, los empates se ordenan alfabéticamente y el Home corta el quinto bungalow.
+2. Green: botón localizado, desempate canónico, orden administrado y carrusel completo.
+3. Refactor: una sola fuente para el teléfono y una sola lista pública ordenada.
+
+Comando:
+`npm test -- 'src/app/[locale]/layout.test.tsx' 'src/app/[locale]/public-site-content-order.test.ts' src/components/public-site/floating-whatsapp-button.test.tsx src/components/public-site/home-bungalow-carousel.test.tsx src/app/admin/content/content-hub.test.tsx src/app/admin/home/home-editor.test.tsx`
+
+Trazabilidad: RF-006-18, RF-006-19, RF-006-20.

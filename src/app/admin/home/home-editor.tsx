@@ -346,7 +346,7 @@ function getPreviewBody(document: HomeContentDocument, selected: SelectedNode, l
     case "story":
       return section.content.paragraphs[locale][0] ?? "Agrega el primer párrafo de esta historia.";
     case "bungalows":
-      return `${section.content.title[locale]} · ${section.content.visibleCount} bungalows visibles`;
+      return `${section.content.title[locale]} · carrusel completo`;
     case "quote-band":
       return section.content.quote[locale];
     case "experiences":
@@ -2281,19 +2281,8 @@ export function HomeEditor({
                   <section className={styles.subCard}>
                     <div className={styles.formGrid}>
                       <label className={styles.field}>
-                        <span>Bungalows visibles</span>
-                        <select
-                          value={selectedSection.content.visibleCount}
-                          onChange={(event) =>
-                            updateSection(selectedSection.id, (section) => {
-                              if (section.type === "bungalows") section.content.visibleCount = Number.parseInt(event.target.value, 10) as 2 | 3 | 4;
-                            })
-                          }
-                        >
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                        </select>
+                        <span>Listado del Home</span>
+                        <input value="Todos los bungalows · Carrusel" readOnly disabled />
                       </label>
                     </div>
                   </section>

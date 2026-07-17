@@ -86,7 +86,6 @@ function blankLocaleContent() {
     recommendations: ["Reservar"],
   };
 }
-
 export function rememberMediaAsset(
   current: AdminMediaMetadataMap,
   asset: ContentMediaAsset,
@@ -1438,17 +1437,26 @@ export function ContentHub({
                 <strong>Bungalows</strong>
               </div>
               <div className={styles.list}>
-                {bungalows.map((item) => (
-                  <button
-                    key={item.bungalow.id}
-                    type="button"
-                    className={item.bungalow.id === selectedBungalowId ? styles.listItemActive : styles.listItem}
-                    onClick={() => openBungalow(item.bungalow.id)}
-                  >
-                    <span className={styles.listItemTitle}>{item.publicContent.localeContent.es.displayName}</span>
-                    <span className={styles.listItemMeta}>Hasta {item.bungalow.capacity} huéspedes</span>
-                  </button>
-                ))}
+                {[...bungalows]
+                  .sort((left, right) => {
+                    if (left.publicContent.sortOrder !== right.publicContent.sortOrder) {
+                      return left.publicContent.sortOrder - right.publicContent.sortOrder;
+                    }
+                    return left.bungalow.name.localeCompare(right.bungalow.name);
+                  })
+                  .map((item) => (
+                    <button
+                      key={item.bungalow.id}
+                      type="button"
+                      className={item.bungalow.id === selectedBungalowId ? styles.listItemActive : styles.listItem}
+                      onClick={() => openBungalow(item.bungalow.id)}
+                    >
+                      <span className={styles.listItemTitle}>{item.publicContent.localeContent.es.displayName}</span>
+                      <span className={styles.listItemMeta}>
+                        Orden {item.publicContent.sortOrder} · Hasta {item.bungalow.capacity} huéspedes
+                      </span>
+                    </button>
+                  ))}
               </div>
             </aside>
 

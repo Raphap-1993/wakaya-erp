@@ -1,0 +1,57 @@
+.button {
+  position: fixed;
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  z-index: 80;
+  display: grid;
+  width: 3.75rem;
+  height: 3.75rem;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 92%);
+  color: #fff;
+  background: #25d366;
+  clip-path: circle(50%);
+  filter: drop-shadow(0 12px 14px rgb(13 46 31 / 28%));
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    filter 180ms ease;
+}
+
+.button:hover {
+  color: #fff;
+  background: #1fbd5a;
+  filter: drop-shadow(0 16px 17px rgb(13 46 31 / 34%));
+  transform: translateY(-2px) scale(1.03);
+}
+
+.button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+  fill: currentColor;
+}
+
+@media (max-width: 720px) {
+  .button {
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .icon {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

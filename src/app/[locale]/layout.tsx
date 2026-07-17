@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { PlayFooter } from "@/components/public-site/play-footer";
 import { PlayHeader } from "@/components/public-site/play-header";
+import { FloatingWhatsAppButton } from "@/components/public-site/floating-whatsapp-button";
 import { isPublicSiteLocale, listPublicSiteLocales } from "@/components/public-site/public-site-locale";
 import { publicSiteMetadataBase } from "@/components/public-site/public-site-metadata";
 import { getPublicRoute, type PublicRouteKey } from "@/components/public-site/public-site-routes";
@@ -30,7 +31,6 @@ export const metadata: Metadata = {
 export function generateStaticParams() {
   return listPublicSiteLocales().map((locale) => ({ locale }));
 }
-
 function buildNav(
   locale: ReturnType<typeof listPublicSiteLocales>[number],
   content: PublicSiteContent,
@@ -102,6 +102,7 @@ export default async function LocalizedPublicSiteLayout({
         footerNav={buildNav(locale, content, FOOTER_NAV_KEYS, false)}
         logoUrl={resolvePublicSiteMedia(publishedCorporate.document.publicSite.media.logo)}
       />
+      <FloatingWhatsAppButton phone={corporateContact.whatsapp} locale={locale} />
     </main>
   );
 }

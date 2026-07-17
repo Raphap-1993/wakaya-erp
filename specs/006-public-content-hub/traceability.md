@@ -19,3 +19,6 @@
 | RF-006-08 | estados publish/conflict | expectedVersion/409 | T-006-001/003 | UI-006-10 |
 | RF-006-09/10 | popup y CTA | public view/query contract | T-006-006 | UI-006-07/08/09 |
 | RF-006-13 | formulario y detalle | `requested_experience_id`/booking API | T-006-001/003/006 | UI booking request detail |
+| RF-006-18 | layout público localizado | contacto corporativo publicado | T-006-009 | UI-006-14 + tests de layout/componente |
+| RF-006-19 | Home, catálogo y tab Bungalows | `sort_order`, desempate estable | T-006-009 | UI-006-15 + tests de orden |
+| RF-006-20 | carrusel público del Home | colección completa y scroll-snap responsive | T-006-009 | UI-006-16 + test de carrusel |

@@ -40,3 +40,9 @@ Confirmación explícita: respuesta textual `aprobado` del usuario después de l
 - `check:prototype-coverage -- --strict --feature 006-public-content-hub`: aprobado.
 - `check:prototype-spa-coherence -- --strict --feature 006-public-content-hub`: no aplica; prototipo standalone.
 - `check:prototype-mock-data -- --strict --feature 006-public-content-hub`: no aplica; datos Wakaya embebidos sin placeholders.
+
+## Aceptación incremental 2026-07-17
+- El Product Owner solicitó explícitamente un botón flotante con icono y color de WhatsApp en todo el sitio, administrado por el contacto del backoffice.
+- El Product Owner entregó la secuencia visual aprobada de bungalows: Familiar, Matrimonial, Individual, Doble y Triple.
+- Este slice reutiliza el editor de contacto, el campo de orden y los patrones visuales ya aprobados; no introduce una nueva superficie administrativa.
+- El Product Owner amplió la instrucción durante la implementación: el Home debe listar los cinco bungalows mediante carrusel, manteniendo las tarjetas visuales vigentes.

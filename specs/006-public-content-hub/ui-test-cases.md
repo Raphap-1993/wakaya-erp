@@ -40,3 +40,12 @@ Dado viewport 390x844, cuando edita crop y contenido, entonces no hay scroll hor
 
 ## UI-006-13 - Experiencia persistida
 Dado que el visitante llega desde `?experience=paseo-laguna`, cuando envía el formulario, entonces la booking request persiste `requestedExperienceId` y su detalle muestra título, slug e ID aunque las notas se editen.
+
+## UI-006-14 - WhatsApp global administrable
+Dado un número publicado en `Empresa y políticas > Contacto y horarios`, cuando el visitante abre cualquier ruta ES/EN, entonces ve el botón verde de WhatsApp y el enlace usa ese número con mensaje localizado.
+
+## UI-006-15 - Orden público de bungalows
+Dado un orden publicado, cuando se renderizan Home y catálogo, entonces ambos lo conservan; los empates heredados usan Familiar, Matrimonial, Individual, Doble y Triple.
+
+## UI-006-16 - Carrusel completo de bungalows
+Dado el Home en desktop o mobile, cuando el visitante recorre el carrusel por botones, teclado o gesto horizontal, entonces puede alcanzar las cinco tarjetas sin alterar su orden.

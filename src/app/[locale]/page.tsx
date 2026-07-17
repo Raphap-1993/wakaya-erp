@@ -2,11 +2,11 @@ import type { Route } from "next";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
+import { HomeBungalowCarousel } from "@/components/public-site/home-bungalow-carousel";
 import { HomeHeroSlider } from "@/components/public-site/home-hero-slider";
 import homeStyles from "@/components/public-site/home-prototype.module.css";
 import type { PublicSiteLocale } from "@/components/public-site/public-site-locale";
 import {
-  getPublicBungalowDetailRoute,
   getPublicRoute,
 } from "@/components/public-site/public-site-routes";
 import { listLocalizedPublicExperiences } from "@/lib/content/public-content";
@@ -23,7 +23,6 @@ async function readLocale(
   const resolvedParams = await params;
   return resolvedParams.locale as PublicSiteLocale;
 }
-
 export async function generateMetadata({
   params,
 }: {
@@ -65,8 +64,7 @@ export default async function LocalizedPublicHomePage({
     scrollLabel: slide.scrollLabel,
     style: slide.style,
   }));
-  const bungalowsSection = home.sections.find((section) => section.type === "bungalows");
-  const rooms = (await getLocalizedBungalows(locale)).slice(0, bungalowsSection?.content.visibleCount ?? 4);
+  const rooms = await getLocalizedBungalows(locale);
   const experiencesSection = home.sections.find((section) => section.type === "experiences");
   const publicExperiences = await listLocalizedPublicExperiences(locale);
   const homeExperiences = experiencesSection?.type === "experiences"
@@ -209,39 +207,11 @@ export default async function LocalizedPublicHomePage({
                 ) : null}
               </div>
 
-              <div className={homeStyles.roomGrid}>
-                {rooms.map((room) => (
-                  <article
-                    key={room.slug}
-                    className={homeStyles.roomGridCard}
-                    data-home-section="room-grid-card"
-                  >
-                    <div className={homeStyles.roomGridMedia}>
-                      <img src={room.image} alt={room.displayName} />
-                      <div className={homeStyles.roomGridShade} />
-                      <div className={homeStyles.roomGridPriceBadge}>
-                        <span>{room.displayPriceFrom}</span>
-                      </div>
-                    </div>
-
-                    <div className={homeStyles.roomGridBody}>
-                      <p className={homeStyles.roomGridEyebrow}>{room.displayTagline}</p>
-                      <h3>{room.displayName}</h3>
-                      <p>{room.displayDescription}</p>
-                      <div className={homeStyles.roomGridFacts}>
-                        <span>{room.displayCapacity}</span>
-                        <span>{room.displayArea}</span>
-                      </div>
-                      <Link
-                        className={homeStyles.roomGridLink}
-                        href={getPublicBungalowDetailRoute(locale, room.slug) as Route}
-                      >
-                        {section.content.detailLabel}
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
+              <HomeBungalowCarousel
+                locale={locale}
+                rooms={rooms}
+                detailLabel={section.content.detailLabel}
+              />
             </div>
           </section>
         );

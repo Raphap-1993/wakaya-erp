@@ -22,5 +22,7 @@ describe('LocalizedPublicSiteLayout', () => {
     expect(countOccurrences(html, 'href="/en/testimonials"')).toBe(1);
     expect(countOccurrences(html, 'href="/en/gallery"')).toBe(2);
     expect(countOccurrences(html, 'href="/en/publications"')).toBe(1);
+    expect(html).toContain('data-public-whatsapp="floating-button"');
+    expect(html).toContain('https://wa.me/51961508813');
   });
 });
