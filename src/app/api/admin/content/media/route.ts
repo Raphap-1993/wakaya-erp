@@ -10,6 +10,25 @@ import { requirePermission } from "@/middleware/authn";
 
 export const dynamic = "force-dynamic";
 
+export async function GET(request: Request) {
+  const auth = await requirePermission(request, "content:write");
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q") ?? "";
+  const rawLimit = Number.parseInt(url.searchParams.get("limit") ?? "100", 10);
+  const limit = Number.isFinite(rawLimit) ? rawLimit : 100;
+
+  try {
+    const assets = await contentMediaService.listAssets({ query, limit });
+    return jsonResponse({ assets });
+  } catch (error) {
+    return failureResponse(error);
+  }
+}
+
 const slotSchema = z.union([
   z.literal("hero"),
   z.literal("detail"),

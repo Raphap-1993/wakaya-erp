@@ -8,6 +8,9 @@ import {
 } from "@/app/admin/content/public-site-settings-editor";
 import { CropDialog } from "@/app/admin/content/media/crop-dialog";
 import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
+import {
+  MediaLibraryPicker,
+} from "@/app/admin/content/media/media-library-picker";
 import { describeAdminApiError, type AdminApiErrorPayload } from "@/app/admin/content/admin-api-errors";
 import {
   resolveAdminMediaDescriptor,
@@ -124,6 +127,7 @@ export function CorporateContentEditor({
   const [versionConflict, setVersionConflict] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [uploadIntent, setUploadIntent] = useState<{ file: File; mediaSlot: PublicSiteMediaSlot } | null>(null);
+  const [librarySlot, setLibrarySlot] = useState<PublicSiteMediaSlot | null>(null);
 
   const content = draft.locales[locale];
 
@@ -171,6 +175,13 @@ export function CorporateContentEditor({
         <div className={styles.toolbar}>
           <strong>{label}</strong>
           <div className={styles.inlineActions}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => setLibrarySlot(mediaSlot)}
+            >
+              Biblioteca
+            </button>
             <label className={styles.secondaryButton} htmlFor={`corporate-media-${mediaSlot}`}>
               {previewUrl ? "Reemplazar" : "Subir imagen"}
             </label>
@@ -189,6 +200,13 @@ export function CorporateContentEditor({
             event.target.value = "";
             if (file) setUploadIntent({ file, mediaSlot });
           }}
+        />
+        <MediaLibraryPicker
+          open={librarySlot === mediaSlot}
+          slot={mediaSlot === "logo" ? "detail" : "hero"}
+          selectedAssetId={reference.kind === "asset" ? reference.assetId : null}
+          onClose={() => setLibrarySlot(null)}
+          onSelect={(assetId) => updateMedia(mediaSlot, assetId)}
         />
       </div>
     );

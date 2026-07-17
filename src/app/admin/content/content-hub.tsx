@@ -9,6 +9,10 @@ import { useRouter } from "next/navigation";
 import { HomeEditor } from "@/app/admin/home/home-editor";
 import { CropDialog } from "@/app/admin/content/media/crop-dialog";
 import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
+import {
+  MediaLibraryPicker,
+  type MediaLibrarySlot,
+} from "@/app/admin/content/media/media-library-picker";
 import { CorporateContentEditor } from "@/app/admin/content/corporate-content-editor";
 import {
   describeAdminApiError,
@@ -217,6 +221,7 @@ function AssetField({
   previewUrl,
   mediaMetadata,
   onUploadSelected,
+  onSelectAsset,
   onRemove,
 }: {
   label: string;
@@ -224,9 +229,11 @@ function AssetField({
   previewUrl: string;
   mediaMetadata: AdminMediaMetadataMap;
   onUploadSelected: (file: File, slot: "hero" | "gallery" | "card" | "detail") => void;
+  onSelectAsset?: (assetId: string, slot: MediaLibrarySlot) => void;
   onRemove?: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const usablePreviewUrl = previewUrl.trim();
   const descriptor = usablePreviewUrl
     ? resolveAdminMediaDescriptor(usablePreviewUrl, mediaMetadata)
@@ -237,6 +244,15 @@ function AssetField({
       <div className={styles.toolbar}>
         <strong>{label}</strong>
         <div className={styles.inlineActions}>
+          {onSelectAsset ? (
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => setLibraryOpen(true)}
+            >
+              Biblioteca
+            </button>
+          ) : null}
           <button
             type="button"
             className={styles.secondaryButton}
@@ -278,6 +294,15 @@ function AssetField({
           }
         }}
       />
+      {onSelectAsset ? (
+        <MediaLibraryPicker
+          open={libraryOpen}
+          slot={slot}
+          selectedAssetId={resolveAdminMediaDescriptor(usablePreviewUrl, mediaMetadata).assetId}
+          onClose={() => setLibraryOpen(false)}
+          onSelect={(assetId) => onSelectAsset(assetId, slot)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -315,6 +340,7 @@ export function ContentHub({
   const [uploadIntent, setUploadIntent] = useState<UploadIntent | null>(null);
   const uploadHandlerRef = useRef<((asset: ContentMediaAsset) => void) | null>(null);
   const bungalowGalleryUploadRef = useRef<HTMLInputElement | null>(null);
+  const [bungalowGalleryLibraryOpen, setBungalowGalleryLibraryOpen] = useState(false);
 
   const selectedExperience = useMemo(
     () => experiences.find((item) => item.id === selectedExperienceId) ?? null,
@@ -512,6 +538,30 @@ export function ContentHub({
     }
     setGallery(body as GalleryPublication);
     setFeedback({ kind: "success", message: "Galería publicada." });
+  }
+
+  async function deleteSelectedGalleryAssetPhysically() {
+    if (!selectedGalleryItem) return;
+    if (!window.confirm("¿Eliminar físicamente esta imagen? Esta acción no se puede deshacer.")) return;
+
+    const response = await fetch(
+      `/api/admin/content/media/${encodeURIComponent(selectedGalleryItem.assetId)}?detachGalleryItemId=${encodeURIComponent(selectedGalleryItem.id)}`,
+      { method: "DELETE" },
+    );
+    const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload;
+    if (!response.ok) {
+      setFeedback({ kind: "error", message: describeAdminApiError(body, response) });
+      return;
+    }
+
+    setGallery((current) => ({
+      ...current,
+      items: current.items.filter((item) => item.id !== selectedGalleryItem.id),
+    }));
+    setSelectedGalleryId(
+      gallery.items.find((item) => item.id !== selectedGalleryItem.id)?.id ?? "",
+    );
+    setFeedback({ kind: "success", message: "Imagen eliminada físicamente." });
   }
 
   async function saveBungalow(event: FormEvent<HTMLFormElement>) {
@@ -1007,6 +1057,13 @@ export function ContentHub({
                       );
                     })
                   }
+                  onSelectAsset={(assetId) =>
+                    setExperiences((current) =>
+                      current.map((item) =>
+                        item.id === selectedExperience.id ? { ...item, cardAssetId: assetId } : item,
+                      ),
+                    )
+                  }
                   onRemove={() =>
                     setExperiences((current) =>
                       current.map((item) =>
@@ -1029,6 +1086,13 @@ export function ContentHub({
                       );
                     })
                   }
+                  onSelectAsset={(assetId) =>
+                    setExperiences((current) =>
+                      current.map((item) =>
+                        item.id === selectedExperience.id ? { ...item, heroAssetId: assetId } : item,
+                      ),
+                    )
+                  }
                   onRemove={() =>
                     setExperiences((current) =>
                       current.map((item) =>
@@ -1038,6 +1102,91 @@ export function ContentHub({
                   }
                 />
               </div>
+
+              <section className={styles.previewCard} aria-labelledby="experience-gallery-title">
+                <div className={styles.toolbar}>
+                  <strong id="experience-gallery-title">Galería del servicio</strong>
+                  <span className={styles.listItemMeta}>
+                    {selectedExperience.galleryAssetIds.length} imagen{selectedExperience.galleryAssetIds.length === 1 ? "" : "es"}
+                  </span>
+                </div>
+                <div className={styles.formGrid}>
+                  {selectedExperience.galleryAssetIds.map((assetId, index) => (
+                    <AssetField
+                      key={`${assetId}-${index}`}
+                      label={`Galería ${index + 1}`}
+                      slot="gallery"
+                      previewUrl={assetPreviewUrl(assetId, "gallery")}
+                      mediaMetadata={mediaMetadata}
+                      onUploadSelected={(file, slot) =>
+                        beginUpload(file, slot, (asset) => {
+                          setExperiences((current) =>
+                            current.map((item) =>
+                              item.id === selectedExperience.id
+                                ? {
+                                    ...item,
+                                    galleryAssetIds: item.galleryAssetIds.map((currentAssetId, currentIndex) =>
+                                      currentIndex === index ? asset.id : currentAssetId,
+                                    ),
+                                  }
+                                : item,
+                            ),
+                          );
+                        })
+                      }
+                      onSelectAsset={(assetId) =>
+                        setExperiences((current) =>
+                          current.map((item) =>
+                            item.id === selectedExperience.id
+                              ? {
+                                  ...item,
+                                  galleryAssetIds: item.galleryAssetIds.map((currentAssetId, currentIndex) =>
+                                    currentIndex === index ? assetId : currentAssetId,
+                                  ),
+                                }
+                              : item,
+                          ),
+                        )
+                      }
+                      onRemove={() =>
+                        setExperiences((current) =>
+                          current.map((item) =>
+                            item.id === selectedExperience.id
+                              ? { ...item, galleryAssetIds: item.galleryAssetIds.filter((_, currentIndex) => currentIndex !== index) }
+                              : item,
+                          ),
+                        )
+                      }
+                    />
+                  ))}
+                  <AssetField
+                    label="Agregar imagen a galería"
+                    slot="gallery"
+                    previewUrl=""
+                    mediaMetadata={mediaMetadata}
+                    onUploadSelected={(file, slot) =>
+                      beginUpload(file, slot, (asset) => {
+                        setExperiences((current) =>
+                          current.map((item) =>
+                            item.id === selectedExperience.id
+                              ? { ...item, galleryAssetIds: [...item.galleryAssetIds, asset.id] }
+                              : item,
+                          ),
+                        );
+                      })
+                    }
+                    onSelectAsset={(assetId) =>
+                      setExperiences((current) =>
+                        current.map((item) =>
+                          item.id === selectedExperience.id
+                            ? { ...item, galleryAssetIds: [...item.galleryAssetIds, assetId] }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              </section>
             </form>
           </div>
         ) : null}
@@ -1134,6 +1283,14 @@ export function ContentHub({
                           }));
                         })
                       }
+                      onSelectAsset={(assetId) =>
+                        setGallery((current) => ({
+                          ...current,
+                          items: current.items.map((item) =>
+                            item.id === selectedGalleryItem.id ? { ...item, assetId } : item,
+                          ),
+                        }))
+                      }
                     />
 
                     <div className={styles.formGrid}>
@@ -1191,9 +1348,9 @@ export function ContentHub({
                     >
                       EN
                     </button>
-                    <button
-                      type="button"
-                      className={styles.ghostButton}
+                      <button
+                        type="button"
+                        className={styles.ghostButton}
                       onClick={() => {
                         const remaining = gallery.items
                           .filter((item) => item.id !== selectedGalleryItem.id)
@@ -1202,9 +1359,16 @@ export function ContentHub({
                         setGallery((current) => ({ ...current, items: remaining }));
                         setSelectedGalleryId(remaining[0]?.id ?? "");
                       }}
-                    >
-                      Eliminar de la galería
-                    </button>
+                      >
+                        Eliminar de la galería
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.ghostButton}
+                        onClick={() => void deleteSelectedGalleryAssetPhysically()}
+                      >
+                        Eliminar físicamente
+                      </button>
                   </div>
 
                   <div className={styles.formGrid}>
@@ -1517,6 +1681,18 @@ export function ContentHub({
                             }));
                           })
                         }
+                        onSelectAsset={(assetId) =>
+                          updateSelectedBungalow((current) => ({
+                            ...current,
+                            ...replaceBungalowHero(
+                              {
+                                heroAssetId: current.heroAssetId ?? null,
+                                galleryAssetIds: current.galleryAssetIds ?? [],
+                              },
+                              assetId,
+                            ),
+                          }))
+                        }
                         onRemove={() =>
                           updateSelectedBungalow((current) => ({
                             ...current,
@@ -1537,6 +1713,13 @@ export function ContentHub({
                             onClick={() => bungalowGalleryUploadRef.current?.click()}
                           >
                             Agregar imagen
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.secondaryButton}
+                            onClick={() => setBungalowGalleryLibraryOpen(true)}
+                          >
+                            Elegir de biblioteca
                           </button>
                         </div>
                         {selectedBungalow.publicContent.galleryAssetIds?.length ? (
@@ -1618,6 +1801,31 @@ export function ContentHub({
                                     >
                                       Quitar
                                     </button>
+                                    <button
+                                      type="button"
+                                      className={styles.ghostButton}
+                                      onClick={async () => {
+                                        if (!window.confirm("¿Eliminar físicamente esta imagen? Esta acción no se puede deshacer.")) return;
+                                        const response = await fetch(
+                                          `/api/admin/content/media/${encodeURIComponent(assetId)}?detachBungalowId=${encodeURIComponent(selectedBungalow.bungalow.id)}`,
+                                          { method: "DELETE" },
+                                        );
+                                        const body = (await response.json().catch(() => ({}))) as AdminApiErrorPayload;
+                                        if (!response.ok) {
+                                          setFeedback({ kind: "error", message: describeAdminApiError(body, response) });
+                                          return;
+                                        }
+                                        updateSelectedBungalow((current) => ({
+                                          ...current,
+                                          galleryAssetIds: (current.galleryAssetIds ?? []).filter(
+                                            (currentAssetId) => currentAssetId !== assetId,
+                                          ),
+                                        }));
+                                        setFeedback({ kind: "success", message: "Imagen eliminada físicamente." });
+                                      }}
+                                    >
+                                      Eliminar físicamente
+                                    </button>
                                   </div>
                                 </div>
                               );
@@ -1646,6 +1854,20 @@ export function ContentHub({
                                       previewUrl={descriptor.previewUrl}
                                     />
                                   </div>
+                                  <div className={styles.inlineActions}>
+                                    <button
+                                      type="button"
+                                      className={styles.ghostButton}
+                                      onClick={() =>
+                                        updateSelectedBungalow((current) => ({
+                                          ...current,
+                                          galleryUrls: current.galleryUrls.filter((currentUrl) => currentUrl !== url),
+                                        }))
+                                      }
+                                    >
+                                      Quitar de la galería
+                                    </button>
+                                  </div>
                                 </div>
                               );
                             })}
@@ -1671,6 +1893,17 @@ export function ContentHub({
                               }));
                             });
                           }}
+                        />
+                        <MediaLibraryPicker
+                          open={bungalowGalleryLibraryOpen}
+                          slot="gallery"
+                          onClose={() => setBungalowGalleryLibraryOpen(false)}
+                          onSelect={(assetId) =>
+                            updateSelectedBungalow((current) => ({
+                              ...current,
+                              galleryAssetIds: [...(current.galleryAssetIds ?? []), assetId],
+                            }))
+                          }
                         />
                       </div>
                     </div>

@@ -343,7 +343,7 @@ export const DEFAULT_HOME_CONTENT: HomeContentDocument = {
           id: "bungalows-primary",
           label: {
             en: "See all",
-            es: "Ver todos",
+            es: "Ver opciones",
           },
           destination: {
             kind: "internal",
@@ -387,11 +387,11 @@ export const DEFAULT_HOME_CONTENT: HomeContentDocument = {
       content: {
         eyebrow: {
           en: "Experiences",
-          es: "Vivencias",
+          es: "Servicios",
         },
         title: {
-          en: "Unique experiences",
-          es: "Experiencias unicas",
+          en: "Experiences designed to rest, celebrate, share, and connect with nature.",
+          es: "Experiencias diseñadas para descansar, celebrar, compartir y conectar con la naturaleza.",
         },
         visibleCount: 3,
       },
@@ -400,8 +400,8 @@ export const DEFAULT_HOME_CONTENT: HomeContentDocument = {
         {
           id: "experiences-primary",
           label: {
-            en: "See all",
-            es: "Ver todas",
+            en: "View options",
+            es: "Ver opciones",
           },
           destination: {
             kind: "internal",

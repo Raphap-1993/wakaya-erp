@@ -63,8 +63,8 @@ export const DEFAULT_PUBLIC_EXPERIENCES: DefaultExperienceRecord[] = [
     localeContent: {
       es: {
         title: "Bodas",
-        summary: "Celebra tu boda en un entorno natural con coordinación del equipo Wakaya.",
-        body: "Wakaya ofrece espacios naturales para bodas y una coordinación personalizada según la fecha, cantidad de invitados y formato del evento.",
+        summary: "El comienzo de una nueva historia merece un escenario inolvidable.",
+        body: "En Wakaya, la naturaleza se convierte en el escenario perfecto para celebrar el amor. Nuestro equipo te acompaña con una coordinación personalizada, cuidando cada detalle para que tú y tus invitados vivan un encuentro con lo mágico.",
         duration: "A medida",
         priceLabel: "Cotizar",
         ctaLabel: "Consultar servicio",
@@ -97,8 +97,8 @@ export const DEFAULT_PUBLIC_EXPERIENCES: DefaultExperienceRecord[] = [
     localeContent: {
       es: {
         title: "Eventos Corporativos",
-        summary: "Jornadas, reuniones y encuentros de equipo en un entorno natural.",
-        body: "Coordinamos eventos corporativos según el número de participantes, los espacios requeridos y los servicios de alimentación necesarios.",
+        summary: "Reúne a tu equipo en un entorno natural donde la tranquilidad inspira nuevas ideas, fortalece la colaboración y transforma cada encuentro en una experiencia única.",
+        body: "En Wakaya diseñamos y coordinamos cada evento de forma personalizada, adaptando los espacios, la propuesta gastronómica y cada detalle a los objetivos de tu empresa. Creamos el ambiente ideal para impulsar la creatividad, fortalecer el trabajo en equipo y vivir una jornada productiva e inspiradora.",
         duration: "A medida",
         priceLabel: "Cotizar",
         ctaLabel: "Consultar servicio",
@@ -131,8 +131,8 @@ export const DEFAULT_PUBLIC_EXPERIENCES: DefaultExperienceRecord[] = [
     localeContent: {
       es: {
         title: "Full Day",
-        summary: "Disfruta Wakaya durante el día y coordina las actividades disponibles.",
-        body: "El Full Day permite disfrutar los espacios de Wakaya durante una jornada. La disponibilidad, horarios y servicios incluidos se confirman al consultar.",
+        summary: "Escápate de la rutina y vive un día diferente en Wakaya, rodeado de naturaleza, tranquilidad y experiencias diseñadas para relajarte, reconectar y disfrutar cada momento.",
+        body: "Nuestro programa Full Day te permite disfrutar de los espacios y servicios de Wakaya en un entorno único. La disponibilidad, los horarios y las actividades incluidas se coordinan según la fecha de tu visita para brindarte una experiencia personalizada.",
         duration: "Día completo",
         priceLabel: "Consultar",
         ctaLabel: "Consultar servicio",
@@ -165,8 +165,8 @@ export const DEFAULT_PUBLIC_EXPERIENCES: DefaultExperienceRecord[] = [
     localeContent: {
       es: {
         title: "Cenas Románticas",
-        summary: "Una cena para dos preparada en el entorno natural de Wakaya.",
-        body: "Coordinamos cenas románticas según la fecha, el menú disponible y los detalles que la pareja desee incluir.",
+        summary: "Comparte una velada especial para dos, rodeados por la naturaleza y la tranquilidad de Wakaya, en un ambiente donde cada instante invita a celebrar el amor y crear recuerdos inolvidables.",
+        body: "Cada cena se diseña de forma personalizada, cuidando la propuesta gastronómica, la ambientación y cada detalle para que vivan una experiencia íntima y exclusiva, donde el encanto de Wakaya haga de esa noche un verdadero encuentro con lo mágico.",
         duration: "Con reserva",
         priceLabel: "Cotizar",
         ctaLabel: "Consultar servicio",
@@ -196,8 +196,8 @@ export const DEFAULT_PUBLIC_EXPERIENCES: DefaultExperienceRecord[] = [
     localeContent: {
       es: {
         title: "Restaurante",
-        summary: "Cocina para huéspedes y visitantes en el entorno de Wakaya.",
-        body: "Consulta la atención del restaurante, los horarios y las opciones disponibles para la fecha de tu visita.",
+        summary: "Disfruta de una experiencia gastronómica rodeada de naturaleza, donde cada plato se complementa con la tranquilidad, el encanto y la hospitalidad de Wakaya.",
+        body: "Nuestro restaurante recibe tanto a huéspedes como a visitantes. Consulta los horarios de atención, la disponibilidad y la propuesta gastronómica para la fecha de tu visita.",
         duration: "Según horario",
         priceLabel: "Ver carta",
         ctaLabel: "Consultar servicio",

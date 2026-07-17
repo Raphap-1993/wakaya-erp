@@ -261,9 +261,31 @@ export async function readStoredPublicMedia(
   pathSegments: string[],
   storage: MediaStorage = createFilesystemMediaStorage(),
 ) {
-  const buffer = await storage.read(pathSegments).catch(() => {
-    throw new Error("media_not_found");
-  });
+  let buffer: Buffer;
+  try {
+    buffer = await storage.read(pathSegments);
+  } catch {
+    const [scope, assetId, filename] = pathSegments;
+    const isManagedVariantPath =
+      scope === "assets" &&
+      Boolean(assetId) &&
+      typeof filename === "string" &&
+      filename.endsWith(".webp") &&
+      filename !== "master.webp";
+
+    if (!isManagedVariantPath) {
+      throw new Error("media_not_found");
+    }
+
+    try {
+      // Assets are reusable across slots. Older uploads may only have the
+      // variants required by their original slot, so master.webp is the
+      // safe, uncropped fallback for a new slot reference.
+      buffer = await storage.read(["assets", assetId, "master.webp"]);
+    } catch {
+      throw new Error("media_not_found");
+    }
+  }
 
   return {
     buffer,

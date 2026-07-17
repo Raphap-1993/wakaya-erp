@@ -1,28 +1,33 @@
 @import "@fontsource-variable/lora";
-@import "@fontsource-variable/montserrat";
+@import "@fontsource/barlow-condensed/300.css";
 
 :root {
   color-scheme: light;
   --wakaya-font-sans: "Avenir Next", "Inter", "Segoe UI", sans-serif;
   --wakaya-font-public-display: "Lora Variable", "Lora", Georgia, serif;
-  --wakaya-font-public-body: "Montserrat Variable", "Montserrat", "Avenir Next", sans-serif;
+  --wakaya-font-public-body: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --wakaya-font-public-ui: var(--wakaya-font-public-body);
+  --wakaya-font-public-weight: 300;
+  --wakaya-font-public-ui-weight: 400;
   --font-playfair-display: var(--wakaya-font-sans);
   --font-jost: var(--wakaya-font-sans);
   --font-dm-mono: var(--wakaya-font-sans);
-  --wakaya-eco-green: #295331;
-  --wakaya-eco-green-deep: #173b26;
-  --wakaya-palm-lime: #b6ce87;
-  --wakaya-palm-lime-deep: #90ad55;
-  --wakaya-lime-ink: #536c2c;
-  --wakaya-sand-beige: #eee9dd;
-  --wakaya-sand-light: #f8f5ed;
-  --wakaya-bg: #f7f1e7;
+  --wakaya-eco-green: #07872b;
+  --wakaya-cta-green: #4ca517;
+  --wakaya-cta-green-hover: #07872b;
+  --wakaya-eco-green-deep: #08412f;
+  --wakaya-palm-lime: #07872b;
+  --wakaya-palm-lime-deep: #4ca517;
+  --wakaya-lime-ink: #07872b;
+  --wakaya-sand-beige: #fdfbf7;
+  --wakaya-sand-light: #fdfbf7;
+  --wakaya-bg: #fdfbf7;
   --wakaya-surface: rgba(255, 252, 247, 0.9);
-  --wakaya-text: #17362f;
-  --wakaya-muted: #6e6256;
+  --wakaya-text: #2b2e2a;
+  --wakaya-muted: #626760;
   --wakaya-line: rgba(69, 52, 35, 0.12);
   --wakaya-accent: #efad1a;
-  --wakaya-forest: #28473e;
+  --wakaya-forest: #0e6043;
 }
 
 *,

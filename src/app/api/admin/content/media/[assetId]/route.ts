@@ -23,8 +23,13 @@ export async function DELETE(
   }
 
   try {
+    const url = new URL(request.url);
     const result = await contentMediaService.deleteAsset(
       await readAssetId(context.params),
+      {
+        detachGalleryItemId: url.searchParams.get("detachGalleryItemId") ?? undefined,
+        detachBungalowId: url.searchParams.get("detachBungalowId") ?? undefined,
+      },
     );
     return jsonResponse(result);
   } catch (error) {

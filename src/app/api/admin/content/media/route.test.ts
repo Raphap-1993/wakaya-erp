@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { requirePermissionMock, createAssetMock } = vi.hoisted(() => ({
+const { requirePermissionMock, createAssetMock, listAssetsMock } = vi.hoisted(() => ({
   requirePermissionMock: vi.fn(),
   createAssetMock: vi.fn(),
+  listAssetsMock: vi.fn(),
 }));
 
 vi.mock("@/middleware/authn", () => ({
@@ -12,6 +13,7 @@ vi.mock("@/middleware/authn", () => ({
 vi.mock("@/lib/content/media/content-media-service", () => ({
   contentMediaService: {
     createAsset: createAssetMock,
+    listAssets: listAssetsMock,
   },
 }));
 
@@ -19,11 +21,47 @@ async function loadRoute() {
   return import("./route");
 }
 
+describe("GET /api/admin/content/media", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    requirePermissionMock.mockReset();
+    listAssetsMock.mockReset();
+    requirePermissionMock.mockResolvedValue({
+      authenticated: true,
+      roles: ["admin"],
+      subject: "admin-user-1",
+    });
+  });
+
+  it("lists reusable assets with a filename query", async () => {
+    listAssetsMock.mockResolvedValue([
+      {
+        id: "asset_01",
+        originalFilename: "slider.jpg",
+        previewUrl: "/media/assets/asset_01/master.webp",
+        createdAt: "2026-07-16T00:00:00.000Z",
+      },
+    ]);
+
+    const { GET } = await loadRoute();
+    const response = await GET(
+      new Request("http://localhost/api/admin/content/media?q=slider&limit=20"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      assets: [expect.objectContaining({ id: "asset_01", originalFilename: "slider.jpg" })],
+    });
+    expect(listAssetsMock).toHaveBeenCalledWith({ query: "slider", limit: 20 });
+  });
+});
+
 describe("POST /api/admin/content/media", () => {
   beforeEach(() => {
     vi.resetModules();
     requirePermissionMock.mockReset();
     createAssetMock.mockReset();
+    listAssetsMock.mockReset();
 
     requirePermissionMock.mockResolvedValue({
       authenticated: true,

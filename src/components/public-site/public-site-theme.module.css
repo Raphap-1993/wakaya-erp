@@ -1,19 +1,19 @@
 .page {
   --wakaya-font-sans: var(--wakaya-font-public-body);
-  --wakaya-accent: var(--wakaya-palm-lime);
+  --wakaya-accent: var(--wakaya-eco-green);
   --font-playfair-display: var(--wakaya-font-public-display);
   --font-jost: var(--wakaya-font-public-body);
   --font-dm-mono: var(--wakaya-font-public-body);
   --bg: var(--wakaya-sand-beige);
-  --surface: rgba(248, 245, 237, 0.92);
+  --surface: rgba(253, 251, 247, 0.94);
   --surface-strong: var(--wakaya-sand-light);
   --surface-soft: rgba(238, 233, 221, 0.9);
   --line: rgba(41, 83, 49, 0.16);
-  --text: var(--wakaya-eco-green-deep);
-  --muted: #6e6256;
-  --muted-strong: #4d463f;
-  --accent: var(--wakaya-palm-lime);
-  --accent-deep: var(--wakaya-palm-lime-deep);
+  --text: var(--wakaya-text);
+  --muted: var(--wakaya-muted);
+  --muted-strong: #454a44;
+  --accent: var(--wakaya-eco-green);
+  --accent-deep: var(--wakaya-eco-green-deep);
   --accent-soft: rgba(182, 206, 135, 0.2);
   --forest: var(--wakaya-eco-green);
   --shadow-soft: 0 24px 70px rgba(23, 59, 38, 0.09);
@@ -29,8 +29,43 @@
     linear-gradient(180deg, var(--wakaya-sand-light) 0%, var(--bg) 45%, #e5dfd1 100%);
   color: var(--text);
   font-family: var(--wakaya-font-sans);
+  font-size: 18px;
+  font-weight: var(--wakaya-font-public-weight);
+  font-style: normal;
   font-kerning: normal;
   text-rendering: optimizeLegibility;
+}
+
+.page :global(p),
+.page :global(a),
+.page :global(button),
+.page :global(input),
+.page :global(select),
+.page :global(textarea),
+.page :global(label),
+.page :global(li),
+.page :global(span) {
+  font-weight: var(--wakaya-font-public-weight) !important;
+}
+
+.page :global(h1),
+.page :global(h2),
+.page :global(h3),
+.page :global(h4),
+.page :global(h5),
+.page :global(h6),
+.page :global(p),
+.page :global(a),
+.page :global(button),
+.page :global(input),
+.page :global(select),
+.page :global(textarea),
+.page :global(label),
+.page :global(li),
+.page :global(span),
+.page :global(em),
+.page :global(i) {
+  font-style: normal !important;
 }
 
 .page.page :global(h1),

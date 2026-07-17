@@ -87,6 +87,7 @@ describe("style governance", () => {
             value !== "var(--wakaya-font-sans)" &&
             value !== "var(--wakaya-font-public-display)" &&
             value !== "var(--wakaya-font-public-body)" &&
+            value !== "var(--wakaya-font-public-ui)" &&
             value !== "inherit"
           );
         })
@@ -101,12 +102,17 @@ describe("style governance", () => {
     const publicTheme = readStyle("src/components/public-site/public-site-theme.module.css");
 
     expect(globals).toContain('--wakaya-font-public-display: "Lora Variable"');
-    expect(globals).toContain('--wakaya-font-public-body: "Montserrat Variable"');
-    expect(globals).toContain("--wakaya-eco-green: #295331;");
-    expect(globals).toContain("--wakaya-palm-lime: #b6ce87;");
-    expect(globals).toContain("--wakaya-sand-beige: #eee9dd;");
+    expect(globals).toContain('--wakaya-font-public-body: "Barlow Condensed"');
+    expect(globals).toContain("--wakaya-font-public-ui: var(--wakaya-font-public-body);");
+    expect(globals).toContain("--wakaya-font-public-weight: 300;");
+    expect(globals).toContain("--wakaya-font-public-ui-weight: 400;");
+    expect(globals).toContain("--wakaya-eco-green: #07872b;");
+    expect(globals).toContain("--wakaya-cta-green: #4ca517;");
+    expect(globals).toContain("--wakaya-sand-beige: #fdfbf7;");
+    expect(globals).toContain("--wakaya-text: #2b2e2a;");
     expect(publicTheme).toContain("--wakaya-font-sans: var(--wakaya-font-public-body);");
     expect(publicTheme).toContain("font-family: var(--wakaya-font-public-display);");
+    expect(publicTheme).toContain("font-style: normal;");
   });
 
   it("removes the retired gold accents from public-site styles", () => {

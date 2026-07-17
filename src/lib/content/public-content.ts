@@ -63,11 +63,14 @@ function mediaAssetUrl(assetId: string | null | undefined, variant: "card" | "he
 
 function mapExperienceRecord(record: ExperienceRecord, locale: PublicSiteLocale): PublicExperience {
   const localized = record.localeContent[locale];
+  const fallback = findDefaultExperienceBySlug(record.slug);
   const coverImage =
     mediaAssetUrl(record.cardAssetId, "card") ||
     mediaAssetUrl(record.heroAssetId, "heroDesktop") ||
-    mediaAssetUrl(record.galleryAssetIds[0], "detail");
-  const heroImage = mediaAssetUrl(record.heroAssetId, "heroDesktop") || coverImage;
+    mediaAssetUrl(record.galleryAssetIds[0], "detail") ||
+    fallback?.cardImage ||
+    "";
+  const heroImage = mediaAssetUrl(record.heroAssetId, "heroDesktop") || fallback?.heroImage || coverImage;
 
   return {
     id: record.id,

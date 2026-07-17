@@ -7,6 +7,11 @@ import Link from "next/link";
 import { CropDialog } from "@/app/admin/content/media/crop-dialog";
 import { MediaFilenamePreview } from "@/app/admin/content/media/media-filename-preview";
 import {
+  MediaLibraryPicker,
+  mediaAssetUrl,
+  type MediaLibrarySlot,
+} from "@/app/admin/content/media/media-library-picker";
+import {
   resolveAdminMediaDescriptor,
   type AdminMediaMetadataMap,
 } from "@/lib/content/media/admin-media-metadata";
@@ -473,6 +478,42 @@ function TextStyleFields({
   onChange: (patch: Partial<HomeTextStyle>) => void;
   includeSubtitle?: boolean;
 }) {
+  const sizeField = (
+    label: string,
+    value: string | undefined,
+    fallback: (typeof HOME_BODY_SIZES)[number],
+    onValueChange: (value: string) => void,
+  ) => (
+    <label className={styles.field}>
+      <span>{label}</span>
+      <select value={value ?? fallback} onChange={(event) => onValueChange(event.target.value)}>
+        {(label === "Tamaño heading" ? HOME_HEADING_SIZES : HOME_BODY_SIZES).map((size) => (
+          <option key={size} value={size}>
+            {size}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  return (
+    <section className={styles.subCard}>
+      <div className={styles.subCardHeader}>
+        <h3>Tamaños tipográficos</h3>
+        <p>Un único control de tamaño por tipo de texto.</p>
+      </div>
+      <div className={styles.formGrid}>
+        {sizeField("Tamaño eyebrow", style.eyebrowSize, DEFAULT_EYEBROW_SIZE, (value) => onChange({ eyebrowSize: value as (typeof HOME_BODY_SIZES)[number] }))}
+        {sizeField("Tamaño heading", style.headingSize, "regular", (value) => onChange({ headingSize: value as (typeof HOME_HEADING_SIZES)[number] }))}
+        {includeSubtitle ? sizeField("Tamaño subtítulo", style.subtitleSize, DEFAULT_SUBTITLE_SIZE, (value) => onChange({ subtitleSize: value as (typeof HOME_BODY_SIZES)[number] })) : null}
+        {sizeField("Tamaño body", style.bodySize, "regular", (value) => onChange({ bodySize: value as (typeof HOME_BODY_SIZES)[number] }))}
+        {sizeField("Tamaño labels", style.labelSize, DEFAULT_LABEL_SIZE, (value) => onChange({ labelSize: value as (typeof HOME_BODY_SIZES)[number] }))}
+        {sizeField("Tamaño CTA", style.ctaSize, DEFAULT_CTA_SIZE, (value) => onChange({ ctaSize: value as (typeof HOME_BODY_SIZES)[number] }))}
+      </div>
+    </section>
+  );
+
+  /* Legacy advanced controls remain below for migration compatibility. */
   return (
     <details className={`${styles.advancedDetails} ${styles.fieldFull}`}>
       <summary>Opciones avanzadas</summary>
@@ -820,6 +861,36 @@ function NavigationStyleFields({
     <section className={styles.subCard}>
       <div className={styles.subCardHeader}>
         <h3>Menú público</h3>
+        <p>Controla únicamente el tamaño de links y CTA.</p>
+      </div>
+      <div className={styles.formGrid}>
+        <label className={styles.field}>
+          <span>Tamaño links menú</span>
+          <select
+            value={style?.linkSize ?? DEFAULT_NAV_LINK_SIZE}
+            onChange={(event) => onChange({ linkSize: event.target.value as (typeof HOME_BODY_SIZES)[number] })}
+          >
+            {HOME_BODY_SIZES.map((size) => <option key={size} value={size}>{size}</option>)}
+          </select>
+        </label>
+        <label className={styles.field}>
+          <span>Tamaño CTA menú</span>
+          <select
+            value={style?.ctaSize ?? DEFAULT_NAV_CTA_SIZE}
+            onChange={(event) => onChange({ ctaSize: event.target.value as (typeof HOME_BODY_SIZES)[number] })}
+          >
+            {HOME_BODY_SIZES.map((size) => <option key={size} value={size}>{size}</option>)}
+          </select>
+        </label>
+      </div>
+    </section>
+  );
+
+  /* Legacy navigation controls remain below for migration compatibility. */
+  return (
+    <section className={styles.subCard}>
+      <div className={styles.subCardHeader}>
+        <h3>Menú público</h3>
       </div>
       <div className={styles.formGrid}>
         <label className={styles.field}>
@@ -1010,6 +1081,7 @@ function ImageField({
   slot,
   isUploading,
   onSelect,
+  onSelectAsset,
 }: {
   label: string;
   value: string;
@@ -1017,7 +1089,9 @@ function ImageField({
   slot: string;
   isUploading: boolean;
   onSelect: (file: File, slot: string) => void;
+  onSelectAsset?: (assetId: string, slot: MediaLibrarySlot) => void;
 }) {
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const mediaDescriptor = value
     ? resolveAdminMediaDescriptor(value, mediaMetadata)
     : null;
@@ -1049,6 +1123,24 @@ function ImageField({
           }}
         />
       </label>
+      {onSelectAsset ? (
+        <>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => setLibraryOpen(true)}
+          >
+            Elegir de biblioteca
+          </button>
+          <MediaLibraryPicker
+            open={libraryOpen}
+            slot={slot === "hero" ? "hero" : "detail"}
+            selectedAssetId={mediaDescriptor?.assetId}
+            onClose={() => setLibraryOpen(false)}
+            onSelect={(assetId) => onSelectAsset(assetId, slot === "hero" ? "hero" : "detail")}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
@@ -1748,6 +1840,9 @@ export function HomeEditor({
                         updateSlide(selectedSlide.id, (slide) => void (slide.image = mediaUrl));
                       })
                     }
+                    onSelectAsset={(assetId) =>
+                      updateSlide(selectedSlide.id, (slide) => void (slide.image = mediaAssetUrl(assetId, "hero")))
+                    }
                   />
                 </div>
               </section>
@@ -2050,6 +2145,11 @@ export function HomeEditor({
                             });
                           })
                         }
+                        onSelectAsset={(assetId) =>
+                          updateSection(selectedSection.id, (section) => {
+                            if (section.type === "story") section.content.image = mediaAssetUrl(assetId, "detail");
+                          })
+                        }
                       />
                     </div>
                   </section>
@@ -2226,6 +2326,11 @@ export function HomeEditor({
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "quote-band") section.content.image = mediaUrl;
                             });
+                          })
+                        }
+                        onSelectAsset={(assetId) =>
+                          updateSection(selectedSection.id, (section) => {
+                            if (section.type === "quote-band") section.content.image = mediaAssetUrl(assetId, "detail");
                           })
                         }
                       />
@@ -2433,6 +2538,11 @@ export function HomeEditor({
                             updateSection(selectedSection.id, (section) => {
                               if (section.type === "closing-cta") section.content.image = mediaUrl;
                             });
+                          })
+                        }
+                        onSelectAsset={(assetId) =>
+                          updateSection(selectedSection.id, (section) => {
+                            if (section.type === "closing-cta") section.content.image = mediaAssetUrl(assetId, "detail");
                           })
                         }
                       />

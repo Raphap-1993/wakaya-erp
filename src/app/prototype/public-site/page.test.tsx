@@ -36,7 +36,7 @@ describe('PublicSitePrototypePage', () => {
     expect(html).toContain('Nuestra historia');
     expect(html).toContain('Donde la selva');
     expect(html).toContain('Nuestros Bungalows');
-    expect(html).toContain('Experiencias unicas');
+    expect(html).toContain('Experiencias diseñadas para descansar, celebrar, compartir y conectar con la naturaleza.');
     expect(html).toContain('Lo que dicen nuestros huespedes');
     expect(html).toContain('Tu retiro en la selva te espera');
     expect(html).toContain('Solicitar reserva');

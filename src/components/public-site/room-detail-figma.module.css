@@ -27,7 +27,7 @@
 }
 
 .storyHeader {
-  margin-bottom: 12px;
+  margin-bottom: 24px;
 }
 
 .storyKicker {
@@ -41,12 +41,13 @@
 }
 
 .storyTitle {
-  margin: 0 0 10px;
+  margin: 0 0 18px;
   color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
-  font-size: calc(clamp(2.75rem, 5vw, 4.3rem) + 2px);
-  font-weight: 700;
-  line-height: 0.94;
+  font-size: clamp(4.25rem, 7vw, 6.8rem);
+  font-weight: var(--wakaya-font-public-weight);
+  letter-spacing: -0.025em;
+  line-height: 0.9;
 }
 
 .ratingRow {
@@ -120,8 +121,8 @@
   margin: 0 0 18px;
   color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
-  font-size: calc(2rem + 2px);
-  font-weight: 700;
+  font-size: clamp(2.4rem, 4vw, 3.8rem);
+  font-weight: var(--wakaya-font-public-weight);
   line-height: 1.1;
 }
 

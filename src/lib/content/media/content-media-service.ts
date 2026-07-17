@@ -47,6 +47,13 @@ export type ContentMediaAsset = {
   variants: Partial<Record<MediaVariantKey, PersistedVariant>>;
 };
 
+export type ContentMediaLibraryAsset = {
+  id: string;
+  originalFilename: string;
+  previewUrl: string;
+  createdAt: string;
+};
+
 type PersistedAssetRow = {
   id: string;
   storage_key: string;
@@ -421,6 +428,38 @@ export class ContentMediaService {
     }));
   }
 
+  async listAssets(input: { query?: string; limit?: number } = {}): Promise<ContentMediaLibraryAsset[]> {
+    const pool = this.resolvePool();
+    if (!pool) {
+      return [];
+    }
+
+    const query = input.query?.trim() ?? "";
+    const limit = Math.min(Math.max(input.limit ?? 100, 1), 200);
+    const result = await pool.query<{
+      id: string;
+      original_filename: string | null;
+      created_at: Date | string;
+    }>(
+      `
+        select id, original_filename, created_at
+        from media_asset
+        where status = 'ready'
+          and ($1 = '' or original_filename ilike '%' || $1 || '%')
+        order by created_at desc, id desc
+        limit $2
+      `,
+      [query, limit],
+    );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      originalFilename: row.original_filename ?? "imagen.webp",
+      previewUrl: `/media/assets/${row.id}/master.webp`,
+      createdAt: new Date(row.created_at).toISOString(),
+    }));
+  }
+
   async createAsset(input: {
     file: File;
     slot: ContentMediaSlot;
@@ -527,7 +566,10 @@ export class ContentMediaService {
     }
   }
 
-  async deleteAsset(assetId: string): Promise<{
+  async deleteAsset(
+    assetId: string,
+    options: { detachGalleryItemId?: string; detachBungalowId?: string } = {},
+  ): Promise<{
     deleted: true;
     assetId: string;
     cleanupPending: boolean;
@@ -562,6 +604,19 @@ export class ContentMediaService {
       const asset = assetResult.rows[0];
       if (!asset) {
         throw new Error("media_not_found");
+      }
+
+      if (options.detachGalleryItemId) {
+        await client.query(
+          "delete from content_gallery_item where id = $1 and asset_id = $2",
+          [options.detachGalleryItemId, assetId],
+        );
+      }
+      if (options.detachBungalowId) {
+        await client.query(
+          "update bungalow_public_content set gallery_asset_ids = array_remove(gallery_asset_ids, $1) where bungalow_id = $2",
+          [assetId, options.detachBungalowId],
+        );
       }
 
       const mediaUrlPattern = `%/media/assets/${assetId}/%`;

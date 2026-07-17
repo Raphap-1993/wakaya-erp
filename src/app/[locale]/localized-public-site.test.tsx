@@ -194,7 +194,7 @@ describe("localized public site routes", () => {
     expect(html).toContain("Wakaya Ecolodge");
     expect(html).toContain("Un encuentro con lo Magico");
     expect(html).toContain("Nuestros Bungalows");
-    expect(html).toContain("Experiencias unicas");
+    expect(html).toContain("Experiencias diseñadas para descansar, celebrar, compartir y conectar con la naturaleza.");
     expect(html).toContain("Lo que dicen nuestros huespedes");
     expect(html).toContain("Tu retiro en la selva te espera");
     expect(html).toContain('href="/es/contact"');

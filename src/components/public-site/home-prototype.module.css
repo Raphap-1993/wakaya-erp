@@ -56,8 +56,8 @@
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 48px;
+  gap: 40px;
+  margin-bottom: 68px;
 }
 
 .sectionHeadCenter {
@@ -237,8 +237,8 @@
 
 .primaryButton,
 .requestSubmit {
-  background: var(--wakaya-palm-lime);
-  color: var(--wakaya-eco-green-deep);
+  background: var(--wakaya-cta-green);
+  color: var(--wakaya-sand-light);
 }
 
 .requestSubmit {
@@ -581,8 +581,8 @@
 }
 
 .roomSection .sectionShell {
-  padding-top: 112px;
-  padding-bottom: 112px;
+  padding-top: 128px;
+  padding-bottom: 128px;
 }
 
 .roomSection h2,
@@ -594,12 +594,20 @@
 .roomGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  gap: 20px;
+  background: transparent;
 }
 
 .roomGridCard {
   background: var(--wakaya-eco-green-deep);
+}
+
+.roomSection .sectionEyebrowOnDark,
+.roomSection .inlineLinkOnDark,
+.roomSection .roomGridEyebrow,
+.roomSection .roomGridLink,
+.roomSection .roomGridFacts {
+  color: var(--wakaya-cta-green);
 }
 
 .roomGridMedia {
@@ -634,7 +642,7 @@
 .roomGridPriceBadge span {
   display: inline-flex;
   padding: 8px 12px;
-  background: rgba(182, 206, 135, 0.94);
+  background: var(--wakaya-cta-green);
   color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-label-size, 12px);
@@ -755,8 +763,13 @@
 }
 
 .experienceSection .sectionShell {
-  padding-top: 112px;
-  padding-bottom: 112px;
+  padding-top: 136px;
+  padding-bottom: 136px;
+}
+
+.experienceSection .sectionHead h2 {
+  font-size: clamp(3.2rem, 5.5vw, 5.6rem);
+  line-height: 0.98;
 }
 
 .experienceGrid {
@@ -793,7 +806,7 @@
   top: 16px;
   right: 16px;
   padding: 8px 10px;
-  background: var(--wakaya-palm-lime);
+  background: var(--wakaya-cta-green);
   color: var(--wakaya-eco-green-deep);
   font-family: var(--wakaya-font-sans);
   font-size: var(--home-label-size, 12px);

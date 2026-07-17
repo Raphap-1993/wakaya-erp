@@ -52,7 +52,7 @@ describe("DELETE /api/admin/content/media/[assetId]", () => {
       assetId: "asset_01",
       cleanupPending: false,
     });
-    expect(deleteAssetMock).toHaveBeenCalledWith("asset_01");
+    expect(deleteAssetMock).toHaveBeenCalledWith("asset_01", {});
   });
 
   it("returns 409 while the asset is referenced", async () => {

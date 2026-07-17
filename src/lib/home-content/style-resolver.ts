@@ -169,7 +169,7 @@ function resolveNavigationScale(size: HomeNavigationStyle["linkSize"] | HomeNavi
     case "regular":
     default:
       return {
-        link: "17.5px",
+        link: "16.5px",
         mobileLink: "1.9rem",
         locale: "12.5px",
         cta: "14px",

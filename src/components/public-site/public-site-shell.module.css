@@ -102,12 +102,17 @@
 
 .prototypeNavLink {
   color: rgba(255, 255, 255, 0.75);
-  font-family: var(--wakaya-font-sans);
-  font-size: var(--nav-link-size, 19px);
-  font-weight: var(--nav-link-weight, 430);
-  letter-spacing: 0.06em;
+  font-family: var(--wakaya-font-public-ui);
+  font-size: var(--nav-link-size, 18px);
+  font-weight: var(--nav-link-weight, 400);
+  letter-spacing: 0.09em;
   text-decoration: none;
   transition: color 160ms ease;
+}
+
+.prototypeHeader .prototypeNavLink {
+  font-family: var(--wakaya-font-public-ui);
+  font-weight: var(--wakaya-font-public-ui-weight);
 }
 
 .prototypeNavLink:hover {
@@ -115,7 +120,7 @@
 }
 
 .prototypeNavLinkActive {
-  color: var(--wakaya-palm-lime);
+  color: var(--wakaya-eco-green);
 }
 
 .prototypeActions {
@@ -141,15 +146,20 @@
   padding: 0 12px;
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.78);
-  font-family: var(--wakaya-font-sans);
+  font-family: var(--wakaya-font-public-ui);
   font-size: var(--nav-locale-size, 13px);
-  font-weight: var(--nav-locale-weight, 520);
+  font-weight: var(--nav-locale-weight, 400);
   letter-spacing: 0.18em;
   text-decoration: none;
   text-transform: uppercase;
   transition:
     background 160ms ease,
     color 160ms ease;
+}
+
+.prototypeHeader .prototypeLocaleLink {
+  font-family: var(--wakaya-font-public-ui);
+  font-weight: var(--wakaya-font-public-ui-weight);
 }
 
 .prototypeLocaleLink:first-child {
@@ -161,8 +171,8 @@
 }
 
 .prototypeLocaleLinkActive {
-  background: var(--wakaya-palm-lime);
-  color: var(--wakaya-eco-green-deep);
+  background: var(--wakaya-eco-green);
+  color: var(--wakaya-sand-light);
 }
 
 .prototypeCta {
@@ -171,13 +181,13 @@
   justify-content: center;
   min-height: 42px;
   padding: 0 20px;
-  border: 1px solid var(--wakaya-palm-lime);
+  border: 1px solid var(--wakaya-cta-green);
   border-radius: 0;
   background: rgba(182, 206, 135, 0.18);
-  color: var(--wakaya-palm-lime);
-  font-family: var(--wakaya-font-sans);
+  color: var(--wakaya-cta-green);
+  font-family: var(--wakaya-font-public-ui);
   font-size: var(--nav-cta-size, 14px);
-  font-weight: var(--nav-cta-weight, 560);
+  font-weight: var(--nav-cta-weight, 400);
   letter-spacing: 0.12em;
   text-decoration: none;
   text-transform: uppercase;
@@ -186,9 +196,14 @@
     color 160ms ease;
 }
 
+.prototypeHeader .prototypeCta {
+  font-family: var(--wakaya-font-public-ui);
+  font-weight: var(--wakaya-font-public-ui-weight);
+}
+
 .prototypeCta:hover {
-  background: var(--wakaya-palm-lime);
-  color: var(--wakaya-eco-green-deep);
+  background: var(--wakaya-cta-green-hover);
+  color: var(--wakaya-sand-light);
 }
 
 .prototypeMenuButton {
@@ -245,10 +260,15 @@
   padding: 16px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
-  font-family: var(--wakaya-font-sans);
+  font-family: var(--wakaya-font-public-ui);
   font-size: var(--nav-link-mobile-size, calc(2rem + 2px));
-  font-weight: var(--nav-link-weight, 430);
+  font-weight: var(--nav-link-weight, 400);
   text-decoration: none;
+}
+
+.prototypeHeader .prototypeMobileLink {
+  font-family: var(--wakaya-font-public-ui);
+  font-weight: var(--wakaya-font-public-ui-weight);
 }
 
 .prototypeMobileCtaWrap {
@@ -273,12 +293,17 @@
   background: var(--wakaya-palm-lime);
   color: var(--wakaya-eco-green-deep);
   border-radius: 0;
-  font-family: var(--wakaya-font-sans);
+  font-family: var(--wakaya-font-public-ui);
   font-size: var(--nav-cta-size, 15px);
-  font-weight: var(--nav-cta-weight, 560);
+  font-weight: var(--nav-cta-weight, 400);
   letter-spacing: 0.15em;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+.prototypeHeader .prototypeMobileCta {
+  font-family: var(--wakaya-font-public-ui);
+  font-weight: var(--wakaya-font-public-ui-weight);
 }
 
 .prototypeFooter {

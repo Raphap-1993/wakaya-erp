@@ -7,6 +7,7 @@ import { createFilesystemMediaStorage } from "./filesystem-media-storage";
 import {
   type MediaCropSpec,
   optimizeContentImage,
+  readStoredPublicMedia,
   uploadOptimizedPublicImage,
 } from "./image-optimizer";
 
@@ -64,6 +65,30 @@ const dualHeroCrops: Record<string, MediaCropSpec> = {
 };
 
 describe("content image optimizer", () => {
+  it("falls back to the reusable master when a slot variant is missing", async () => {
+    const reads: string[] = [];
+    const storage = {
+      write: async () => ({ storageKey: "", absolutePath: "" }),
+      read: async (path: string[]) => {
+        reads.push(path.join("/"));
+        if (path.at(-1) === "master.webp") return Buffer.from("master");
+        throw new Error("missing_variant");
+      },
+      remove: async () => undefined,
+    };
+
+    const result = await readStoredPublicMedia(
+      ["assets", "asset_reusable", "card.webp"],
+      storage,
+    );
+
+    expect(result.buffer.toString()).toBe("master");
+    expect(reads).toEqual([
+      "assets/asset_reusable/card.webp",
+      "assets/asset_reusable/master.webp",
+    ]);
+  });
+
   it("creates a near-lossless master and required hero variants", async () => {
     const source = await createLargeJpegFile();
 

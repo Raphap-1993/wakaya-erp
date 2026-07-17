@@ -62,7 +62,7 @@ describe("home typography style resolver", () => {
     expect(sectionVars["--home-cta-size"]).toBe("15px");
     expect(sectionVars["--home-label-size"]).toBe("11px");
     expect(sectionVars["--home-cta-weight"]).toBe("610");
-    expect(navVars["--nav-link-size"]).toBe("calc(17.5px - 1.5px)");
+    expect(navVars["--nav-link-size"]).toBe("calc(16.5px - 1.5px)");
     expect(navVars["--nav-link-weight"]).toBe("400");
     expect(navVars["--nav-cta-size"]).toBe("calc(15px + 1px)");
   });
